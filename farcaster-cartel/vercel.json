@@ -1,0 +1,30 @@
+{
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "installCommand": "npm install",
+    "devCommand": "npm run dev",
+    "framework": "nextjs",
+    "env": {
+        "NEXT_PUBLIC_URL": "https://farcaster-cartel.vercel.app",
+        "NEXT_PUBLIC_WC_PROJECT_ID": "@wc_project_id",
+        "NEXT_PUBLIC_BASE_PAY_PAYMASTER_URL": "@paymaster_url",
+        "NEXT_PUBLIC_CDP_API_KEY": "@cdp_api_key",
+        "NEXT_PUBLIC_PAYMASTER_POLICY_ID": "@paymaster_policy_id",
+        "NEXT_PUBLIC_CARTEL_CORE_ADDRESS": "0x...",
+        "NEXT_PUBLIC_CARTEL_POT_ADDRESS": "0x...",
+        "NEXT_PUBLIC_CARTEL_SHARES_ADDRESS": "0x...",
+        "NEXT_PUBLIC_USDC_ADDRESS": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "BASE_RPC_URL": "@base_rpc_url",
+        "DATABASE_URL": "@database_url",
+        "NEYNAR_API_KEY": "@neynar_api_key",
+        "NEYNAR_SIGNER_UUID": "@neynar_signer_uuid",
+        "DEPLOYER_PRIVATE_KEY": "@deployer_private_key",
+        "BASE_PAY_WEBHOOK_SECRET": "@webhook_secret"
+    },
+    "regions": [
+        "iad1"
+    ],
+    "buildOptimization": {
+        "turbo": true
+    }
+}
