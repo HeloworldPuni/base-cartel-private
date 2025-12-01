@@ -1,6 +1,6 @@
 'use client'
 
-// import { useMiniKit, useIsInMiniApp } from '@coinbase/onchainkit/minikit';
+// import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface SafeAreaInsets {
@@ -44,29 +44,21 @@ export const useFrameContext = () => useContext(FrameContext);
 export default function FrameProvider({ children }: { children: ReactNode }) {
   const [frameContext, setFrameContext] = useState<FrameContextType>(null);
   // const { context } = useMiniKit();
-  // const { isInMiniApp } = useIsInMiniApp();
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        // Small delay to ensure context is fully loaded
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        setFrameContext({
-          context: null,
-          isInMiniApp: false
-        });
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        setFrameContext({
-          context: { error: 'Failed to initialize' },
-          isInMiniApp: false
-        });
-      }
-    }
-
-    init();
+    /*
+    if (context) {
+      setFrameContext({
+        context: context as MiniAppContext,
+        isInMiniApp: true
+      });
+    } else {
+    */
+    setFrameContext({
+      context: null,
+      isInMiniApp: false
+    });
+    // }
   }, [])
 
   return (
