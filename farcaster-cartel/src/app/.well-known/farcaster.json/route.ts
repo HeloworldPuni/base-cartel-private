@@ -3,11 +3,9 @@ import { METADATA } from "../../../lib/utils";
 export async function GET() {
   const config = {
     accountAssociation: {
-      header:
-        "eyJmaWQiOjEyMTQyLCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4MDRlNkYxMTFlQmY2RkQyNTU3NmQ0ODA0ODA5NjI0MzVEYzNhYThEOCJ9",
-      payload: "eyJkb21haW4iOiJmcmFtZXMtdjItZGVtby1saWxhYy52ZXJjZWwuYXBwIn0",
-      signature:
-        "MHg5MGI1YzA0Zjc3MGY1M2I4M2I3OGQzOTMwNTNjMmJjZjUwNmE3ZThjNDViYmEwNDk2OTcwZTM1ZTQ0YzU2MGU1Nzc4Y2Y1ZTJkNDY2YzE1MWQxNGMzYmFjNzM3ZDcxZGEwZDVjYWJmMGMzZTdhYTc2YzRjMmQ5MmE5NDJhYjkyODFj",
+      header: "", // TODO: PASTE YOUR HEADER FROM BASE DEVELOPER PORTAL HERE
+      payload: "", // TODO: PASTE YOUR PAYLOAD FROM BASE DEVELOPER PORTAL HERE
+      signature: "", // TODO: PASTE YOUR SIGNATURE FROM BASE DEVELOPER PORTAL HERE
     },
     "frame": {
       "version": "1",
