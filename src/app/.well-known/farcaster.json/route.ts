@@ -19,6 +19,16 @@ export async function GET() {
       "ogTitle": METADATA.name,
       "ogDescription": METADATA.description,
       "ogImageUrl": METADATA.bannerImageUrl,
+      "primaryCategory": "games",
+      "subtitle": "Rule the Chain",
+      "tagline": "Join the Syndicate",
+      "screenshotUrls": [
+        "https://i.imgur.com/2bsV8mV.png",
+        "https://i.imgur.com/2bsV8mV.png",
+        "https://i.imgur.com/2bsV8mV.png"
+      ],
+      "heroImageUrl": "https://i.imgur.com/2bsV8mV.png",
+      "webhookUrl": `${METADATA.homeUrl}/api/webhook`,
       "requiredCapabilities": [
         "actions.ready",
         "actions.signIn",
@@ -40,7 +50,7 @@ export async function GET() {
       ],
       "canonicalDomain": METADATA.homeUrl,
       "noindex": false,
-      "tags": ["base", "baseapp", "miniapp", "game", "strategy", "base-cartel"]
+      "tags": ["base", "game", "strategy", "cartel", "social"]
     },
     "baseBuilder": {
       "allowedAddresses": ["0x8342A48694A74044116F330db5050a267b28dD85"],
