@@ -39,9 +39,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invite already used' }, { status: 400 });
         }
 
-        if (invite.expiresAt && new Date() > invite.expiresAt) {
-            return NextResponse.json({ error: 'Invite expired' }, { status: 400 });
-        }
+
 
         // 3. Create User, Update Invite, Create Referrals, Generate New Invites
         const result = await prisma.$transaction(async (tx) => {
