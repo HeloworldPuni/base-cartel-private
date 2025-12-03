@@ -35,11 +35,14 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             count: createdInvites.length,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             invites: createdInvites.map((i: any) => i.code)
         });
 
     } catch (error) {
         console.error('Error generating invites:', error);
-        return NextResponse.json({ success: false, error: (error as any).message, stack: (error as any).stack }, { status: 200 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : '';
+        return NextResponse.json({ success: false, error: errorMessage, stack: errorStack }, { status: 200 });
     }
 }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
-import { useAccount, useConnect, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useConnect } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 // Removed unused Avatar import
 
