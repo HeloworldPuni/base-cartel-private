@@ -25,6 +25,37 @@
         "subtitle": "Rule the Chain",
         "tagline": "Join the Syndicate",
         "screenshotUrls": [
+            "https://i.imgur.com/2bsV8mV.png",
+            "https://i.imgur.com/2bsV8mV.png",
+            "https://i.imgur.com/2bsV8mV.png"
+        ],
+        "heroImageUrl": "https://i.imgur.com/2bsV8mV.png",
+        "webhookUrl": "https://www.basecartel.in/api/webhook",
+        "requiredCapabilities": [
+            "actions.ready",
+            "actions.signIn",
+            "actions.openUrl",
+            "actions.sendToken",
+            "actions.viewToken",
+            "actions.composeCast",
+            "actions.viewProfile",
+            "actions.setPrimaryButton",
+            "actions.swapToken",
+            "actions.close",
+            "actions.viewCast",
+            "wallet.getEthereumProvider"
+        ],
+        "requiredChains": [
+            "eip155:8453",
+            "eip155:10"
+        ],
+        "canonicalDomain": "www.basecartel.in",
+        "noindex": false,
+        "tags": [
+            "base",
+            "game",
+            "strategy",
+            "cartel",
             "social"
         ]
     }
