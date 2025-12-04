@@ -48,8 +48,6 @@ export async function POST(request: Request) {
                 data: {
                     walletAddress,
                     farcasterId: farcasterId ? farcasterId.toString() : null,
-                    joinedViaInviteCode: inviteCode,
-                    // referrerUserId: invite.creatorId, // Fixed field name
                 }
             });
 
@@ -61,8 +59,6 @@ export async function POST(request: Request) {
                 where: { id: invite.id },
                 data: {
                     usedCount: { increment: 1 },
-                    // usedByUserId: newUser.id, // Removed unique constraint violation for multi-use invites
-                    // usedAt: new Date(),
                     status: newStatus
                 }
             });
@@ -73,7 +69,7 @@ export async function POST(request: Request) {
                     data: {
                         referrerId: invite.creatorId,
                         refereeId: newUser.id,
-                        inviteCode: inviteCode,
+                        inviteId: invite.id,
                         isRewardable: invite.type !== 'founder' // Exclude founder invites from rewards
                     }
                 });
