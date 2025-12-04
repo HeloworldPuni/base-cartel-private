@@ -27,7 +27,7 @@ export async function getClanSummary(address: string): Promise<ClanSummary> {
         include: {
             user: {
                 select: {
-                    username: true,
+                    farcasterId: true,
                     shares: true,
                     // We might need to join with CartelEvent to get raid counts
                 }
@@ -48,7 +48,7 @@ export async function getClanSummary(address: string): Promise<ClanSummary> {
 
         directInvitees.push({
             address: ref.userAddress,
-            handle: ref.user.username || undefined,
+            handle: ref.user.farcasterId || undefined,
             joinedAt: ref.joinedAt,
             shares: ref.user.shares || 0,
             raidsBy,
@@ -148,12 +148,12 @@ export async function getClanTree(address: string, depth: number = 2): Promise<C
     // Fetch root user
     const user = await prisma.user.findUnique({
         where: { walletAddress: address },
-        select: { username: true, shares: true }
+        select: { farcasterId: true, shares: true }
     });
 
     const node: ClanTreeNode = {
         address,
-        handle: user?.username || undefined,
+        handle: user?.farcasterId || undefined,
         shares: user?.shares || 0,
         children: []
     };
