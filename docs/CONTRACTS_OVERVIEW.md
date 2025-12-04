@@ -45,25 +45,6 @@ This document provides a technical overview of the Base Cartel smart contract sy
 *   `claimProfitFor(address user)`
     *   **Agent:** Claims profit share rewards on behalf of a user (for gasless/agent flows).
 *   `getPendingProfit(address user)`
-    *   **View:** Calculates total claimable rewards (pending + new) for a user.
-*   `sponsorRevenue(uint256 amount)`
-    *   **Public:** Allows anyone (usually admin) to inject USDC into the daily revenue pool.
-*   `raid(address target)`
-    *   **Public:** Initiates a raid against a target. Collects fee and emits event.
-*   `raidFor(address user, address target)`
-    *   **Agent:** Initiates a raid on behalf of a user.
-*   `betray()`
-    *   **Public:** Burns all shares to exit the game (logic placeholder).
-
----
-
-## 2. CartelShares.sol
-**Role:** The ERC1155 token representing "Reputation" or "Shares" in the cartel.
-
-### Storage Variables
-*   `SHARE_ID` (uint256): Constant ID (1) for the main share token.
-*   `minter` (address): Address authorized to mint/burn shares (usually CartelCore).
-
 ### Functions
 *   `setMinter(address _minter)`
     *   **Admin:** Sets the address allowed to mint tokens.

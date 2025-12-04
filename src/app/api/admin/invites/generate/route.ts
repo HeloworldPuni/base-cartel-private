@@ -8,6 +8,9 @@ export async function POST(request: Request) {
         const { count = 1, secret } = body;
 
         // Simple admin protection
+        console.log("Admin Debug - Received:", secret);
+        console.log("Admin Debug - Expected:", process.env.ADMIN_SECRET);
+
         if (secret !== process.env.ADMIN_SECRET) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
