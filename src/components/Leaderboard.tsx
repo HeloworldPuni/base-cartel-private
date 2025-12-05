@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RankRow } from "@/components/ui/RankRow";
@@ -11,8 +13,6 @@ interface Player {
     totalClaimed: number;
     fid?: number;
 }
-
-"use client";
 
 import { useState, useEffect } from 'react';
 
