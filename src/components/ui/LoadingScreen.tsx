@@ -1,6 +1,8 @@
-import { motion } from "framer-motion";
+"use client";
 
-const hatVariants = {
+import { motion, Variants } from "framer-motion";
+
+const hatVariants: Variants = {
     initial: { y: 0, opacity: 0 },
     animate: {
         y: [0, -10, 0],
@@ -13,7 +15,7 @@ const hatVariants = {
     },
 };
 
-const textVariants = {
+const textVariants: Variants = {
     initial: { opacity: 0 },
     animate: {
         opacity: [0.4, 1, 0.4],
