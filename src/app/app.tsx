@@ -1,12 +1,51 @@
+import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { Button } from "@/components/ui/button";
+import CartelDashboard from "@/components/CartelDashboard";
+import Leaderboard from "@/components/Leaderboard";
+import JoinCartel from "@/components/JoinCartel";
 import { AnimatePresence, motion } from "framer-motion";
-import { LoadingScreen } from "~/components/ui/LoadingScreen";
-
-// ... imports ...
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 export default function App() {
-  // ... hooks ...
+  const { address, isConnected } = useAccount();
+  const [hasJoined, setHasJoined] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [currentView, setCurrentView] = useState<"dashboard" | "leaderboard">("dashboard");
 
-  // ... useEffect ...
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!address) {
+        setIsCheckingStatus(false);
+        return;
+      }
+
+      try {
+        // Simulate checking if user is in cartel
+        // In a real app, this would be an API call
+        const storedJoinStatus = localStorage.getItem(`cartel_joined_${address}`);
+        if (storedJoinStatus === 'true') {
+          setHasJoined(true);
+        }
+      } catch (error) {
+        console.error("Failed to check status:", error);
+      } finally {
+        // Add a small delay for the loading animation to be visible
+        setTimeout(() => setIsCheckingStatus(false), 1500);
+      }
+    };
+
+    checkStatus();
+  }, [address]);
+
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center space-y-4">
+        <h1 className="text-2xl font-bold text-red-500">BASE CARTEL</h1>
+        <p className="text-zinc-400">Connect your wallet to enter the underworld.</p>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -30,6 +69,9 @@ export default function App() {
         >
           <JoinCartel onJoin={(inviteCode) => {
             console.log("Joining with invite:", inviteCode);
+            if (address) {
+              localStorage.setItem(`cartel_joined_${address}`, 'true');
+            }
             setHasJoined(true);
           }} />
         </motion.div>
