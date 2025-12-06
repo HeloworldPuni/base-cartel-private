@@ -57,9 +57,10 @@ function generateHeadline(ev: any): string {
 }
 
 function calculateImportance(ev: any): number {
-    if (ev.type === 'HIGH_STAKES_RAID') return 8;
-    if (ev.type === 'RETIRE' && ev.payout > 1000) return 9;
-    return 5;
+    if (ev.type === 'HIGH_STAKES_RAID') return 9; // Always big news
+    if (ev.type === 'RETIRE' && ev.payout > 500) return 9; // Big exit
+    if (ev.type === 'RAID' && ev.stolenShares >= 50) return 7; // Significant raid
+    return 4; // Minor activity
 }
 
 function formatAddress(addr?: string): string {
@@ -68,8 +69,9 @@ function formatAddress(addr?: string): string {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-export async function getNews(limit: number = 20) {
+export async function getNews(limit: number = 20, minImportance: number = 7) {
     return await prisma.cartelNews.findMany({
+        where: { importance: { gte: minImportance } },
         orderBy: { timestamp: 'desc' },
         take: limit
     });
