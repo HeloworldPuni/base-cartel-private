@@ -65,9 +65,9 @@ export async function callPaidEndpoint<T = any>(endpoint: string): Promise<T> {
 // Auto-agent helpers
 
 export async function getRaidSuggestion(address: string) {
-    // Use absolute URL for server-side calls, or relative for client-side if proxying
-    // Ensure we use the public URL if available, or localhost for dev
-    const baseUrl = process.env.BASE_CARTEL_API_URL || "http://localhost:3000";
+    const isClient = typeof window !== 'undefined';
+    // Use relative URL on client, absolute on server
+    const baseUrl = isClient ? '' : (process.env.BASE_CARTEL_API_URL || "http://localhost:3000");
     const url = `${baseUrl}/api/agent/suggest-raid?address=${address}`;
 
     return callPaidEndpoint<{
@@ -81,7 +81,8 @@ export async function getRaidSuggestion(address: string) {
 }
 
 export async function getCartelAnalytics(address: string) {
-    const baseUrl = process.env.BASE_CARTEL_API_URL || "http://localhost:3000";
+    const isClient = typeof window !== 'undefined';
+    const baseUrl = isClient ? '' : (process.env.BASE_CARTEL_API_URL || "http://localhost:3000");
     const url = `${baseUrl}/api/analytics/my-cartel?address=${address}`;
 
     return callPaidEndpoint<{
