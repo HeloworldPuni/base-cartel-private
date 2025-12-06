@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
-import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
+
 import { useAccount, useConnect, useWriteContract } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
