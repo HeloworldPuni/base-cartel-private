@@ -1,30 +1,41 @@
---card: #161A23;
---card-foreground: #E5E7EB;
+@import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@300;400;500;600;700&display=swap');
 
---popover: #161A23;
---popover-foreground: #E5E7EB;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
---primary: #3B82F6;
---primary-foreground: #ffffff;
+:root {
+  /* 4-Page Mini-App Theme */
+  --background: #0B0F17;
+  --foreground: #E5E7EB;
 
---secondary: #262A33;
---secondary-foreground: #E5E7EB;
+  --card: #161A23;
+  --card-foreground: #E5E7EB;
 
---muted: #9CA3AF;
---muted-foreground: #6B7280;
+  --popover: #161A23;
+  --popover-foreground: #E5E7EB;
 
---accent: #FFD700;
---accent-foreground: #0B0F17;
+  --primary: #3B82F6;
+  --primary-foreground: #ffffff;
 
---destructive: #EF4444;
---destructive-foreground: #ffffff;
+  --secondary: #262A33;
+  --secondary-foreground: #E5E7EB;
 
---border: #262A33;
---input: #161A23;
---ring: #3B82F6;
+  --muted: #9CA3AF;
+  --muted-foreground: #6B7280;
 
---radius: 1rem;
-/* rounded-2xl */
+  --accent: #FFD700;
+  --accent-foreground: #0B0F17;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #262A33;
+  --input: #161A23;
+  --ring: #3B82F6;
+
+  --radius: 1rem;
+  /* rounded-2xl */
 }
 
 body {
