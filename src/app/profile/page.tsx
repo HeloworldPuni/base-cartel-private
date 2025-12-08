@@ -58,9 +58,9 @@ export default function ProfilePage() {
                                     <Address className="text-xs text-zinc-500 font-mono" />
                                 </div>
                             </Identity>
-                            {/* Fallback Debug Info */}
-                            <div className="text-xs text-zinc-600 hidden">
-                                Debug: {address}
+                            {/* Fallback Debug Info - VISIBLE this time */}
+                            <div className="text-xs text-red-500 mt-2 font-mono">
+                                Debug: Address={address} | Connected={isConnected ? 'Yes' : 'No'}
                             </div>
                         </CardContent>
                     </Card>
