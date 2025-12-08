@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { ClanSummary } from '@/lib/clan-service';
 
 export default function ProfilePage() {
-    const { address } = useAccount();
+    const { address, isConnected } = useAccount();
     const { disconnect } = useDisconnect();
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
