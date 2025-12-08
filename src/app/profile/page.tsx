@@ -58,6 +58,10 @@ export default function ProfilePage() {
                                     <Address className="text-xs text-zinc-500 font-mono" />
                                 </div>
                             </Identity>
+                            {/* Fallback Debug Info */}
+                            <div className="text-xs text-zinc-600 hidden">
+                                Debug: {address}
+                            </div>
                         </CardContent>
                     </Card>
 
