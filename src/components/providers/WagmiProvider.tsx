@@ -8,8 +8,8 @@ import { METADATA } from "../../lib/utils";
 export const config = createConfig({
   chains: [baseSepolia, base, optimism],
   transports: {
-    [baseSepolia.id]: http(),
-    [base.id]: http(),
+    [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
+    [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
     [optimism.id]: http(),
   },
   connectors: [
