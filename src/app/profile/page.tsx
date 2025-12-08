@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccount, useDisconnect } from 'wagmi';
+import { Identity, Avatar, Name, Address } from '@coinbase/onchainkit/identity';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -47,15 +48,16 @@ export default function ProfilePage() {
                     {/* Identity Card */}
                     <Card className="card-glow border-zinc-700">
                         <CardContent className="p-4 flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-full bg-zinc-800 border-2 border-[#4A87FF] flex items-center justify-center text-2xl">
-                                👤
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-white text-lg">Agent</h3>
-                                <p className="text-xs text-zinc-500 font-mono">
-                                    {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown'}
-                                </p>
-                            </div>
+                            <Identity
+                                address={address}
+                                className="bg-transparent border-none p-0 flex flex-row items-center gap-4"
+                            >
+                                <Avatar className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
+                                <div className="flex flex-col">
+                                    <Name className="font-bold text-white text-lg" />
+                                    <Address className="text-xs text-zinc-500 font-mono" />
+                                </div>
+                            </Identity>
                         </CardContent>
                     </Card>
 
