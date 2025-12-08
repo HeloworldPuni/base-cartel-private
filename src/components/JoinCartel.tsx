@@ -131,7 +131,62 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         <div className="text-6xl mb-4">🎩</div>
                         <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
                             ENTER THE CARTEL
-                        </CardTitle>
+                            <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
+                                INVITE-ONLY ACCESS
+                            </p>
+                    </div>
+                    {isInMiniApp && context?.user && (
+                        <div className="flex flex-col items-center gap-2 mt-4 animate-fade-in">
+                            {context.user.pfpUrl && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={context.user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF] glow-blue" />
+                            )}
+                            <p className="text-zinc-300 font-medium">
+                                Welcome, <span className="text-[#4A87FF]">@{context.user.username}</span>
+                            </p>
+                        </div>
+                    )}
+                </CardHeader>
+                <CardContent className="space-y-6 px-6 pb-8">
+                    <p className="text-center text-zinc-400 text-sm leading-relaxed">
+                        Open Access for limited time. Join now.
+                    </p>
+
+                    <div className="card-glow p-5 rounded-xl space-y-3">
+                        <div className="flex justify-between text-sm items-center">
+                            <span className="text-zinc-400">Entry Fee</span>
+                            <span className="text-[#3DFF72] font-bold text-lg">FREE</span>
+                        </div>
+                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
+                        <div className="flex justify-between text-sm items-center">
+                            <span className="text-zinc-400">Initial Shares</span>
+                            <span className="text-white font-bold text-lg">100</span>
+                        </div>
+                    </div>
+
+                    {!isConnected ? (
+                        <div className="space-y-4">
+                            <p className="text-center text-sm text-zinc-400">
+                                {isInMiniApp ? "Connecting to your account..." : "Connect your wallet to verify eligiblity."}
+                            </p>
+                            {!isInMiniApp && (
+                                <Button
+                                    className="w-full bg-[#4A87FF] hover:bg-[#5A97FF] text-white font-bold py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                                    onClick={() => {
+                                        const connector = connectors.find(c => c.id === 'coinbaseWalletSDK');
+                                        if (connector) {
+                                            connect({ connector });
+                                        } else {
+                                            const first = connectors[0];
+                                            if (first) connect({ connector: first });
+                                        }
+                                    }}
+                                >
+                                    Connect Wallet
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
                         <>
                             <div className="space-y-2">
                                 <label className="text-sm text-zinc-400 font-medium">Referral Code (Optional)</label>
@@ -154,10 +209,10 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         </>
                     )}
 
-                        <p className="text-center text-xs text-zinc-600 mt-4">
-                            Open Access · Referrals earn bonus shares
-                        </p>
-                    </CardContent>
+                    <p className="text-center text-xs text-zinc-600 mt-4">
+                        Open Access · Referrals earn bonus shares
+                    </p>
+                </CardContent>
             </Card>
 
             <PaymentModal
