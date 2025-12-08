@@ -96,10 +96,15 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             const referrer = data.referrerAddress;
             if (!referrer) throw new Error("Referrer address missing");
 
+            const contractAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+            if (!contractAddress) {
+                throw new Error("Contract address is not configured");
+            }
+
             // 2. Execute On-Chain Join (Mint Shares)
-            console.log("Minting shares on-chain...");
+            console.log("Minting shares on-chain at:", contractAddress);
             const hash = await writeContractAsync({
-                address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+                address: contractAddress,
                 abi: CartelCoreABI,
                 functionName: 'join',
                 args: [referrer]
