@@ -1,6 +1,7 @@
 "use client";
 
-import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
+import { Identity, Avatar, Name, Address } from '@coinbase/onchainkit/identity';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -12,15 +13,8 @@ import { ClanSummary } from '@/lib/clan-service';
 import { useFrameContext } from "@/components/providers/FrameProvider";
 
 export default function ProfilePage() {
-    const { address, isConnected } = useAccount();
+    const { address } = useAccount();
     const { disconnect } = useDisconnect();
-
-    // Resolve Onchain Identity (Basenames/ENS)
-    const { data: ensName, error: ensError, isLoading: ensLoading } = useEnsName({
-        address,
-        chainId: 8453,
-    });
-    const { data: ensAvatar } = useEnsAvatar({ name: ensName!, chainId: 8453 });
 
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
@@ -28,11 +22,6 @@ export default function ProfilePage() {
     // Get Farcaster Context
     const { context } = useFrameContext();
     const user = context?.user;
-
-    // Determine Display Data (Priority: Farcaster -> ENS -> Address)
-    const displayName = user?.username ? `@${user.username}` : (ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member'));
-    const displayAvatar = user?.pfpUrl || ensAvatar;
-    const displaySubtext = user?.fid ? `FID: ${user.fid}` : (ensName ? address : '');
 
     useEffect(() => {
         if (address) {
@@ -65,34 +54,26 @@ export default function ProfilePage() {
                     {/* Identity Card */}
                     <Card className="card-glow border-zinc-700">
                         <CardContent className="p-4 flex items-center gap-4">
-                            <div className="bg-transparent border-none p-0 flex flex-row items-center gap-4 w-full">
-                                {displayAvatar ? (
-                                    // Custom Avatar Render
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={displayAvatar} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
-                                ) : (
-                                    <div className="w-16 h-16 rounded-full border-2 border-[#4A87FF] bg-zinc-800 flex items-center justify-center">
-                                        <span className="text-2xl">👤</span>
-                                    </div>
-                                )}
-
-                                <div className="flex flex-col">
-                                    {/* Manual Render Block - Forces Font and Color */}
-                                    <div
-                                        className="font-bold text-lg heading-font text-white"
-                                        style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}
+                            {/* Force White Text for OnchainKit Components */}
+                            <div className="flex flex-row items-center gap-4 w-full">
+                                <div className="p-1 border-2 border-[#4A87FF] rounded-full">
+                                    <Identity
+                                        address={address}
+                                        schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
+                                        className="flex items-center gap-4"
                                     >
-                                        {displayName}
-                                    </div>
-
-                                    <div className="text-xs text-zinc-500 font-mono">
-                                        {displaySubtext}
-                                    </div>
-
-                                    {/* DEBUG INFO - Will help diagnose missing data */}
-                                    <div className="text-[10px] text-red-500 mt-1 font-mono">
-                                        DEBUG: {address?.slice(0, 6)} | ENS: {ensName || 'null'} | Err: {ensError?.message || 'none'}
-                                    </div>
+                                        <Avatar className="h-16 w-16" />
+                                        <div className="flex flex-col">
+                                            {/* Name with enforced white color and massive glow */}
+                                            <Name
+                                                className="font-bold text-lg heading-font text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                                            />
+                                            {/* Subtext address */}
+                                            <Address
+                                                className="text-xs text-zinc-400 font-mono"
+                                            />
+                                        </div>
+                                    </Identity>
                                 </div>
                             </div>
                         </CardContent>

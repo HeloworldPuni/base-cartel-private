@@ -11,20 +11,9 @@ const baseWithEns = {
   ...base,
   contracts: {
     ...base.contracts,
-    ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e' as const, // Standard Registry (Checksum Verified)
-    },
-    // Universal Resolver for L2 - This is the key for wagmi useEnsName to resolve on L2
-    ensUniversalResolver: {
-      address: '0xC6D566A56A1aFF6508b41F6C45F4CD8EE5d130BF' as const, // L2 Resolver (Checksum Verified)
-      blockCreated: 24712949, // Optimization
-    },
-    // Multicall3 is needed for batching
-    multicall3: {
-      address: '0xcA11bde05977b3631167028862bE2a173976CA11' as const,
-      blockCreated: 5022,
-    },
+    // We rely on standard config or OnchainKit's internal resolution now
   },
+},
 };
 
 export const config = createConfig({
