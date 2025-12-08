@@ -36,6 +36,12 @@
 
   --radius: 1rem;
   /* rounded-2xl */
+
+  /* Force OnchainKit to use Light Text (Dark Mode) variables always */
+  --ock-font-family: 'DM Sans', sans-serif;
+  --ock-foreground: #FFFFFF;
+  --ock-foreground-muted: #9CA3AF;
+  --ock-background: transparent;
 }
 
 body {
