@@ -1,7 +1,6 @@
 "use client";
 
 import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi';
-import { Identity, Avatar, Name, Address } from '@coinbase/onchainkit/identity';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -10,7 +9,6 @@ import AutoAgentPanel from "@/components/agent/AutoAgentPanel";
 import ReferralModal from "@/components/ReferralModal";
 import { useState, useEffect } from 'react';
 import { ClanSummary } from '@/lib/clan-service';
-
 import { useFrameContext } from "@/components/providers/FrameProvider";
 
 export default function ProfilePage() {
@@ -18,9 +16,6 @@ export default function ProfilePage() {
     const { disconnect } = useDisconnect();
 
     // Resolve Onchain Identity (Basenames/ENS)
-    // We manually fetch this to guarantee we have the string to render
-    // Resolve Onchain Identity (Basenames/ENS)
-    // We manually fetch this to guarantee we have the string to render
     const { data: ensName, error: ensError, isLoading: ensLoading } = useEnsName({
         address,
         chainId: 8453,
@@ -70,7 +65,6 @@ export default function ProfilePage() {
                     {/* Identity Card */}
                     <Card className="card-glow border-zinc-700">
                         <CardContent className="p-4 flex items-center gap-4">
-                            {/* Manual Container instead of Identity wrapper to debug visibility */}
                             <div className="bg-transparent border-none p-0 flex flex-row items-center gap-4 w-full">
                                 {displayAvatar ? (
                                     // Custom Avatar Render
@@ -86,47 +80,60 @@ export default function ProfilePage() {
                                     {/* Manual Render Block - Forces Font and Color */}
                                     <div
                                         className="font-bold text-lg heading-font text-white"
-                                        style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }} // Force Glow
+                                        style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}
                                     >
                                         {displayName}
                                     </div>
 
-                                    {/* Referral Section */}
-                                    <Card className="card-glow border-[#D4AF37]/30">
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-lg heading-font text-white flex items-center gap-2">
-                                                🤝 Recruit Associates
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            <div className="flex justify-between items-center text-sm">
-                                                <span className="text-zinc-400">Total Recruits</span>
-                                                <span className="text-white font-bold">{referralStats?.directInvitesUsed || 0}</span>
-                                            </div>
-
-                                            <Button
-                                                className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold"
-                                                onClick={() => setIsReferralOpen(true)}
-                                            >
-                                                Get Referral Link
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Settings / Auto Agent */}
-                                    <div className="space-y-3">
-                                        <h2 className="text-lg font-bold heading-font text-zinc-200">Agent Configuration</h2>
-                                        <AutoAgentPanel />
+                                    <div className="text-xs text-zinc-500 font-mono">
+                                        {displaySubtext}
                                     </div>
 
-                                    <ReferralModal
-                                        isOpen={isReferralOpen}
-                                        onClose={() => setIsReferralOpen(false)}
-                                        address={address}
-                                        referralCount={referralStats?.directInvitesUsed || 0}
-                                    />
+                                    {/* DEBUG INFO - Will help diagnose missing data */}
+                                    <div className="text-[10px] text-red-500 mt-1 font-mono">
+                                        DEBUG: {address?.slice(0, 6)} | ENS: {ensName || 'null'} | Err: {ensError?.message || 'none'}
+                                    </div>
                                 </div>
-                            </AppLayout>
-                        </AuthenticatedRoute>
-                        );
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Referral Section */}
+                    <Card className="card-glow border-[#D4AF37]/30">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg heading-font text-white flex items-center gap-2">
+                                🤝 Recruit Associates
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-zinc-400">Total Recruits</span>
+                                <span className="text-white font-bold">{referralStats?.directInvitesUsed || 0}</span>
+                            </div>
+
+                            <Button
+                                className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold"
+                                onClick={() => setIsReferralOpen(true)}
+                            >
+                                Get Referral Link
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    {/* Settings / Auto Agent */}
+                    <div className="space-y-3">
+                        <h2 className="text-lg font-bold heading-font text-zinc-200">Agent Configuration</h2>
+                        <AutoAgentPanel />
+                    </div>
+
+                    <ReferralModal
+                        isOpen={isReferralOpen}
+                        onClose={() => setIsReferralOpen(false)}
+                        address={address}
+                        referralCount={referralStats?.directInvitesUsed || 0}
+                    />
+                </div>
+            </AppLayout>
+        </AuthenticatedRoute>
+    );
 }
