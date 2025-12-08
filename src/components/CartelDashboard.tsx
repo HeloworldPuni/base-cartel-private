@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import RaidModal from "./RaidModal";
 import BadgesList from "./BadgesList";
 import BetrayModal from "./BetrayModal";
-import InviteModal from "./InviteModal";
+// Removed InviteModal
 import { haptics } from "@/lib/haptics";
 import AutoAgentPanel from "@/components/agent/AutoAgentPanel";
 import ActivityFeed from "./ActivityFeed";
@@ -42,7 +42,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- STATE UI (Modals) ---
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
     const [isBetrayModalOpen, setIsBetrayModalOpen] = useState(false);
-    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    // Removed isInviteModalOpen
     const [isMyClanModalOpen, setIsMyClanModalOpen] = useState(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [isClaiming, setIsClaiming] = useState(false);
@@ -208,8 +208,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </CardContent>
             </StatCard>
 
-            <BadgesList />
-
             {/* Actions */}
             <div className="space-y-3">
                 <h2 className="text-lg font-bold heading-font text-zinc-200">Actions</h2>
@@ -238,15 +236,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         <span className="font-bold heading-font">My Clan</span>
                     </ActionButton>
 
-                    <Link href="/invites" className="w-full" onClick={async () => await haptics.light()}>
-                        <ActionButton
-                            variant="invite"
-                            className="w-full h-28"
-                        >
-                            <span className="text-3xl">🤝</span>
-                            <span className="font-bold heading-font">Invite</span>
-                        </ActionButton>
-                    </Link>
+                    {/* Invite Button Removed - Moved to Profile */}
 
                     <ActionButton
                         variant="betray"
@@ -306,10 +296,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 onClose={() => setIsBetrayModalOpen(false)}
             />
 
-            <InviteModal
-                isOpen={isInviteModalOpen}
-                onClose={() => setIsInviteModalOpen(false)}
-            />
+
 
             <MyClanModal
                 isOpen={isMyClanModalOpen}
