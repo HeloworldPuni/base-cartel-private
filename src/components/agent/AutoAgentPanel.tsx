@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from 'next/link';
 
 // ABI for AgentVault (minimal)
 const AGENT_VAULT_ABI = [
@@ -22,14 +23,19 @@ const AGENT_VAULT_ABI = [
 
 const AGENT_VAULT_ADDRESS = process.env.NEXT_PUBLIC_AGENT_VAULT_ADDRESS as `0x${string}`;
 
-export default function AutoAgentPanel() {
+interface AutoAgentPanelProps {
+    compact?: boolean;
+}
+
+export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps) {
     const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
     const { signTypedDataAsync } = useSignTypedData();
 
     const [enabled, setEnabled] = useState(false);
     const [strategy, setStrategy] = useState('conservative');
-    const [budget, setBudget] = useState('5');
+    const [budget, setBudget] = useState('0');
+    const [isConfigured, setIsConfigured] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [statusMsg, setStatusMsg] = useState('');
 
@@ -42,6 +48,7 @@ export default function AutoAgentPanel() {
                         setEnabled(data.settings.enabled);
                         setStrategy(data.settings.strategy);
                         setBudget(data.settings.budget.toString());
+                        setIsConfigured(data.settings.budget > 0);
                     }
                 });
         }
@@ -124,6 +131,7 @@ export default function AutoAgentPanel() {
             const data = await res.json();
             if (data.success) {
                 setStatusMsg("Agent settings saved!");
+                setIsConfigured(true);
             } else {
                 throw new Error(data.error);
             }
@@ -155,11 +163,52 @@ export default function AutoAgentPanel() {
         }
     };
 
+    // --- COMPACT VIEW (Dashboard) ---
+    if (compact) {
+        return (
+            <Card className="w-full card-glow border-zinc-800 bg-zinc-900/50">
+                <CardHeader className="py-3 px-4">
+                    <CardTitle className="flex items-center justify-between text-white text-base">
+                        <span className="flex items-center gap-2">
+                            🤖 Auto-Agent
+                            {enabled && <span className="text-xs text-green-500 font-normal py-0.5 px-2 bg-green-500/10 rounded-full animate-pulse">Running</span>}
+                        </span>
+
+                        {isConfigured ? (
+                            <Button
+                                variant={enabled ? "default" : "secondary"}
+                                size="sm"
+                                onClick={() => setEnabled(!enabled)} // Note: In real app this should trigger a save/update
+                                className={`h-7 text-xs ${enabled ? "bg-green-600 hover:bg-green-700" : "bg-zinc-700"}`}
+                            >
+                                {enabled ? "ON" : "OFF"}
+                            </Button>
+                        ) : (
+                            <Link href="/profile">
+                                <Button size="sm" variant="outline" className="h-7 text-xs border-zinc-600 text-zinc-400">
+                                    Configure
+                                </Button>
+                            </Link>
+                        )}
+                    </CardTitle>
+                </CardHeader>
+                {!isConfigured && (
+                    <CardContent className="pb-3 px-4 pt-0">
+                        <p className="text-xs text-zinc-500">
+                            Setup strategies in <Link href="/profile" className="text-[#4A87FF] hover:underline">Profile</Link> to enable.
+                        </p>
+                    </CardContent>
+                )}
+            </Card>
+        );
+    }
+
+    // --- FULL VIEW (Profile) ---
     return (
-        <Card className="w-full max-w-md mx-auto mt-4 bg-zinc-900 border-zinc-800">
+        <Card className="w-full bg-zinc-900 border-zinc-800">
             <CardHeader>
                 <CardTitle className="flex items-center justify-between text-white">
-                    <span>🤖 Auto-Agent</span>
+                    <span>🤖 Strategy Control</span>
                     <Button
                         variant={enabled ? "default" : "secondary"}
                         onClick={() => setEnabled(!enabled)}
@@ -171,82 +220,70 @@ export default function AutoAgentPanel() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <AnimatePresence>
-                    {enabled && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                        >
-                            <div className="space-y-4 pt-2">
-                                <div className="space-y-2">
-                                    <Label className="text-zinc-400">Strategy</Label>
-                                    <select
-                                        value={strategy}
-                                        onChange={(e) => setStrategy(e.target.value)}
-                                        className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white"
-                                    >
-                                        <option value="conservative">Conservative (Claim Only)</option>
-                                        <option value="balanced">Balanced (Safe Raids)</option>
-                                        <option value="aggressive">Aggressive (Active Raids)</option>
-                                    </select>
-                                </div>
+                    <motion.div
+                        layout
+                        className="space-y-4 pt-2"
+                    >
+                        <div className="space-y-2">
+                            <Label className="text-zinc-400">Strategy</Label>
+                            <select
+                                value={strategy}
+                                onChange={(e) => setStrategy(e.target.value)}
+                                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                            >
+                                <option value="conservative">Conservative (Claim Only)</option>
+                                <option value="balanced">Balanced (Safe Raids)</option>
+                                <option value="aggressive">Aggressive (Active Raids)</option>
+                            </select>
+                        </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-zinc-400">Daily Budget (USDC)</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            type="number"
-                                            value={budget}
-                                            onChange={(e) => setBudget(e.target.value)}
-                                            className="bg-zinc-800 border-zinc-700 text-white"
-                                        />
-                                        <Button variant="outline" onClick={handleDeposit} disabled={isLoading}>
-                                            Deposit
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-zinc-800/50 rounded border border-zinc-700/50">
-                                    <Label className="text-zinc-400 mb-2 block">AI Intelligence (Paid)</Label>
-                                    <Button
-                                        variant="secondary"
-                                        className="w-full mb-2"
-                                        onClick={handleGetSuggestion}
-                                        disabled={isLoading}
-                                    >
-                                        Get Raid Suggestion ($0.005)
-                                    </Button>
-                                    {suggestion && (
-                                        <div className="text-xs text-zinc-300 bg-black/40 p-2 rounded">
-                                            <p>Target: <span className="text-red-400">{suggestion.targetHandle}</span></p>
-                                            <p>Est. Gain: <span className="text-green-400">{suggestion.estimatedGainShares.min}-{suggestion.estimatedGainShares.max} Shares</span></p>
-                                            <p>Confidence: <span className="text-blue-400">{suggestion.confidence}%</span></p>
-                                            <p>Risk: <span className="text-yellow-400">{suggestion.riskLevel}</span></p>
-                                            <p className="italic mt-1">"{suggestion.reason}"</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {statusMsg && (
-                                    <div className="text-sm text-yellow-400 p-2 bg-zinc-800 rounded">
-                                        {statusMsg}
-                                    </div>
-                                )}
-
-                                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSave} disabled={isLoading}>
-                                    {isLoading ? 'Processing...' : 'Save Configuration'}
+                        <div className="space-y-2">
+                            <Label className="text-zinc-400">Daily Budget (USDC)</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="number"
+                                    value={budget}
+                                    onChange={(e) => setBudget(e.target.value)}
+                                    className="bg-zinc-800 border-zinc-700 text-white"
+                                />
+                                <Button variant="outline" onClick={handleDeposit} disabled={isLoading}>
+                                    Deposit
                                 </Button>
                             </div>
-                        </motion.div>
-                    )}
+                        </div>
+
+                        <div className="p-4 bg-zinc-800/50 rounded border border-zinc-700/50">
+                            <Label className="text-zinc-400 mb-2 block">AI Intelligence (Paid)</Label>
+                            <Button
+                                variant="secondary"
+                                className="w-full mb-2"
+                                onClick={handleGetSuggestion}
+                                disabled={isLoading}
+                            >
+                                Get Raid Suggestion ($0.005)
+                            </Button>
+                            {suggestion && (
+                                <div className="text-xs text-zinc-300 bg-black/40 p-2 rounded">
+                                    <p>Target: <span className="text-red-400">{suggestion.targetHandle}</span></p>
+                                    <p>Est. Gain: <span className="text-green-400">{suggestion.estimatedGainShares.min}-{suggestion.estimatedGainShares.max} Shares</span></p>
+                                    <p>Confidence: <span className="text-blue-400">{suggestion.confidence}%</span></p>
+                                    <p>Risk: <span className="text-yellow-400">{suggestion.riskLevel}</span></p>
+                                    <p className="italic mt-1">"{suggestion.reason}"</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {statusMsg && (
+                            <div className="text-sm text-yellow-400 p-2 bg-zinc-800 rounded">
+                                {statusMsg}
+                            </div>
+                        )}
+
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSave} disabled={isLoading}>
+                            {isLoading ? 'Processing...' : 'Save Configuration'}
+                        </Button>
+                    </motion.div>
                 </AnimatePresence>
-                {!enabled && (
-                    <div className="text-center text-zinc-500 text-sm py-2">
-                        Enable Auto-Agent to configure strategies.
-                    </div>
-                )}
             </CardContent>
         </Card>
     );

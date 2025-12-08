@@ -211,7 +211,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             {/* Actions */}
             <div className="space-y-3">
                 <h2 className="text-lg font-bold heading-font text-zinc-200">Actions</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                     <ActionButton
                         variant="raid"
                         className="h-28"
@@ -221,7 +221,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         }}
                     >
                         <span className="text-3xl">⚔️</span>
-                        <span className="font-bold heading-font">Raid</span>
+                        <span className="font-bold heading-font text-sm mt-2">Raid</span>
                     </ActionButton>
 
                     <ActionButton
@@ -233,10 +233,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         }}
                     >
                         <span className="text-3xl">🧬</span>
-                        <span className="font-bold heading-font">My Clan</span>
+                        <span className="font-bold heading-font text-sm mt-2">My Clan</span>
                     </ActionButton>
-
-                    {/* Invite Button Removed - Moved to Profile */}
 
                     <ActionButton
                         variant="betray"
@@ -247,7 +245,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         }}
                     >
                         <span className="text-3xl">🩸</span>
-                        <span className="font-bold heading-font">Betray</span>
+                        <span className="font-bold heading-font text-sm mt-2">Betray</span>
                     </ActionButton>
                 </div>
             </div>
@@ -255,7 +253,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             {/* Auto-Agent */}
             <div className="space-y-3">
                 <h2 className="text-lg font-bold heading-font text-zinc-200">Automation</h2>
-                <AutoAgentPanel />
+                <AutoAgentPanel compact={true} />
             </div>
 
             {/* Most Wanted */}
