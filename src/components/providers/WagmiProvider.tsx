@@ -23,34 +23,35 @@ const baseWithEns = {
       address: '0xcA11bde05977b3631167028862bE2a173976CA11' as const,
       blockCreated: 5022,
     },
-  };
+  },
+};
 
-  export const config = createConfig({
-    // Use our modified base chain definition
-    chains: [baseSepolia, baseWithEns, optimism],
-    transports: {
-      [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
-      [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
-      [optimism.id]: http(),
-    },
-    connectors: [
-      farcasterMiniApp(),
-      baseAccount({
-        appName: METADATA.name,
-        appLogoUrl: METADATA.iconImageUrl,
-      }),
-      coinbaseWallet({
-        appName: METADATA.name,
-      }),
-    ],
-  });
+export const config = createConfig({
+  // Use our modified base chain definition
+  chains: [baseSepolia, baseWithEns, optimism],
+  transports: {
+    [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
+    [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
+    [optimism.id]: http(),
+  },
+  connectors: [
+    farcasterMiniApp(),
+    baseAccount({
+      appName: METADATA.name,
+      appLogoUrl: METADATA.iconImageUrl,
+    }),
+    coinbaseWallet({
+      appName: METADATA.name,
+    }),
+  ],
+});
 
-  const queryClient = new QueryClient();
+const queryClient = new QueryClient();
 
-  export default function Provider({ children }: { children: React.ReactNode }) {
-    return (
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </WagmiProvider>
-    );
+export default function Provider({ children }: { children: React.ReactNode }) {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
 }
