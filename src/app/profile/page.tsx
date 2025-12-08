@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { Identity, Avatar, Name, Address } from '@coinbase/onchainkit/identity';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -17,22 +17,12 @@ export default function ProfilePage() {
     const { address, isConnected } = useAccount();
     const { disconnect } = useDisconnect();
 
-    // Resolve Onchain Identity (Basenames/ENS)
-    // We rely on standard wagmi hooks which should work if the Provider is configured correctly (which we fixed in Step 10842)
-    const { data: ensName } = useEnsName({ address, chainId: 8453 });
-    const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
-
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
 
     // Get Farcaster Context
     const { context } = useFrameContext();
     const user = context?.user;
-
-    // Determine Display Data (Priority: Farcaster -> ENS -> Address)
-    const displayName = user?.username ? `@${user.username}` : (ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member'));
-    const displayAvatar = user?.pfpUrl || ensAvatar;
-    const displaySubtext = user?.fid ? `FID: ${user.fid}` : (ensName ? address : '');
 
     useEffect(() => {
         if (address) {
@@ -69,24 +59,29 @@ export default function ProfilePage() {
                                 address={address}
                                 className="bg-transparent border-none p-0 flex flex-row items-center gap-4"
                             >
-                                {displayAvatar ? (
-                                    // Usage of img for custom avatar source
+                                {user?.pfpUrl ? (
+                                    // Farcaster Avatar
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={displayAvatar} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
+                                    <img src={user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
                                 ) : (
                                     <Avatar className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
                                 )}
 
                                 <div className="flex flex-col">
-                                    <div
-                                        className="font-bold text-lg heading-font"
-                                        style={{ color: '#FFFFFF', textShadow: '0 0 10px rgba(255,255,255,0.5)' }} // Force White
-                                    >
-                                        {displayName}
-                                    </div>
+                                    {/* Farcaster Name OR OnchainKit Name */}
+                                    {user?.username ? (
+                                        <div
+                                            className="font-bold text-lg heading-font text-white"
+                                            style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}
+                                        >
+                                            @{user.username}
+                                        </div>
+                                    ) : (
+                                        <Name className="font-bold text-lg heading-font text-white" />
+                                    )}
 
                                     <div className="text-xs text-zinc-500 font-mono">
-                                        {displaySubtext}
+                                        {user?.fid ? `FID: ${user.fid}` : <Address />}
                                     </div>
                                 </div>
                             </Identity>
