@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: METADATA.name,
     description: METADATA.description,
-    images: [METADATA.bannerImageUrl],
     url: METADATA.homeUrl,
     siteName: METADATA.name
   },
