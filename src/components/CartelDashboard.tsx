@@ -1,60 +1,12 @@
 "use client";
 
-import { SFX, playSound } from "@/lib/audio";
-// ... imports
-
-// Inside component
-const handleClaim = async () => {
-    if (!address || profitAmount === 0 || isClaiming) return;
-    playSound('coin');
-    try {
-        setIsClaiming(true);
-        // ... logic
-    } catch (error) {
-        playSound('error');
-        console.error("Claim failed:", error);
-    } finally {
-        setIsClaiming(false);
-    }
-};
-
-    // ... inside render ...
-
-                    <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        <ActionButton
-                            variant="raid"
-                            className="h-28 w-full btn-glow border border-red-500/30 hover:border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-                            onClick={async () => {
-                                playSound('slash');
-                                await haptics.light();
-                                setIsRaidModalOpen(true);
-                            }}
-                        >
-                            <span className="text-3xl">⚔️</span>
-                            <span className="font-bold heading-font text-sm mt-2">Raid</span>
-                        </ActionButton>
-                    </motion.div>
-
-                    <motion.div whileHover="hover" whileTap="tap">
-                        <ActionButton
-                            variant="clan"
-                            className="h-28 w-full card-glow hover:border-[#3B82F6]"
-                            onClick={async () => {
-                                playSound('click');
-                                await haptics.light();
-                                setIsMyClanModalOpen(true);
-                            }}
-                        >
-                            <span className="text-3xl">🧬</span>
-                            <span className="font-bold heading-font text-sm mt-2">My Clan</span>
-                        </ActionButton>
-                    </motion.div>
-import { StatCard } from "@/components/ui/StatCard";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import { fadeUp, scaleHover, scaleTap } from "@/components/ui/motionTokens";
+import { BossBadge } from "@/components/ui/BossBadge";
 import { ClaimButton } from "@/components/ui/ClaimButton";
 import { ActionButton } from "@/components/ui/ActionButton";
+import { SFX, playSound } from "@/lib/audio"; // Added Import
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

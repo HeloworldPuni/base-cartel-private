@@ -8,7 +8,7 @@ export const SFX = {
     coin: isClient ? new Howl({ src: ["/sounds/coin.wav"], volume: 0.25 }) : null,
     slash: isClient ? new Howl({ src: ["/sounds/slash.wav"], volume: 0.3 }) : null,
     ping: isClient ? new Howl({ src: ["/sounds/ping.wav"], volume: 0.2 }) : null,
-    error: isClient ? new Howl({ src: ["/sounds/error.wav"], volume: 0.25 }),
+    error: isClient ? new Howl({ src: ["/sounds/error.wav"], volume: 0.25 }) : null,
     // Placeholder methods to prevent crashes if SFX is called during SSR or if null
     play: (key: keyof typeof SFX) => {
         if (SFX[key] && typeof (SFX[key] as Howl).play === 'function') {
