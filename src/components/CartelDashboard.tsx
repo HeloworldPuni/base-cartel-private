@@ -152,9 +152,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             animate="animate"
             className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-24 relative overflow-hidden"
         >
-            {/* Background Elements (Subtle) */}
-            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-900/10 to-transparent pointer-events-none" />
-            <div className="absolute top-10 right-[-20px] text-9xl opacity-[0.03] pointer-events-none rotate-12">🎩</div>
+            {/* Background Elements (Subtle) - Removed for better blending per user request */}
+            {/* <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-900/10 to-transparent pointer-events-none" /> */}
+            {/* <div className="absolute top-10 right-[-20px] text-9xl opacity-[0.03] pointer-events-none rotate-12">🎩</div> */}
 
             {/* HERO HEADER */}
             <motion.header variants={fadeUp} className="flex flex-col items-center pt-6 pb-4 relative z-10 w-full">
@@ -166,7 +166,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         className="absolute inset-0 bg-[#D4AF37] blur-2xl opacity-20 rounded-full"
                     />
                 </div>
-                
+
                 <div className="flex items-center justify-center gap-3 w-full px-8">
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
                     <Badge variant="outline" className="bg-[#1A1D26] text-[#D4AF37] border-[#D4AF37]/30 text-[10px] tracking-wider uppercase px-3 py-1 shadow-[0_0_10px_rgba(212,175,55,0.1)]">
@@ -174,7 +174,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     </Badge>
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
                 </div>
-                
+
                 <h2 className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] mt-3 uppercase opacity-70">Empire Earnings Today</h2>
             </motion.header>
 
