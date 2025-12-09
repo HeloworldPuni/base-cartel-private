@@ -157,21 +157,25 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             <div className="absolute top-10 right-[-20px] text-9xl opacity-[0.03] pointer-events-none rotate-12">🎩</div>
 
             {/* HERO HEADER */}
-            <motion.header variants={fadeUp} className="flex flex-col items-center pt-6 pb-2 relative z-10">
-                <div className="relative">
-                    <span className="text-4xl">🎩</span>
+            <motion.header variants={fadeUp} className="flex flex-col items-center pt-6 pb-4 relative z-10 w-full">
+                <div className="relative mb-2">
+                    <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">🎩</span>
                     <motion.div
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        className="absolute inset-0 bg-[#D4AF37] blur-xl opacity-20"
+                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.2, 1] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="absolute inset-0 bg-[#D4AF37] blur-2xl opacity-20 rounded-full"
                     />
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                    <Badge variant="outline" className="bg-[#1A1D26] text-[#D4AF37] border-[#D4AF37]/30 text-[10px] tracking-wider uppercase px-2 py-0.5">
+                
+                <div className="flex items-center justify-center gap-3 w-full px-8">
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
+                    <Badge variant="outline" className="bg-[#1A1D26] text-[#D4AF37] border-[#D4AF37]/30 text-[10px] tracking-wider uppercase px-3 py-1 shadow-[0_0_10px_rgba(212,175,55,0.1)]">
                         Season 1 • Live
                     </Badge>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
                 </div>
-                <h2 className="text-zinc-500 text-xs font-mono tracking-widest mt-2 uppercase">Empire Earnings Today</h2>
+                
+                <h2 className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] mt-3 uppercase opacity-70">Empire Earnings Today</h2>
             </motion.header>
 
             {/* STATS GRID (Compact) */}

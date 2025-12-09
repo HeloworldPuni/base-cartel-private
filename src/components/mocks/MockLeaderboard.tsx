@@ -13,7 +13,10 @@ const MOCK_PLAYERS = [
     { rank: 3, name: "Scarface", shares: 850, totalClaimed: 28000, address: "0x3" },
     { rank: 4, name: "You", shares: 500, totalClaimed: 12500, address: "0x4" },
     { rank: 5, name: "Griselda", shares: 420, totalClaimed: 8900, address: "0x5" },
-];
+    { rank: 6, name: "Tony_S", shares: 350, totalClaimed: 6500, address: "0x6" },
+    { rank: 7, name: "Corleone", shares: 300, totalClaimed: 5200, address: "0x7" },
+    { rank: 8, name: "Heisenberg", shares: 250, totalClaimed: 3100, address: "0x8" },
+    { rank: 9, name: "Capone", shares: 200, totalClaimed: 1200, address: "0x9" },
 
 export default function MockLeaderboard() {
     return (
