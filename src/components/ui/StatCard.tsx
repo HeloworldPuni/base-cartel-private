@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
-export const statCardVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+export const statCardVariants: Variants = {
+    initial: { opacity: 0, y: 5 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
 };
 
 interface StatCardProps {
@@ -17,7 +17,7 @@ export function StatCard({ children, className = "" }: StatCardProps) {
             initial="initial"
             animate="animate"
             whileHover={{ scale: 1.02 }}
-            className={`rounded-2xl bg-[#111323] border border-white/5 p-4 ${className}`}
+            className={`rounded-xl bg-[#13161F] border border-white/5 p-3 shadow-lg backdrop-blur-sm ${className}`}
         >
             {children}
         </motion.div>

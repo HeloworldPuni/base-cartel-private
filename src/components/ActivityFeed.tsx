@@ -49,9 +49,12 @@ export default function ActivityFeed() {
 
     const getEventIcon = (type: string) => {
         switch (type) {
-            case 'HIGH_STAKES_RAID': return '🔥';
-            case 'RETIRE': return '💀';
-            default: return '⚔️';
+            case 'HIGH_STAKES_RAID': return <span className="text-xl drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">🔥</span>;
+            case 'RAID': return <span className="text-xl drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]">⚔️</span>;
+            case 'RETIRE': return <span className="text-xl drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">💀</span>;
+            case 'CLAIM': return <span className="text-xl drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">🪙</span>; // Gold glow
+            case 'AUTO': return <span className="text-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">🤖</span>; // Blue glow
+            default: return <span className="text-xl opacity-50">📝</span>;
         }
     };
 
