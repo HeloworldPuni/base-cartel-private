@@ -100,7 +100,7 @@ export default function Leaderboard() {
                                                             : "bg-[#1B1F26] border-zinc-800"
                                                 }`}
                                         >
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between gap-3">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                                     <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
                                                         player.rank === 2 ? "text-zinc-300" :
@@ -120,14 +120,14 @@ export default function Leaderboard() {
                                                         {player.rank === 3 && "🥉"}
                                                         {player.rank > 3 && `#${player.rank}`}
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
                                                             <div className={`font-bold truncate ${isTopThree ? "text-white" : "text-zinc-300"
                                                                 }`}>
                                                                 {player.name}
                                                             </div>
                                                             {/* Title Badge */}
-                                                            <div className={`text-[10px] px-1.5 py-0.5 rounded border border-white/10 ${theme.color} bg-black/30 flex items-center gap-1`}>
+                                                            <div className={`text-[10px] px-1.5 py-0.5 rounded border border-white/10 ${theme.color} bg-black/30 flex items-center gap-1 whitespace-nowrap`}>
                                                                 <span>{theme.icon}</span>
                                                                 <span className="uppercase tracking-wider font-bold">{title}</span>
                                                             </div>
