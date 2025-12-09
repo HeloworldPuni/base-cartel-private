@@ -101,7 +101,7 @@ export default function Leaderboard() {
                                                 }`}
                                         >
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3 flex-1">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
                                                     <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
                                                         player.rank === 2 ? "text-zinc-300" :
                                                             player.rank === 3 ? "text-orange-500" :
@@ -122,7 +122,7 @@ export default function Leaderboard() {
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2">
-                                                            <div className={`font-bold ${isTopThree ? "text-white" : "text-zinc-300"
+                                                            <div className={`font-bold truncate ${isTopThree ? "text-white" : "text-zinc-300"
                                                                 }`}>
                                                                 {player.name}
                                                             </div>
