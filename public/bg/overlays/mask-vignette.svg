@@ -1,7 +1,0 @@
-<svg width="1080" height="2400" viewBox="0 0 1080 2400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1080" height="2400" fill="url(#vig)"/>
-  <radialGradient id="vig" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 1200) rotate(90) scale(1200 540)">
-      <stop offset="0.6" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000000" stop-opacity="0.8"/>
-  </radialGradient>
-</svg>

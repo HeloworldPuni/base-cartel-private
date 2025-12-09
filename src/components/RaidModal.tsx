@@ -115,10 +115,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const currentFee = raidType === 'normal' ? RAID_FEE : HIGH_STAKES_RAID_FEE;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Cinematic Background Overlay */}
-            <div className="absolute inset-0 bg-[url('/bg/raid/bg-raid-main.svg')] bg-cover bg-center bg-no-repeat" />
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" /> {/* Readability Layer */}
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             {/* High-Stakes Flash Effect */}
             {showFlash && (
                 <div className="fixed inset-0 z-[60] pointer-events-none animate-flash bg-gradient-to-br from-red-500/20 to-orange-500/20 mix-blend-overlay" />

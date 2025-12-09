@@ -67,9 +67,7 @@ export default function ProfilePage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <motion.div {...motionPage} className="relative min-h-[85vh]">
-                    {/* Cinematic Profile Background */}
-                    <div className="absolute inset-0 w-full h-full -z-10 bg-[url('/bg/profile/bg-profile-main.svg')] bg-cover bg-center bg-no-repeat opacity-50" />
+                <motion.div {...motionPage}>
 
                     <header className="pt-2 flex justify-between items-start">
                         <div>
