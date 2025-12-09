@@ -6,7 +6,7 @@ const isClient = typeof window !== "undefined";
 type SoundKey = 'click' | 'coin' | 'slash' | 'ping' | 'error';
 
 const sounds: Record<SoundKey, Howl | null> = {
-    click: isClient ? new Howl({ src: ["/sounds/click.mp3"], volume: 0.2 }) : null,
+    click: isClient ? new Howl({ src: ["/sounds/click.wav"], volume: 0.2 }) : null,
     coin: isClient ? new Howl({ src: ["/sounds/coin.wav"], volume: 0.25 }) : null,
     slash: isClient ? new Howl({ src: ["/sounds/slash.wav"], volume: 0.3 }) : null,
     ping: isClient ? new Howl({ src: ["/sounds/ping.wav"], volume: 0.2 }) : null,
