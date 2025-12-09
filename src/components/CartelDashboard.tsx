@@ -30,7 +30,8 @@ import { useReadContracts, useWriteContract } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
-import CartelSharesABI from '@/lib/abi/CartelShares.json';
+import { MOCK_USER } from '@/lib/dev-config';
+import { isGodModeEnabled } from '@/lib/dev-mode-client';
 
 interface CartelDashboardProps {
     address?: string;
@@ -40,6 +41,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- OFF-CHAIN STATE (DB/Index) ---
     const [rank, setRank] = useState<number | null>(null);
     const [highStakesCount, setHighStakesCount] = useState(0);
+    const [isGodMode, setIsGodMode] = useState(false);
+
+    useEffect(() => {
+        setIsGodMode(isGodModeEnabled());
+    }, []);
 
     // --- STATE UI (Modals) ---
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
@@ -87,17 +93,31 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         ]
     });
 
-    const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
-    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
-    const profitAmount = contractData?.[2]?.result ? Number(formatUnits(contractData[2].result as bigint, 6)) : 0;
-    const dailyRevenue = contractData?.[3]?.result ? Number(formatUnits(contractData[3].result as bigint, 6)) : 0;
-    const totalShares = contractData?.[4]?.result ? Number(contractData[4].result) : 1;
+    const isDevMode = isGodMode && !address;
+
+    const realShares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
+    const realPotBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
+    const realProfitAmount = contractData?.[2]?.result ? Number(formatUnits(contractData[2].result as bigint, 6)) : 0;
+    const realDailyRevenue = contractData?.[3]?.result ? Number(formatUnits(contractData[3].result as bigint, 6)) : 0;
+    const realTotalShares = contractData?.[4]?.result ? Number(contractData[4].result) : 1;
+
+    const shares = isDevMode ? MOCK_USER.shares : realShares;
+    const potBalance = isDevMode ? MOCK_USER.potBalance : realPotBalance;
+    const profitAmount = isDevMode ? MOCK_USER.profitAmount : realProfitAmount;
+    const dailyRevenue = isDevMode ? MOCK_USER.dailyRevenue : realDailyRevenue;
+    const totalShares = isDevMode ? 10000000 : realTotalShares; // Mock total shares
 
     const sharePercentage = totalShares > 0 ? (shares / totalShares) * 100 : 0;
     const formattedPct = sharePercentage < 0.01 && sharePercentage > 0 ? "<0.01" : sharePercentage.toFixed(2);
 
     // --- FETCH OFF-CHAIN DATA (Rank, Badges) ---
     useEffect(() => {
+        if (isGodModeEnabled() && !address) {
+            setHighStakesCount(MOCK_USER.highStakesCount);
+            setRank(MOCK_USER.rank);
+            return;
+        }
+
         if (address) {
             fetch(`/api/cartel/me/stats?address=${address}`)
                 .then(res => res.json())
@@ -113,6 +133,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- CLAIM ACTION ---
     const handleClaim = async () => {
+        if (isGodModeEnabled() && !address) {
+            playSound('error');
+            alert("Dev Mode: Claiming is disabled (No Wallet).");
+            return;
+        }
         await haptics.medium();
         if (profitAmount > 0) playSound('coin');
         setIsClaiming(true);
