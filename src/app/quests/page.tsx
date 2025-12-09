@@ -2,21 +2,18 @@
 
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
+import AuthenticatedRoute from '@/components/AuthenticatedRoute';
+import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { fadeUp, slideLeft, scaleHover, scaleTap } from "@/components/motion/variants";
+import { fadeUp, slideLeft, scaleHover, scaleTap, motionPage, motionList } from "@/components/ui/motionTokens";
 
 export default function QuestsPage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeUp}
-                    className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto"
-                >
+                <motion.div {...motionPage}>
                     <header className="pt-2">
                         <h1 className="text-2xl font-black heading-font text-neon-blue">QUESTS</h1>
                         <p className="text-sm text-zinc-400">Complete challenges to earn reputation</p>
@@ -103,8 +100,8 @@ function QuestItem({ title, reward, progress, total, completed = false, delay = 
         <motion.div
             variants={slideLeft}
             transition={{ delay, duration: 0.3 }}
-            whileHover="hover"
-            whileTap="tap"
+            whileHover={scaleHover.hover}
+            whileTap={scaleTap.tap}
             className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800"
         >
             <div className="flex-1 mr-4">

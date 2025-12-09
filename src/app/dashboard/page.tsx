@@ -5,18 +5,14 @@ import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import CartelDashboard from '@/components/CartelDashboard';
 import { motion } from "framer-motion";
-import { fadeUp } from "@/components/motion/variants";
+import { motionPage } from "@/components/ui/motionTokens";
 
 export default function DashboardPage() {
     const { address } = useAccount();
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeUp}
-                >
+                <motion.div {...motionPage}>
                     <CartelDashboard address={address} />
                 </motion.div>
             </AppLayout>

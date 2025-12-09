@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { fadeUp, scaleHover, scaleTap } from "@/components/motion/variants";
+import { fadeUp, scaleHover, scaleTap } from "@/components/ui/motionTokens";
 import { BossBadge } from "@/components/ui/BossBadge";
 import { StatCard } from "@/components/ui/StatCard";
 import { ClaimButton } from "@/components/ui/ClaimButton";

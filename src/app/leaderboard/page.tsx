@@ -4,17 +4,13 @@ import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import Leaderboard from '@/components/Leaderboard';
 import { motion } from "framer-motion";
-import { fadeUp } from "@/components/motion/variants";
+import { motionPage } from "@/components/ui/motionTokens";
 
 export default function LeaderboardPage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeUp}
-                >
+                <motion.div {...motionPage}>
                     <Leaderboard />
                 </motion.div>
             </AppLayout>

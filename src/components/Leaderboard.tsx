@@ -18,7 +18,7 @@ interface Player {
 
 import { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
-import { fadeUp } from "@/components/motion/variants";
+import { fadeUp, staggerList, shimmer } from "@/components/ui/motionTokens";
 
 export default function Leaderboard() {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -69,7 +69,12 @@ export default function Leaderboard() {
                             ))}
                         </div>
                     ) : (
-                        <motion.div initial="hidden" animate="visible" className="space-y-2">
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={staggerList}
+                            className="space-y-2"
+                        >
                             {players.map((player, index) => {
                                 const title = getCartelTitle(player.rank, player.shares);
                                 const theme = getTitleTheme(title);
@@ -80,7 +85,6 @@ export default function Leaderboard() {
                                     <motion.div
                                         key={player.rank}
                                         variants={fadeUp}
-                                        transition={{ delay: index * 0.03 }}
                                     >
                                         <RankRow
                                             index={index}
