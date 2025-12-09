@@ -1,0 +1,41 @@
+<svg width="1080" height="2400" viewBox="0 0 1080 2400" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Film Grain Filter -->
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    
+    <!-- Hat Gradient -->
+    <linearGradient id="hat-grad" x1="540" y1="500" x2="540" y2="1500" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#3A8BFF"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base Color -->
+  <rect width="1080" height="2400" fill="#070A0F"/>
+
+  <!-- Top Blue Glow (Base Identity) -->
+  <circle cx="540" cy="0" r="800" fill="url(#blue-glow-grad)" fill-opacity="0.2"/>
+  <radialGradient id="blue-glow-grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 0) rotate(90) scale(800)">
+    <stop stop-color="#3A8BFF"/>
+    <stop offset="1" stop-color="#070A0F" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- Hat Silhouette -->
+  <g opacity="0.05" transform="translate(290, 800) scale(1.0)">
+     <path d="M50 350 L 75 100 A 25 25 0 0 1 100 75 H 400 A 25 25 0 0 1 425 100 L 450 350" fill="url(#hat-grad)"/>
+     <rect x="0" y="350" width="500" height="40" rx="20" fill="#3A8BFF"/>
+  </g>
+
+  <!-- Grain Overlay -->
+  <rect width="1080" height="2400" filter="url(#grain)" opacity="0.03"/>
+  
+  <!-- Vignette -->
+  <rect width="1080" height="2400" fill="url(#vignette-grad)"/>
+  <radialGradient id="vignette-grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 1200) rotate(90) scale(1200 540)">
+    <stop offset="0.7" stop-color="#070A0F" stop-opacity="0"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0.8"/>
+  </radialGradient>
+</svg>

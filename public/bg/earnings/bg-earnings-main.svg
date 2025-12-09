@@ -1,0 +1,33 @@
+<svg width="1080" height="2400" viewBox="0 0 1080 2400" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+
+  <!-- Base Color -->
+  <rect width="1080" height="2400" fill="#070A0F"/>
+
+  <!-- Top Splendor Glow (Gold/Green) -->
+  <ellipse cx="540" cy="0" rx="900" ry="600" fill="url(#money-glow)" fill-opacity="0.15"/>
+  <radialGradient id="money-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 0) rotate(90) scale(600 900)">
+    <stop stop-color="#FFD36A"/>
+    <stop offset="0.6" stop-color="#3DFF72"/>
+    <stop offset="1" stop-color="#070A0F" stop-opacity="0"/>
+  </radialGradient>
+  
+  <!-- Spotlight -->
+  <path d="M540 0 L 200 2400 H 880 L 540 0 Z" fill="url(#spotlight)" opacity="0.05"/>
+  <linearGradient id="spotlight" x1="540" y1="0" x2="540" y2="2400">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- Vault Silhouette -->
+  <rect x="290" y="800" width="500" height="500" rx="50" stroke="#FFD36A" stroke-width="20" opacity="0.03" fill="none"/>
+  <circle cx="540" cy="1050" r="150" stroke="#FFD36A" stroke-width="20" opacity="0.03"/>
+
+  <!-- Grain Overlay -->
+  <rect width="1080" height="2400" filter="url(#grain)" opacity="0.03"/>
+</svg>

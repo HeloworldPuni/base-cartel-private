@@ -1,0 +1,33 @@
+<svg width="1080" height="2400" viewBox="0 0 1080 2400" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+
+  <!-- Base Color -->
+  <rect width="1080" height="2400" fill="#070A0F"/>
+
+  <!-- Nebula Glows -->
+  <circle cx="1080" cy="200" r="800" fill="url(#purple-glow)" fill-opacity="0.15"/>
+  <circle cx="0" cy="2200" r="800" fill="url(#blue-glow)" fill-opacity="0.1"/>
+  
+  <radialGradient id="purple-glow">
+    <stop stop-color="#B980FF"/>
+    <stop offset="1" stop-color="#070A0F" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="blue-glow">
+    <stop stop-color="#3A8BFF"/>
+    <stop offset="1" stop-color="#070A0F" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- DNA Silhouette -->
+  <g opacity="0.05" stroke="#B980FF" stroke-width="10">
+      <path d="M200 0 C 200 0, 880 600, 200 1200 S 880 1800, 200 2400"/>
+      <path d="M880 0 C 880 0, 200 600, 880 1200 S 200 1800, 880 2400"/>
+  </g>
+
+  <!-- Grain Overlay -->
+  <rect width="1080" height="2400" filter="url(#grain)" opacity="0.03"/>
+</svg>

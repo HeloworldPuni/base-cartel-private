@@ -153,8 +153,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-24 relative overflow-hidden"
         >
             {/* Background Elements (Restored & Blended) */}
-            <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
-            <div className="absolute top-[-40px] right-[-40px] text-[10rem] opacity-[0.03] pointer-events-none rotate-12 blur-sm">🎩</div>
+            {/* Cinematic Background */}
+            <div className="absolute inset-0 w-full h-full bg-[url('/bg/dashboard/bg-dashboard-main.svg')] bg-cover bg-top bg-no-repeat pointer-events-none opacity-100 z-0" />
 
             {/* HERO HEADER */}
             <motion.header variants={fadeUp} className="flex flex-col items-center pt-6 pb-4 relative z-10 w-full">
