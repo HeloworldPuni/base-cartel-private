@@ -241,7 +241,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                             <ClaimButton
                                 onClick={handleClaim}
                                 disabled={isClaiming || profitAmount === 0}
-                                className="h-9 px-4 text-xs font-bold bg-[#3DFF72] hover:bg-[#3DFF72]/90 text-black shadow-[0_0_15px_rgba(61,255,114,0.4)] transition-all"
+                                className="h-9 min-w-[100px] px-4 text-xs font-bold bg-[#3DFF72] hover:bg-[#3DFF72]/90 text-black shadow-[0_0_15px_rgba(61,255,114,0.4)] transition-all"
                             >
                                 {isClaiming ? "CLAIMING..." : "CLAIM"}
                             </ClaimButton>

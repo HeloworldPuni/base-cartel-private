@@ -12,7 +12,7 @@ export function ClaimButton({ onClick, disabled, children, className = "" }: Cla
         <motion.button
             disabled={disabled}
             onClick={onClick}
-            className={`w-full py-3 rounded-xl font-semibold text-sm bg-emerald-400 text-black shadow-lg shadow-emerald-500/40 disabled:opacity-50 ${className}`}
+            className={`py-3 rounded-xl font-semibold text-sm bg-emerald-400 text-black shadow-lg shadow-emerald-500/40 disabled:opacity-50 ${className}`}
             whileHover={!disabled ? { scale: 1.03 } : undefined}
             whileTap={!disabled ? { scale: 0.97 } : undefined}
             animate={{
