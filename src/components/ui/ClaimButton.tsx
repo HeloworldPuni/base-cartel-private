@@ -4,14 +4,15 @@ interface ClaimButtonProps {
     onClick: () => void;
     disabled?: boolean;
     children: React.ReactNode;
+    className?: string;
 }
 
-export function ClaimButton({ onClick, disabled, children }: ClaimButtonProps) {
+export function ClaimButton({ onClick, disabled, children, className = "" }: ClaimButtonProps) {
     return (
         <motion.button
             disabled={disabled}
             onClick={onClick}
-            className="w-full py-3 rounded-xl font-semibold text-sm bg-emerald-400 text-black shadow-lg shadow-emerald-500/40 disabled:opacity-50"
+            className={`w-full py-3 rounded-xl font-semibold text-sm bg-emerald-400 text-black shadow-lg shadow-emerald-500/40 disabled:opacity-50 ${className}`}
             whileHover={!disabled ? { scale: 1.03 } : undefined}
             whileTap={!disabled ? { scale: 0.97 } : undefined}
             animate={{
