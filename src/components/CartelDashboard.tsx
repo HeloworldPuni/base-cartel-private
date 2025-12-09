@@ -30,6 +30,7 @@ import { useReadContracts, useWriteContract } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
+import CartelSharesABI from '@/lib/abi/CartelShares.json';
 import { MOCK_USER } from '@/lib/dev-config';
 import { isGodModeEnabled } from '@/lib/dev-mode-client';
 
