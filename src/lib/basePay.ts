@@ -2,12 +2,12 @@
 
 // USDC contract address on Base Mainnet
 // USDC contract address on Localhost
-export const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x07a1C8387f3cC7C8012aeDdBCe7fb765C3AdA4db';
+export const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
 
 // Contract addresses
-export const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || '0x25e2c4Eba68F18591DfAF70BDC25b14B3aDdA987'; // Default to Local/Dev if missing, but typically should be Mainnet in prod
-export const CARTEL_POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS || '0x971e88eA6DF0877b3bb8890ae211296866cb6b83';
-export const CARTEL_SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS || '0x2D25b44c75AB2C5291e5b05354E54A6978f99855';
+export const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as string;
+export const CARTEL_POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as string;
+export const CARTEL_SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as string;
 
 // Fee constants (in USDC, 6 decimals)
 export const JOIN_FEE = BigInt(0); // FREE for Phase 1 (invite-only)
