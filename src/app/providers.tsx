@@ -5,6 +5,8 @@ import { base } from 'wagmi/chains';
 import WagmiProvider from "~/components/providers/WagmiProvider";
 import FrameProvider from "~/components/providers/FrameProvider";
 
+import { SharedCastHandler } from "~/components/farcaster/SharedCastHandler";
+
 export default function Providers({
   children,
 }: {
@@ -22,6 +24,7 @@ export default function Providers({
       }}
     >
       <FrameProvider>
+        <SharedCastHandler />
         <WagmiProvider>{children}</WagmiProvider>
       </FrameProvider>
     </OnchainKitProvider>
