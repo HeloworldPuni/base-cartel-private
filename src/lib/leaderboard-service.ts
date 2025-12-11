@@ -14,22 +14,24 @@ export interface LeaderboardEntry {
 
 import prisma from './prisma';
 
-export async function getLeaderboard(limit: number = 20): Promise<LeaderboardEntry[]> {
-    const users = await prisma.user.findMany({
-        orderBy: { shares: 'desc' },
-        take: limit,
-        include: {
-            _count: {
-                select: {
-                    clanMembers: true // Using clanMembers as proxy or just fetch raids separately
+export async function getLeaderboard(limit: number = 20, page: number = 1): Promise<{ entries: LeaderboardEntry[], total: number }> {
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+        prisma.user.findMany({
+            orderBy: { shares: 'desc' },
+            take: limit,
+            skip: skip,
+            include: {
+                _count: {
+                    select: {
+                        clanMembers: true
+                    }
                 }
             }
-        }
-    });
-
-    // To get raid counts, we might need a separate aggregation or assume 0 for now to be fast
-    // Actually, let's just do a count if it's small, or use a grouped query.
-    // For MVP, getting the correct SHARES rank is the most important.
+        }),
+        prisma.user.count()
+    ]);
 
     // Let's get raid counts for these top users
     const addresses = users.map(u => u.walletAddress);
@@ -53,17 +55,19 @@ export async function getLeaderboard(limit: number = 20): Promise<LeaderboardEnt
         });
     }
 
-    return users.map((u, i) => ({
-        rank: i + 1,
+    const entries = users.map((u, i) => ({
+        rank: skip + i + 1,
         address: u.walletAddress,
-        name: u.walletAddress, // TODO: Resolving Farcaster names is done on frontend or separate service
+        name: u.walletAddress,
         shares: u.shares || 0,
-        totalClaimed: u.referralRewardsClaimed || 0, // Using referral rewards claim as proxy for now
+        totalClaimed: u.referralRewardsClaimed || 0,
         raidCount: raidCounts[u.walletAddress] || 0,
         fid: u.farcasterId ? parseInt(u.farcasterId) : undefined,
         lastActive: u.lastSeenAt?.toISOString() || u.createdAt.toISOString(),
-        title: getCartelTitle(i + 1, u.shares || 0)
+        title: getCartelTitle(skip + i + 1, u.shares || 0)
     }));
+
+    return { entries, total };
 }
 
 export function generateLeaderboardPost(entries: LeaderboardEntry[]): string {

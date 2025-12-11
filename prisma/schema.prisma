@@ -11,6 +11,13 @@ model User {
   id            String   @id @default(uuid())
   walletAddress String   @unique
   farcasterId   String?  @unique
+  farcasterHandle String? // Feature 10: Social
+  farcasterLinkedAt DateTime?
+  
+  xUserId       String?  @unique // Feature 10: Social
+  xHandle       String?
+  xLinkedAt     DateTime?
+
   createdAt     DateTime @default(now())
 
   // Referral System
@@ -27,8 +34,12 @@ model User {
   clanMembership CartelReferral?  @relation("ClanMember")
 
   // Feature 6: Last Seen
+  // Feature 6: Last Seen
   lastSeenAt DateTime?
   shares     Int       @default(0) // Added for Feature 8 title calc
+  rep        Int       @default(0) // Feature 10: Reputation
+  questProgress UserQuestProgress[]
+  pendingShares PendingShare[]
 }
 
 model CartelReferral {
@@ -87,6 +98,7 @@ model CartelEvent {
   selfPenaltyShares Float?
   feePaid           Float?
   payout            Float?
+  processed         Boolean     @default(false)
   createdAt         DateTime    @default(now())
   news              CartelNews?
 
@@ -109,4 +121,84 @@ model CartelNews {
   createdAt      DateTime    @default(now())
 
   @@index([timestamp(sort: Desc)])
+}
+
+// --- QUEST SYSTEM ---
+
+enum QuestCategory {
+  SOCIAL
+  GAMEPLAY
+  REFERRAL
+  SYSTEM
+}
+
+enum QuestFrequency {
+  DAILY
+  WEEKLY
+  SEASONAL
+  ONE_TIME
+}
+
+model Quest {
+  id              String         @id @default(uuid())
+  slug            String         @unique
+  title           String
+  description     String
+  category        QuestCategory
+  frequency       QuestFrequency
+  rewardRep       Int            @default(0)
+  rewardShares    Int            @default(0)
+  maxCompletions  Int            @default(1)
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  progress        UserQuestProgress[]
+}
+
+model UserQuestProgress {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  questId         String
+  quest           Quest     @relation(fields: [questId], references: [id])
+  completedCount  Int       @default(0)
+  lastResetAt     DateTime  @default(now())
+  lastCompletedAt DateTime?
+
+  @@unique([userId, questId])
+}
+
+// --- SHARE REWARDS & ANTI-ABUSE ---
+
+enum ShareStatus {
+  PENDING
+  APPROVED
+  MINTED
+  REJECTED
+}
+
+model PendingShare {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  amount    Int
+  reason    String
+  status    ShareStatus @default(PENDING)
+  txHash    String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FraudEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  reason    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

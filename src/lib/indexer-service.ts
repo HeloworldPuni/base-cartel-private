@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import prisma from '@/lib/prisma';
+import prisma from './prisma';
 import { indexReferral } from './clan-service';
 
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
@@ -116,14 +116,88 @@ export async function indexEvents() {
         }
     }
 
-    // 4. Save to DB (Upsert to avoid duplicates)
-    for (const event of eventsToCreate) {
-        await prisma.cartelEvent.upsert({
-            where: { txHash: event.txHash },
-            update: {},
-            create: event
-        });
-    }
+    // 4. Save to DB (Transactional Update per Event)
+    await processEventBatch(eventsToCreate, prisma);
 
     console.log(`Indexed ${eventsToCreate.length} events and processed referrals.`);
+}
+
+/**
+ * Process a batch of events transactionally.
+ * Exported for testing purposes.
+ */
+export async function processEventBatch(events: any[], prismaClient: any) {
+    // We process sequentially to avoid race conditions on the same user in a single batch
+    for (const event of events) {
+        try {
+            await prismaClient.$transaction(async (tx: any) => {
+                // 1. Create/Upsert Event
+                // Ensure event exists. If it was created by API, findUnique finds it.
+                // If not, upsert creates it. 
+                // We use upsert to handle both cases gracefully.
+
+                let dbEvent = await tx.cartelEvent.upsert({
+                    where: { txHash: event.txHash },
+                    update: {}, // No updates if exists, just retrieve
+                    create: { ...event, processed: false }
+                });
+
+                // 2. Idempotency Check
+                if (dbEvent.processed) {
+                    // Already fully processed. Skip.
+                    return;
+                }
+
+                // 2. Process Shares for Raids
+                if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                    const stolen = Math.floor(event.stolenShares || 0);
+                    const penalty = Math.floor(event.selfPenaltyShares || 0);
+
+                    // Update Attacker: +Stolen, -Penalty
+                    if (event.attacker) {
+                        await tx.user.upsert({
+                            where: { walletAddress: event.attacker },
+                            update: {
+                                shares: { increment: stolen - penalty },
+                                lastSeenAt: new Date()
+                            },
+                            create: {
+                                walletAddress: event.attacker,
+                                shares: Math.max(0, stolen - penalty),
+                                active: true
+                            }
+                        });
+                    }
+
+                    // Update Target: -Stolen
+                    if (event.target) {
+                        const targetUser = await tx.user.findUnique({ where: { walletAddress: event.target } });
+                        if (targetUser) {
+                            const current = targetUser.shares || 0;
+                            const newAmount = Math.max(0, current - stolen);
+                            await tx.user.update({
+                                where: { walletAddress: event.target },
+                                data: { shares: newAmount }
+                            });
+                        }
+                    }
+
+                    console.log(`[Indexer] Processed shares for ${event.type} TX ${event.txHash}: +${stolen} to ${event.attacker}, -${stolen} from ${event.target}`);
+                }
+
+                // 4. Mark as Processed (Atomic)
+                await tx.cartelEvent.update({
+                    where: { id: dbEvent.id },
+                    data: { processed: true }
+                });
+            });
+        } catch (e) {
+            // @ts-ignore
+            if (e.code === 'P2002') {
+                // Duplicate ignored
+            } else {
+                console.error(`Failed to process event ${event.txHash}:`, e);
+            }
+        }
+    }
 }

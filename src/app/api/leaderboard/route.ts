@@ -20,13 +20,20 @@ export async function GET(request: Request) {
             );
         }
 
-        const data = await getLeaderboard(100);
+        const { searchParams } = new URL(request.url);
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const page = parseInt(searchParams.get('page') || '1');
+
+        const { entries, total } = await getLeaderboard(limit, page);
 
         return NextResponse.json({
             success: true,
-            data: data,
+            data: entries,
             timestamp: new Date().toISOString(),
-            totalPlayers: data.length,
+            totalPlayers: total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        }, {
         }, {
             headers: {
                 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',

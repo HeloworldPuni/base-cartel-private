@@ -94,7 +94,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         ]
     });
 
-    const isDevMode = isGodMode && !address;
+    const isDevMode = false; // Forced to false for production readiness
 
     const realShares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
     const realPotBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
@@ -102,11 +102,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const realDailyRevenue = contractData?.[3]?.result ? Number(formatUnits(contractData[3].result as bigint, 6)) : 0;
     const realTotalShares = contractData?.[4]?.result ? Number(contractData[4].result) : 1;
 
-    const shares = isDevMode ? MOCK_USER.shares : realShares;
-    const potBalance = isDevMode ? MOCK_USER.potBalance : realPotBalance;
-    const profitAmount = isDevMode ? MOCK_USER.profitAmount : realProfitAmount;
-    const dailyRevenue = isDevMode ? MOCK_USER.dailyRevenue : realDailyRevenue;
-    const totalShares = isDevMode ? 10000000 : realTotalShares; // Mock total shares
+    const shares = realShares;
+    const potBalance = realPotBalance;
+    const profitAmount = realProfitAmount;
+    const dailyRevenue = realDailyRevenue;
+    const totalShares = realTotalShares;
 
     const sharePercentage = totalShares > 0 ? (shares / totalShares) * 100 : 0;
     const formattedPct = sharePercentage < 0.01 && sharePercentage > 0 ? "<0.01" : sharePercentage.toFixed(2);

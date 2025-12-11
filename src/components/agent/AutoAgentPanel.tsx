@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useWriteContract, useSignTypedData, useReadContract } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, parseUnits } from 'viem';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -88,7 +88,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 address: AGENT_VAULT_ADDRESS,
                 abi: AGENT_VAULT_ABI,
                 functionName: 'deposit',
-                args: [parseEther(budget)]
+                args: [parseUnits(budget, 6)]
             });
             setStatusMsg("Deposit successful: " + hash);
             refetchBalance();

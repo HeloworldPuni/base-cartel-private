@@ -60,28 +60,42 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             });
             console.log("Raid Tx:", hash);
 
-            // Record Event for News
-            fetch('/api/cartel/events/record', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    txHash: hash,
-                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES_RAID',
-                    attacker: address,
-                    target: targetAddress,
-                    stolenShares: 100, // Mock for now, or calculate
-                    selfPenaltyShares: raidType === 'high-stakes' ? 50 : 0
-                })
-            });
+            // POLL FOR INDEXER CONFIRMATION
+            let attempts = 0;
+            const maxAttempts = 20; // 60s approx
 
-            // Optimistic success flow
-            setTimeout(() => {
-                setResult('success');
-                setStolenAmount(100); // Mock for UI
-                setSelfPenalty(raidType === 'high-stakes' ? 50 : 0);
-                setStep('result');
-                setIsProcessing(false);
-            }, 5000);
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                try {
+                    const res = await fetch(`/api/indexer/event-status?txHash=${hash}`);
+                    const data = await res.json();
+
+                    if (data.processed) {
+                        clearInterval(pollInterval);
+
+                        // Success!
+                        setStolenAmount(0); // Dashboard will have real value, here just generic msg or 0
+                        setSelfPenalty(0);
+                        setResult('success');
+                        setStep('result');
+                        setIsProcessing(false);
+                    } else {
+                        console.log(`Polling... Attempt ${attempts}/${maxAttempts}`);
+                    }
+                } catch (e) {
+                    console.error("Poll Error", e);
+                }
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(pollInterval);
+                    // Timeout -> Show Result anyway (Optimistic fallback)
+                    // Or keep waiting? Let's show result but maybe log it.
+                    console.log("Polling timed out, showing result optimistically.");
+                    setResult('success');
+                    setStep('result');
+                    setIsProcessing(false);
+                }
+            }, 3000);
 
         } catch (e) {
             console.error("Raid Failed:", e);
