@@ -12,7 +12,38 @@ export const metadata: Metadata = {
     title: METADATA.name,
     description: METADATA.description,
     url: METADATA.homeUrl,
-    siteName: METADATA.name
+    siteName: METADATA.name,
+    images: [METADATA.bannerImageUrl],
+  },
+  other: {
+    "fc:miniapp": JSON.stringify({
+      version: "1",
+      imageUrl: METADATA.bannerImageUrl,
+      button: {
+        title: "Join The Cartel",
+        action: {
+          type: "launch_miniapp",
+          name: METADATA.name,
+          url: METADATA.homeUrl,
+          splashImageUrl: METADATA.iconImageUrl,
+          splashBackgroundColor: METADATA.splashBackgroundColor,
+        },
+      },
+    }),
+    "fc:frame": JSON.stringify({
+      version: "1",
+      imageUrl: METADATA.bannerImageUrl,
+      button: {
+        title: "Join The Cartel",
+        action: {
+          type: "launch_frame",
+          name: METADATA.name,
+          url: METADATA.homeUrl,
+          splashImageUrl: METADATA.iconImageUrl,
+          splashBackgroundColor: METADATA.splashBackgroundColor,
+        },
+      },
+    }),
   },
 };
 
