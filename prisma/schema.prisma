@@ -202,3 +202,14 @@ model FraudEvent {
 
   @@index([userId])
 }
+
+model NotificationToken {
+  id        String   @id @default(uuid())
+  fid       String
+  token     String   @unique
+  url       String
+  createdAt DateTime @default(now())
+  
+  @@unique([fid, token])
+  @@index([fid])
+}
