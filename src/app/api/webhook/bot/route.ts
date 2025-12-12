@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { NeynarAPIClient, Configuration } from "@neynar/nodejs-sdk";
-
-// Initialize Neynar Client
-const config = new Configuration({
-    apiKey: process.env.NEYNAR_API_KEY || "temp-key", // Prevent init failure during build if env missing
-});
-const neynarClient = new NeynarAPIClient(config);
+import { neynarClient } from "~/lib/neynar-client";
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+
 
         // Basic validation of webhook structure
         if (!body.data || !body.type) {
