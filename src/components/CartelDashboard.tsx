@@ -24,6 +24,7 @@ import LoginSummary from "./LoginSummary";
 import { getCartelTitle } from "@/lib/cartel-titles";
 import MyClanModal from "./MyClanModal";
 import RaidHistoryModal from "./RaidHistoryModal";
+import SaveAppButton from "@/components/SaveAppButton";
 
 // Wagmi & Contracts
 import { useReadContracts, useWriteContract } from 'wagmi';
@@ -265,6 +266,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     </StatCard>
                 </motion.div>
             </motion.div>
+
+            {/* SAVE APP PROMPT (If inside MiniApp) */}
+            <div className="flex justify-center mt-2 mb-2">
+                <SaveAppButton variant="outline" className="w-full border-dashed border-zinc-700 text-zinc-500 hover:text-white hover:border-white/50" />
+            </div>
 
             {/* ACTION BUTTONS */}
             <motion.div variants={stagger} className="grid grid-cols-3 gap-3">

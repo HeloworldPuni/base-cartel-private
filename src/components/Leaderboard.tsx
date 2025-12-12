@@ -11,6 +11,8 @@ import { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { fadeUp, staggerList, shimmer } from "@/components/ui/motionTokens";
 
+import { useViewProfile } from '@coinbase/onchainkit/minikit';
+
 interface Player {
     rank: number;
     name: string;
@@ -18,6 +20,100 @@ interface Player {
     totalClaimed: number;
     fid?: number;
     address: string;
+}
+
+function LeaderboardRow({ player, index, onInternalView }: { player: Player, index: number, onInternalView: () => void }) {
+    // Gracefully handle missing hook context if testing outside MiniApp
+    let viewProfile: any = () => { };
+    try {
+        // eslint-disable-next-line
+        viewProfile = useViewProfile(player.fid ? String(player.fid) : undefined);
+    } catch (e) {
+        // Fallback or ignore
+    }
+
+    const handleView = () => {
+        if (player.fid) {
+            viewProfile();
+        } else {
+            onInternalView();
+        }
+    };
+
+    const title = getCartelTitle(player.rank, player.shares);
+    const theme = getTitleTheme(title);
+    const isTopThree = player.rank <= 3;
+    const isTopTen = player.rank <= 10;
+
+    return (
+        <motion.div variants={fadeUp}>
+            <RankRow
+                index={index}
+                className={`p-3 border transition-all duration-300 ${player.rank === 1
+                    ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold scale-[1.02]"
+                    : player.rank === 2
+                        ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
+                        : player.rank === 3
+                            ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
+                            : isTopTen
+                                ? "bg-[#1B1F26] border-[#4A87FF]/20"
+                                : "bg-[#1B1F26] border-zinc-800"
+                    }`}
+            >
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
+                            player.rank === 2 ? "text-zinc-300" :
+                                player.rank === 3 ? "text-orange-500" :
+                                    "text-zinc-500"
+                            }`}>
+                            {player.rank === 1 && (
+                                <motion.div
+                                    animate={{ opacity: [1, 0.6, 1] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="inline-block"
+                                >
+                                    👑
+                                </motion.div>
+                            )}
+                            {player.rank === 2 && "🥈"}
+                            {player.rank === 3 && "🥉"}
+                            {player.rank > 3 && `#${player.rank}`}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div
+                                    onClick={handleView}
+                                    className={`font-bold truncate cursor-pointer hover:underline ${isTopThree ? "text-white" : "text-zinc-300"}`}
+                                >
+                                    {player.name}
+                                </div>
+                                <div className={`text-[10px] px-1.5 py-0.5 rounded border border-white/10 ${theme.color} bg-black/30 flex items-center gap-1 whitespace-nowrap`}>
+                                    <span>{theme.icon}</span>
+                                    <span className="uppercase tracking-wider font-bold">{title}</span>
+                                </div>
+                            </div>
+                            <div className="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
+                                <span className="text-[#4A87FF]">{player.shares} shares</span>
+                                <span>•</span>
+                                <span className="text-[#3DFF72]">${player.totalClaimed.toLocaleString()} claimed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleView}
+                        className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
+                    >
+                        View
+                    </Button>
+
+                </div>
+            </RankRow>
+        </motion.div>
+    );
 }
 
 export default function Leaderboard() {
@@ -101,84 +197,14 @@ export default function Leaderboard() {
                                 variants={staggerList}
                                 className="space-y-2"
                             >
-                                {players.map((player, index) => {
-                                    const title = getCartelTitle(player.rank, player.shares);
-                                    const theme = getTitleTheme(title);
-                                    const isTopThree = player.rank <= 3;
-                                    const isTopTen = player.rank <= 10;
-
-                                    return (
-                                        <motion.div
-                                            key={`${player.rank}-${player.address}`}
-                                            variants={fadeUp}
-                                        >
-                                            <RankRow
-                                                index={index}
-                                                className={`p-3 border transition-all duration-300 ${player.rank === 1
-                                                    ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold scale-[1.02]"
-                                                    : player.rank === 2
-                                                        ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
-                                                        : player.rank === 3
-                                                            ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
-                                                            : isTopTen
-                                                                ? "bg-[#1B1F26] border-[#4A87FF]/20"
-                                                                : "bg-[#1B1F26] border-zinc-800"
-                                                    }`}
-                                            >
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
-                                                            player.rank === 2 ? "text-zinc-300" :
-                                                                player.rank === 3 ? "text-orange-500" :
-                                                                    "text-zinc-500"
-                                                            }`}>
-                                                            {player.rank === 1 && (
-                                                                <motion.div
-                                                                    animate={{ opacity: [1, 0.6, 1] }}
-                                                                    transition={{ duration: 2, repeat: Infinity }}
-                                                                    className="inline-block"
-                                                                >
-                                                                    👑
-                                                                </motion.div>
-                                                            )}
-                                                            {player.rank === 2 && "🥈"}
-                                                            {player.rank === 3 && "🥉"}
-                                                            {player.rank > 3 && `#${player.rank}`}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <div className={`font-bold truncate ${isTopThree ? "text-white" : "text-zinc-300"
-                                                                    }`}>
-                                                                    {player.name}
-                                                                </div>
-                                                                {/* Title Badge */}
-                                                                <div className={`text-[10px] px-1.5 py-0.5 rounded border border-white/10 ${theme.color} bg-black/30 flex items-center gap-1 whitespace-nowrap`}>
-                                                                    <span>{theme.icon}</span>
-                                                                    <span className="uppercase tracking-wider font-bold">{title}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
-                                                                <span className="text-[#4A87FF]">{player.shares} shares</span>
-                                                                <span>•</span>
-                                                                <span className="text-[#3DFF72]">${player.totalClaimed.toLocaleString()} claimed</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleViewProfile(player.address)}
-                                                        className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
-                                                    >
-                                                        View
-                                                    </Button>
-
-                                                </div>
-                                            </RankRow>
-                                        </motion.div>
-                                    );
-                                })}
+                                {players.map((player, index) => (
+                                    <LeaderboardRow
+                                        key={`${player.rank}-${player.address}`}
+                                        player={player}
+                                        index={index}
+                                        onInternalView={() => handleViewProfile(player.address)}
+                                    />
+                                ))}
                             </motion.div>
 
                             {hasMore && (
