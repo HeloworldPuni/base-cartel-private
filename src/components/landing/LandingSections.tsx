@@ -74,11 +74,18 @@ export function LandingHero() {
                         </Link>
                     ) : (
                         <button
-                            onClick={() => {
-                                const btn = document.querySelector('.global-connect-wallet-trigger button') as HTMLButtonElement | null;
-                                if (btn) btn.click();
+                            onClick={(e) => {
+                                e.preventDefault();
+                                // Try to click the specific class we added
+                                const trigger = document.querySelector('.global-connect-wallet-trigger') as HTMLElement;
+                                if (trigger) {
+                                    trigger.click(); // Click the component wrapper/button
+                                    // Also try finding a button inside just in case
+                                    const innerBtn = trigger.querySelector('button');
+                                    if (innerBtn) innerBtn.click();
+                                }
                             }}
-                            className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none"
+                            className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none cursor-pointer"
                         >
                             <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
