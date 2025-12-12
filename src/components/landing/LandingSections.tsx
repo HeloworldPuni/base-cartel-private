@@ -73,12 +73,20 @@ export function LandingHero() {
                             <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </Link>
                     ) : (
-                        <Wallet>
-                            <ConnectWallet className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none">
+                        <div className="relative group inline-block">
+                            {/* Visual "Open App" Button */}
+                            <div className="relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-300">
                                 <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            </ConnectWallet>
-                        </Wallet>
+                            </div>
+
+                            {/* Functional Invisible Wallet Trigger Override */}
+                            <div className="absolute inset-0 z-20 opacity-0 overflow-hidden rounded-full">
+                                <Wallet>
+                                    <ConnectWallet className="w-full h-full p-0 min-w-full min-h-full" />
+                                </Wallet>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
