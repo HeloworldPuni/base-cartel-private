@@ -51,12 +51,7 @@ export function LandingHero() {
                 <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/10 rounded-full blur-[100px] delay-1000 animate-pulse" />
             </div>
 
-            <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={staggerContainer}
-                className="relative z-10 flex flex-col items-center gap-6 max-w-4xl"
-            >
+            <div className="relative z-10 flex flex-col items-center gap-6 max-w-4xl">
                 <motion.div variants={fadeInUp} className="scale-150 mb-4">
                     <span className="text-6xl md:text-8xl drop-shadow-[0_0_25px_rgba(212,175,55,0.5)]">🎩</span>
                 </motion.div>
@@ -91,7 +86,7 @@ export function LandingHero() {
                     )}
                 </div>
 
-            </motion.div>
+            </div>
 
             {/* Scroll indicator */}
             <motion.div
