@@ -75,7 +75,7 @@ export function LandingHero() {
                     {LANDING_CONTENT.hero.subtitle}
                 </motion.p>
 
-                <motion.div variants={fadeInUp} className="mt-8">
+                <div className="mt-8">
                     {isConnected ? (
                         <Link href="/dashboard" className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] inline-block">
                             <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
@@ -89,7 +89,7 @@ export function LandingHero() {
                             </ConnectWallet>
                         </Wallet>
                     )}
-                </motion.div>
+                </div>
 
             </motion.div>
 
