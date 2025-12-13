@@ -6,9 +6,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
 
-import { useAccount, useConnect, useWriteContract, usePublicClient } from 'wagmi';
+import { useAccount, useConnect, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
+import CartelSharesABI from '@/lib/abi/CartelShares.json';
 
 interface JoinCartelProps {
     onJoin: (inviteCode: string) => void;
@@ -29,6 +30,36 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
 
     const { writeContractAsync } = useWriteContract();
 
+    // CHAIN SOURCE OF TRUTH: Check Shares DIRECTLY
+    const sharesAddress = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
+    const coreAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+
+    const { data: shareBalance, refetch: refetchShares } = useReadContract({
+        address: sharesAddress,
+        abi: CartelSharesABI,
+        functionName: 'balanceOf',
+        args: [address as `0x${string}`, 1n],
+        query: {
+            enabled: !!address && !!sharesAddress,
+        }
+    });
+
+    // Auto-login if shares detected on chain
+    useEffect(() => {
+        if (shareBalance && Number(shareBalance) > 0) {
+            console.log("Found on-chain shares! Syncing and logging in...");
+            // Use the sync API to ensure DB is up to date, then move on
+            fetch('/api/user/sync-from-chain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: address, farcasterId: context?.user?.fid })
+            }).finally(() => {
+                onJoin(inviteCode || "EXISTING");
+            });
+        }
+    }, [shareBalance, address, onJoin, context?.user?.fid]);
+
+
     // Auto-connect if in MiniApp
     useEffect(() => {
         if (isInMiniApp && !isConnected) {
@@ -40,7 +71,6 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     }, [isInMiniApp, isConnected, connectors, connect]);
 
     const handleJoinClick = () => {
-        // Validation format check only if provided
         if (inviteCode && !inviteCode.startsWith("BASE-")) {
             alert("Invalid referral code format! Must start with BASE-");
             return;
@@ -53,101 +83,86 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         setErrorMessage(null);
 
         try {
-            console.log("--- STARTING JOIN FLOW ---");
+            console.log("--- CHAIN-FIRST JOIN FLOW ---");
 
-            // 1. PREPARE (DB)
-            console.log("Step 1: Preparing DB Record...");
-            const prepRes = await fetch('/api/auth/prepare-join', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    walletAddress: address,
-                    farcasterId: context?.user?.fid,
-                    inviteCode: inviteCode
-                })
-            });
-
-            if (!prepRes.ok) throw new Error("Failed to prepare user record");
-            const prepData = await prepRes.json();
-
-            // If user already exists in DB, we treat it as success (login)
-            if (prepData.isNewUser === false) {
-                console.log("User already exists in DB. Logging in...");
-                setIsProcessing(false);
-                setShowPayment(false);
+            // 1. Double Check Chain State (Redundant safety)
+            if (shareBalance && Number(shareBalance) > 0) {
+                alert("You are already a member! logging you in...");
                 onJoin(inviteCode);
                 return;
             }
 
-            const referrer = prepData.referrerAddress || "0x0000000000000000000000000000000000000000";
-            console.log("Referrer:", referrer);
-
-            const contractAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
-            if (!contractAddress) {
-                alert("CONFIG ERROR: Missing Contract Address");
-                throw new Error("Missing config");
-            }
-
-            // 2. SIMULATE (Chain Check) & 3. EXECUTE
-            console.log("Step 2/3: Executing Join...");
-
-            try {
-                // We attempt to write directly. 
-                // If the user is already joined on-chain, this will throw an error (Simulation Revert).
-                const hash = await writeContractAsync({
-                    address: contractAddress,
-                    abi: CartelCoreABI,
-                    functionName: 'join',
-                    args: [referrer]
-                });
-                console.log("Tx Hash:", hash);
-                // We rely on the indexer sync below.
-
-            } catch (txError: any) {
-                const msg = (txError.message || "").toLowerCase();
-                console.log("Tx Error:", msg);
-
-                // RECOVERY LOGIC (The Safety Net)
-                if (msg.includes("alreadyjoined") || msg.includes("execution reverted") || msg.includes("reverted")) {
-                    console.warn("User already joined! Attempting recovery...");
-                    alert("⚠️ You are already in the Cartel on-chain.\n\nRecovering your account settings...");
-
-                    // Trigger Sync to fixing "Zombie State"
-                    await fetch('/api/cartel/sync', {
-                        method: 'POST',
-                        body: JSON.stringify({ address: address }),
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-
-                    // Success after recovery
-                    setIsProcessing(false);
-                    setShowPayment(false);
-                    setIsLoading(true);
-                    setTimeout(() => onJoin(inviteCode), 1500);
-                    return;
-                }
-
-                throw txError; // Re-throw other errors (user rejected, etc)
-            }
-
-            // 4. SYNC (FinalConsistency)
-            console.log("Step 4: Syncing State...");
-            // We force a sync for this user to ensure the new shares appear immediately
-            await fetch('/api/cartel/sync', {
+            // 2. Resolve Invite (Stateless)
+            console.log("Resolving invite...");
+            const resolveRes = await fetch('/api/referral/resolve', {
                 method: 'POST',
-                body: JSON.stringify({ address: address }),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inviteCode })
             });
 
-            // FINISH
+            const resolveData = await resolveRes.json();
+
+            if (inviteCode && !resolveData.isValid) {
+                throw new Error(resolveData.error || "Invalid invite code");
+            }
+
+            const referrer = resolveData.referrerAddress || "0x0000000000000000000000000000000000000000";
+            console.log("Using Referrer:", referrer);
+
+            if (!coreAddress) throw new Error("Contract config missing");
+
+            // 3. EXECUTE ON CHAIN
+            console.log("Requesting Wallet Signature...");
+            // Direct write. If it fails, we catch it. No DB records created yet.
+            const hash = await writeContractAsync({
+                address: coreAddress,
+                abi: CartelCoreABI,
+                functionName: 'join',
+                args: [referrer as `0x${string}`]
+            });
+            console.log("Tx Hash:", hash);
+
+            // 4. SYNC TO DB (Only after success)
+            console.log("Tx submitted. Syncing DB...");
+
+            // Wait a moment for indexer or just optimistic sync?
+            // We call sync-from-chain. It checks RPC. 
+            // If RPC is fast, it works. If not, it might fail to see shares yet.
+            // We'll retry a few times or let the indexer handle it.
+
+            // We'll wait 2 seconds for block propagation (Base is fast)
+            await new Promise(r => setTimeout(r, 2000));
+
+            const syncRes = await fetch('/api/user/sync-from-chain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: address,
+                    inviteCode: inviteCode,
+                    farcasterId: context?.user?.fid
+                })
+            });
+
+            // Even if sync "fails" (e.g. RPC lag), the chain tx happened.
+            // The user IS a member. We can optimistically proceed or show success.
+            // But ideally we want the DB to know.
+
             setIsProcessing(false);
             setShowPayment(false);
             setIsLoading(true);
-            setTimeout(() => onJoin(inviteCode), 2000);
+            setTimeout(() => onJoin(inviteCode), 1000);
 
         } catch (error: any) {
-            console.error("Join Flow Failed:", error);
-            alert(`JOIN FAILED:\n${error.message || "Unknown error"}`);
+            console.error("Join Failed:", error);
+            const msg = error.message || "Unknown error";
+
+            // Handle "Already Joined" specifically from contract revert
+            if (msg.toLowerCase().includes("already joined")) {
+                alert("Chain says you already joined! Refreshing...");
+                refetchShares();
+            } else {
+                alert(`Join Failed: ${msg}`);
+            }
             setIsProcessing(false);
         }
     };
@@ -162,24 +177,13 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                             ENTER THE CARTEL
                         </CardTitle>
                         <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
-                            INVITE-ONLY ACCESS
+                            V3.0: CHAIN AUTHORITY
                         </p>
                     </div>
-                    {isInMiniApp && context?.user && (
-                        <div className="flex flex-col items-center gap-2 mt-4 animate-fade-in">
-                            {context.user.pfpUrl && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={context.user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF] glow-blue" />
-                            )}
-                            <p className="text-zinc-300 font-medium">
-                                Welcome, <span className="text-[#4A87FF]">@{context.user.username}</span>
-                            </p>
-                        </div>
-                    )}
                 </CardHeader>
                 <CardContent className="space-y-6 px-6 pb-8">
                     <p className="text-center text-zinc-400 text-sm leading-relaxed">
-                        Open Access for limited time. Join now.
+                        Open Access. Zero Zombie Mode.
                     </p>
 
                     <div className="card-glow p-5 rounded-xl space-y-3">
@@ -189,33 +193,23 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         </div>
                         <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
                         <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Initial Shares</span>
-                            <span className="text-white font-bold text-lg">100</span>
+                            <span className="text-zinc-400">Status</span>
+                            <span className="text-white font-bold text-lg">
+                                {shareBalance && Number(shareBalance) > 0 ? "Member" : "Guest"}
+                            </span>
                         </div>
                     </div>
 
                     {!isConnected ? (
-                        <div className="space-y-4">
-                            <p className="text-center text-sm text-zinc-400">
-                                {isInMiniApp ? "Connecting to your account..." : "Connect your wallet to verify eligiblity."}
-                            </p>
-                            {!isInMiniApp && (
-                                <Button
-                                    className="w-full bg-[#4A87FF] hover:bg-[#5A97FF] text-white font-bold py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
-                                    onClick={() => {
-                                        const connector = connectors.find(c => c.id === 'coinbaseWalletSDK');
-                                        if (connector) {
-                                            connect({ connector });
-                                        } else {
-                                            const first = connectors[0];
-                                            if (first) connect({ connector: first });
-                                        }
-                                    }}
-                                >
-                                    Connect Wallet
-                                </Button>
-                            )}
-                        </div>
+                        <Button
+                            className="w-full bg-[#4A87FF] hover:bg-[#5A97FF] py-4 font-bold"
+                            onClick={() => {
+                                const c = connectors[0];
+                                if (c) connect({ connector: c });
+                            }}
+                        >
+                            Connect Wallet
+                        </Button>
                     ) : (
                         <>
                             <div className="space-y-2">
@@ -223,25 +217,20 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                                 <input
                                     type="text"
                                     placeholder="BASE-XXXXXX"
-                                    className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
+                                    className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white"
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
                                 />
                             </div>
-
                             <Button
-                                className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] hover:from-[#5A97FF] hover:to-[#5FFFF6] text-white font-bold py-6 text-lg rounded-lg glow-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] py-6 font-bold text-lg"
                                 onClick={handleJoinClick}
-                                disabled={isLoading}
+                                disabled={isLoading || (shareBalance && Number(shareBalance) > 0)}
                             >
-                                {isLoading ? "Joining..." : "Join the Cartel (v2.0 Fix)"}
+                                {isLoading ? "Joining..." : "Join the Cartel (v3)"}
                             </Button>
                         </>
                     )}
-
-                    <p className="text-center text-xs text-zinc-600 mt-4">
-                        Open Access · Referrals earn bonus shares
-                    </p>
                 </CardContent>
             </Card>
 
