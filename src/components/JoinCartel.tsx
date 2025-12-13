@@ -96,29 +96,24 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
 
             // Default to Zero Address if API returns null (Open Access mode)
             const referrer = data.referrerAddress || "0x0000000000000000000000000000000000000000";
-            // if (!referrer) throw new Error("Referrer address missing"); // Removed strict check
 
             const contractAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
             if (!contractAddress) {
+                alert("DEBUG ERROR: NEXT_PUBLIC_CARTEL_CORE_ADDRESS is missing!");
                 throw new Error("Contract address is not configured");
             }
 
             // 2. Execute On-Chain Join (Mint Shares)
+            // ALERT FOR DEBUGGING
+            alert(`Ready to Join!\nContract: ${contractAddress}\nReferrer: ${referrer}\n\nCheck your wallet for a popup!`);
+
             console.log("Minting shares on-chain at:", contractAddress);
-
-            // SIMULATE FIRST
-            const publicClient = (window as any).viemPublicClient; // or use hook. 
-            // Better to use the hook if available, but JoinCartel uses useAccount.
-            // Let's rely on writeContractAsync catching it? 
-            // No, the previous issue was wallet crashing.
-
-            // We need usePublicClient hook at top level.
 
             const hash = await writeContractAsync({
                 address: contractAddress,
                 abi: CartelCoreABI,
                 functionName: 'join',
-                args: [referrer]
+                args: [referrer] // Ensure this is a formatted address string
             });
             console.log("Join txn submitted:", hash);
 
@@ -137,13 +132,14 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
 
             setTimeout(() => {
                 onJoin(inviteCode);
-            }, 2000); // Wait bit longer for animation
+            }, 2000);
 
         } catch (error) {
             console.error("Join failed:", error);
+            // Explicitly alert the error to the user
+            alert(`JOIN FAILED:\n${(error as any).message || JSON.stringify(error)}`);
+
             setIsProcessing(false);
-            // Show error in modal instead of alert
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setErrorMessage((error as any).message || "Transaction failed");
         }
     };
