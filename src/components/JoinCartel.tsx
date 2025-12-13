@@ -24,6 +24,15 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
 
     const [inviteCode, setInviteCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    // Auto-populate from URL
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const ref = params.get('ref');
+            if (ref) setInviteCode(ref);
+        }
+    }, []);
     const [showPayment, setShowPayment] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);

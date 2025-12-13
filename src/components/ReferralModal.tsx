@@ -14,12 +14,30 @@ interface ReferralModalProps {
 
 export default function ReferralModal({ isOpen, onClose, address, referralCount = 0 }: ReferralModalProps) {
     const [inviteLink, setInviteLink] = useState("");
+    const [inviteCode, setInviteCode] = useState("");
     const [copied, setCopied] = useState(false);
+    const [isLoadingCode, setIsLoadingCode] = useState(false);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && address) {
+            setIsLoadingCode(true);
             const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://basecartel.in';
-            setInviteLink(`${baseUrl}?ref=${address || 'YOUR_ADDRESS'}`);
+
+            // Default fallback
+            setInviteLink(`${baseUrl}?ref=${address}`);
+
+            // Fetch actual Invite Code
+            fetch(`/api/me/invites?walletAddress=${address}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.invites && data.invites.length > 0) {
+                        const code = data.invites[0].code; // Use the first code
+                        setInviteCode(code);
+                        setInviteLink(`${baseUrl}?ref=${code}`);
+                    }
+                })
+                .catch(e => console.error("Failed to load invite code", e))
+                .finally(() => setIsLoadingCode(false));
         }
     }, [isOpen, address]);
 
@@ -33,7 +51,7 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
 
     const handleShare = () => {
         sdk.actions.composeCast({
-            text: `Join me in the Base Cartel! Use my referral link to get bonus shares. 🔴🔵\n\n${inviteLink}`,
+            text: `Join me in the Base Cartel! Use my referral code ${inviteCode || 'below'} to get bonus shares. 🔴🔵\n\n${inviteLink}`,
             embeds: [inviteLink]
         });
     };
@@ -69,7 +87,7 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-zinc-400 text-xs font-medium">Your Referral Link</label>
+                        <label className="text-zinc-400 text-xs font-medium">Your Referral Link {isLoadingCode && "(Loading...)"}</label>
                         <div className="flex gap-2">
                             <input
                                 type="text"

@@ -22,16 +22,18 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
     useEffect(() => {
         if (isOpen && address) {
             setLoading(true);
-            fetch(`/api/cartel/invites/me?address=${address}`)
-                .then(res => res.json())
-                .then(data => {
-                    setSummary(data);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Failed to fetch clan summary:", err);
-                    setLoading(false);
-                });
+            // Parallel fetch for summary + invite code
+            Promise.all([
+                fetch(`/api/cartel/invites/me?address=${address}`).then(res => res.json()),
+                fetch(`/api/me/invites?walletAddress=${address}`).then(res => res.json())
+            ]).then(([summaryData, invitesData]) => {
+                const code = invitesData.invites && invitesData.invites.length > 0 ? invitesData.invites[0].code : null;
+                setSummary({ ...summaryData, inviteCode: code });
+                setLoading(false);
+            }).catch(err => {
+                console.error("Failed to fetch clan data:", err);
+                setLoading(false);
+            });
         }
     }, [isOpen, address]);
 
@@ -89,14 +91,14 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
                             <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Your Referral Link</h3>
                             <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 mb-6 flex items-center justify-between gap-2">
                                 <code className="text-[#4A87FF] text-sm break-all font-mono">
-                                    {`https://basecartel.in?ref=${address}`}
+                                    {`https://basecartel.in?ref=${summary.inviteCode || address}`}
                                 </code>
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     className="border-[#4A87FF] text-[#4A87FF] hover:bg-[#4A87FF]/10 shrink-0"
                                     onClick={() => {
-                                        navigator.clipboard.writeText(`https://basecartel.in?ref=${address}`);
+                                        navigator.clipboard.writeText(`https://basecartel.in?ref=${summary.inviteCode || address}`);
                                         // Just a simple alert for now, could use a toast
                                         alert("Link copied!");
                                     }}
