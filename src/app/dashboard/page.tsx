@@ -1,3 +1,5 @@
+"use client";
+
 import { useAccount, useReadContract } from 'wagmi';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
