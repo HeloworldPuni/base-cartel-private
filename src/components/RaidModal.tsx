@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sdk } from "@farcaster/miniapp-sdk";
 import PaymentModal from "./PaymentModal";
-import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC } from "@/lib/basePay";
-import { useAccount, useWriteContract } from 'wagmi';
+import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC, CARTEL_POT_ADDRESS, USDC_ADDRESS } from "@/lib/basePay";
+import { useAccount, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
+import ERC20ABI from "@/lib/abi/ERC20.json";
 
 interface RaidModalProps {
     isOpen: boolean;
@@ -24,9 +25,21 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const [selfPenalty, setSelfPenalty] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
+    const [manualTarget, setManualTarget] = useState("");
 
     const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient();
+
+    // ALLOWANCE CHECK
+    const currentFee = raidType === 'normal' ? RAID_FEE : HIGH_STAKES_RAID_FEE;
+    const { data: allowance, refetch: refetchAllowance } = useReadContract({
+        address: USDC_ADDRESS as `0x${string}`,
+        abi: ERC20ABI,
+        functionName: 'allowance',
+        args: [address, CARTEL_POT_ADDRESS as `0x${string}`],
+        query: { enabled: isOpen && !!address }
+    });
 
     if (!isOpen) return null;
 
@@ -38,26 +51,122 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         }
     };
 
+
     const handleConfirmHighStakes = () => {
         setStep('payment');
     };
 
     const handleConfirmPayment = async () => {
         setIsProcessing(true);
-        setStep('raiding');
+        // Do NOT set Step to 'raiding' yet, wait for approval
 
         try {
-            const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
-            const functionName = raidType === 'normal' ? 'raid' : 'highStakesRaid';
+            // Validate Inputs with Resolution
+            let finalTarget = (targetAddress && targetAddress !== "0x0000000000000000000000000000000000000000")
+                ? targetAddress
+                : manualTarget;
 
-            console.log(`Executing ${functionName} on ${targetAddress}...`);
+            // RESOLVE USERNAME/FID if needed
+            if (finalTarget && !finalTarget.startsWith("0x")) {
+                console.log(`Resolving Farcaster user: ${finalTarget}...`);
+                try {
+                    const res = await fetch(`/api/farcaster/resolve?q=${finalTarget}`);
+                    const data = await res.json();
+
+                    if (data.user) {
+                        // Prefer first verified address, then custody address
+                        const resolvedAddr = data.user.verified_addresses?.eth_addresses?.[0] || data.user.custody_address;
+                        if (resolvedAddr) {
+                            console.log(`Resolved ${finalTarget} -> ${resolvedAddr}`);
+                            finalTarget = resolvedAddr;
+                            // Optionally update UI to show we found them
+                        } else {
+                            throw new Error(`User @${finalTarget} has no connected wallet.`);
+                        }
+                    } else {
+                        throw new Error(`Farcaster user "${finalTarget}" not found.`);
+                    }
+                } catch (resolveError: any) {
+                    console.error("Resolution Failed:", resolveError);
+                    alert(resolveError.message || "Could not resolve Farcaster user.");
+                    setIsProcessing(false);
+                    return;
+                }
+            }
+
+            if (!finalTarget || !finalTarget.startsWith("0x") || finalTarget.length !== 42) {
+                console.warn("Invalid Target Address:", finalTarget);
+                throw new Error("Invalid target address. Please enter a valid 0x address.");
+            }
+
+            const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+
+            // 1. Check & Approve if needed
+            if (allowance !== undefined && (allowance as bigint) < currentFee) {
+                console.log("Allowance too low. Requesting approval...");
+
+                const approveHash = await writeContractAsync({
+                    address: USDC_ADDRESS as `0x${string}`,
+                    abi: ERC20ABI,
+                    functionName: 'approve',
+                    args: [CARTEL_POT_ADDRESS as `0x${string}`, BigInt("1000000000000")] // 1M USDC
+                });
+                console.log("Approve Tx sent:", approveHash);
+
+                // WAIT FOR RECEIPT
+                try {
+                    if (publicClient) {
+                        console.log("Waiting for confirmation...");
+                        await publicClient.waitForTransactionReceipt({ hash: approveHash });
+                        console.log("Approval Confirmed.");
+                        // Short delay to let nodes sync
+                        await new Promise(r => setTimeout(r, 2000));
+                        await refetchAllowance();
+                    } else {
+                        console.warn("No public client, skipping wait. Transaction may fail.");
+                    }
+                } catch (waitError) {
+                    console.error("Wait logic failed (ignoring):", waitError);
+                }
+            }
+
+            // 2. Execute Raid
+            const functionName = raidType === 'normal' ? 'raid' : 'highStakesRaid';
+            console.log(`Executing ${functionName} on ${finalTarget}...`);
+
+            // SIMULATE FIRST to catch reverts (e.g. invalid target) gracefully
+            if (publicClient && address) {
+                try {
+                    await publicClient.simulateContract({
+                        address: CORE_ADDRESS,
+                        abi: CartelCoreABI,
+                        functionName: functionName,
+                        args: [finalTarget],
+                        account: address
+                    });
+                } catch (simError: any) {
+                    console.error("Simulation Reverted:", simError);
+                    let msg = "Raid Validation Failed: ";
+                    // Simple heuristic for common errors
+                    if (simError.message?.includes("transfer amount exceeds balance")) msg += "Insufficient USDC balance.";
+                    else if (simError.message?.includes("allowance")) msg += "Approval failed.";
+                    else msg += "Target is likely invalid or not a registered player.";
+
+                    // Show error in UI instead of crashing
+                    alert(msg);
+                    setIsProcessing(false);
+                    return; // ABORT TRANSACTION
+                }
+            }
 
             const hash = await writeContractAsync({
                 address: CORE_ADDRESS,
                 abi: CartelCoreABI,
                 functionName: functionName,
-                args: [targetAddress]
+                args: [finalTarget]
             });
+
+            setStep('raiding');
             console.log("Raid Tx:", hash);
 
             // POLL FOR INDEXER CONFIRMATION
@@ -99,6 +208,11 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
         } catch (e) {
             console.error("Raid Failed:", e);
+            // Handle specific errors
+            // @ts-ignore
+            if (e?.message?.includes("User rejected")) {
+                // stay on payment step or go back
+            }
             setResult('fail');
             setStep('result');
             setIsProcessing(false);
@@ -126,7 +240,6 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         onClose();
     };
 
-    const currentFee = raidType === 'normal' ? RAID_FEE : HIGH_STAKES_RAID_FEE;
 
     return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
@@ -192,6 +305,25 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                     </div>
                                 )}
                             </div>
+
+                            {/* MANUAL TARGET INPUT (Debug/Fallback) */}
+                            {(!targetAddress || targetAddress === "0x0000000000000000000000000000000000000000") && (
+                                <div className="space-y-2">
+                                    <label className="text-xs text-zinc-500 uppercase font-bold">🎯 Manual Target (Debug)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="0x... or Username (e.g. dwr.eth)"
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+                                        onChange={(e) => {
+                                            // Quick hack to update the internal target for this session
+                                            // In a real app we might want proper state, but this prop is read-only.
+                                            // So we'll use a local variable or ref, but since we can't easily change props...
+                                            // We will modify step 2 to prefer a local state override.
+                                            setManualTarget(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            )}
 
                             <div className="flex gap-3">
                                 <Button variant="outline" onClick={handleCloseModal} className="flex-1">Cancel</Button>

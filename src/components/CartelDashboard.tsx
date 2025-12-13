@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import RaidModal from "./RaidModal";
+import FaucetButton from "./FaucetButton";
 import BadgesList from "./BadgesList";
 import BetrayModal from "./BetrayModal";
 import { haptics } from "@/lib/haptics";
@@ -268,7 +269,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </motion.div>
 
             {/* SAVE APP PROMPT (If inside MiniApp) */}
-            <div className="flex justify-center mt-2 mb-2">
+            <div className="flex flex-col gap-2 justify-center mt-2 mb-2 items-center">
+                <FaucetButton />
                 <SaveAppButton variant="outline" className="w-full border-dashed border-zinc-700 text-zinc-500 hover:text-white hover:border-white/50" />
             </div>
 

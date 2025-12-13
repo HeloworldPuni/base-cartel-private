@@ -3,6 +3,19 @@
         "inputs": [
             {
                 "internalType": "address",
+                "name": "target",
+                "type": "address"
+            }
+        ],
+        "name": "highStakesRaid",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
                 "name": "_shares",
                 "type": "address"
             },

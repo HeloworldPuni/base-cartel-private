@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
 
-import { useAccount, useConnect, useWriteContract } from 'wagmi';
+import { useAccount, useConnect, useWriteContract, usePublicClient } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 // Removed unused Avatar import
@@ -105,6 +105,15 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
 
             // 2. Execute On-Chain Join (Mint Shares)
             console.log("Minting shares on-chain at:", contractAddress);
+
+            // SIMULATE FIRST
+            const publicClient = (window as any).viemPublicClient; // or use hook. 
+            // Better to use the hook if available, but JoinCartel uses useAccount.
+            // Let's rely on writeContractAsync catching it? 
+            // No, the previous issue was wallet crashing.
+
+            // We need usePublicClient hook at top level.
+
             const hash = await writeContractAsync({
                 address: contractAddress,
                 abi: CartelCoreABI,

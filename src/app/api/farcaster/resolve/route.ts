@@ -3,42 +3,62 @@ import { neynarClient } from "~/lib/neynar-client";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const address = searchParams.get("address");
+    const query = searchParams.get("q"); // Generic query: username or fid
+    const address = searchParams.get("address"); // Legacy support
 
-    if (!address) {
-        return NextResponse.json({ error: "Address is required" }, { status: 400 });
+    if (!query && !address) {
+        return NextResponse.json({ error: "Query (q) or Address is required" }, { status: 400 });
     }
 
     try {
-        const response = await neynarClient.fetchBulkUsersByEthOrSolAddress({
-            addresses: [address],
-        });
+        // 1. Resolve by Address
+        if (address) {
+            const response = await neynarClient.fetchBulkUsersByEthOrSolAddress({
+                addresses: [address],
+            });
+            // Normalize response: Neynar returns { [address]: [User] }
+            // We want just the user object if possible, or null
+            const users = response[address.toLowerCase()] || [];
+            return NextResponse.json({ user: users[0] || null });
+        }
 
-        // The SDK returns a map or object structure. 
-        // Docs say: { [address]: [User] } or similar list structure?
-        // Let's verify return type from docs: 
-        // "result": { "user": { ... } } inside the object for single address?
-        // The SDK method actually returns `Record<string, User[]>`.
-        // Let's assume it returns keyed by address.
+        // 2. Resolve by Username or FID
+        if (query) {
+            // Check if query is a number (FID)
+            const isFid = /^\d+$/.test(query);
 
-        // Wait, looking at the user provided doc output:
-        // const user = await client.fetchBulkUsersByEthOrSolAddress({addresses: [addr]});
-        // output: { result: { user: { ... } } } -- wait, that might be raw API response.
-        // The SDK usually normalizes this.
+            if (isFid) {
+                const { users } = await neynarClient.fetchBulkUsers({ fids: [Number(query)] });
+                console.log(`[Resolve] FID ${query} ->`, users?.[0]?.username);
+                return NextResponse.json({ user: users[0] || null });
+            } else {
+                // Assume username
+                console.log(`[Resolve] Looking up username: ${query}`);
+                const response = await neynarClient.lookupUserByUsername({ username: query });
+                console.log(`[Resolve] Neynar Response Keys:`, Object.keys(response || {}));
 
-        // Let's play it safe and return the whole response first or inspect it.
-        // But for a "good" project, we want a clean API.
+                // Handle SDK response variations
+                // @ts-ignore
+                const user = response.result?.user || response.user;
 
-        // If the SDK follows the shape of the raw API result shown in docs (which it might not, it wraps it), 
-        // we should check the addresses.
+                if (!user) {
+                    console.warn(`[Resolve] No user found for ${query}`);
+                } else {
+                    console.log(`[Resolve] Found user ${user.username}, Address Count: ${user.verified_addresses?.eth_addresses?.length}`);
+                }
 
-        // Actually, `fetchBulkUsersByEthOrSolAddress` in standard Neynar Node SDK returns `Promise<{ [key: string]: User[] }>` usually.
-        // Let's return the raw response for now, the frontend can parse.
+                return NextResponse.json({ user: user || null });
+            }
+        }
 
-        return NextResponse.json(response);
+        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
     } catch (e: any) {
         console.error("Farcaster Resolve Error:", e);
-        return NextResponse.json({ error: e.message || "Failed to resolve address" }, { status: 500 });
+        // Clean error handling for 404s
+        if (e.response?.status === 404) {
+            return NextResponse.json({ user: null });
+        }
+        return NextResponse.json({ error: e.message || "Failed to resolve user" }, { status: 500 });
     }
 }

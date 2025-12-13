@@ -1,6 +1,8 @@
 
 "use client";
 
+import React from "react";
+
 import { motion, Variants } from "framer-motion";
 import { LANDING_CONTENT } from "./landing-config";
 import Link from "next/link";
@@ -273,6 +275,11 @@ export function LandingFooter() {
 
 export function LandingHeader() {
     const { address } = useAccount();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <header className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex justify-between items-center bg-gradient-to-b from-[#0B0E12] to-transparent pointer-events-none">
@@ -283,7 +290,7 @@ export function LandingHeader() {
 
             {/* Wallet */}
             <div className="pointer-events-auto">
-                {address && (
+                {mounted && address && (
                     <Wallet>
                         <WalletDropdown>
                             <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
