@@ -127,6 +127,14 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             setShowPayment(false);
             setIsLoading(true);
 
+            // FORCE LOG UPDATES
+            console.log("Triggering indexer sync...");
+            try {
+                await fetch('/api/cartel/sync', { method: 'POST' });
+            } catch (e) {
+                console.error("Sync trigger failed", e);
+            }
+
             setTimeout(() => {
                 onJoin(inviteCode);
             }, 2000); // Wait bit longer for animation
