@@ -9,7 +9,6 @@ import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
 import { useAccount, useConnect, useWriteContract, usePublicClient } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
-// Removed unused Avatar import
 
 interface JoinCartelProps {
     onJoin: (inviteCode: string) => void;
@@ -28,19 +27,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Removed unused writeContract
-    // const { writeContract, data: hash } = useWriteContract();
-    // Assuming hash was used in useWaitForTransactionReceipt, we need to check if it's actually used.
-    // Looking at the original code, useWaitForTransactionReceipt was using `hash`. 
-    // If writeContract is removed, hash is gone. 
-    // But wait, the component logic relies on `isConfirmed` from `useWaitForTransactionReceipt`.
-    // However, the new logic uses `fetch` to `/api/auth/join-with-invite` and does NOT use `writeContract` anymore.
-    // So `useWaitForTransactionReceipt` might also be unused if we are not sending a transaction on chain directly here.
-    // Let's check the handleConfirmPayment logic again.
-    // It calls `fetch`, then sets `isConfirmed` logic manually via state? No, it sets `setIsProcessing(false)` and `setShowPayment(false)`.
-    // The `useEffect` listening to `isConfirmed` is likely dead code now if we aren't using `writeContract`.
-
-    // Let's remove the dead hook usage entirely.
+    const { writeContractAsync } = useWriteContract();
 
     // Auto-connect if in MiniApp
     useEffect(() => {
@@ -52,8 +39,6 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         }
     }, [isInMiniApp, isConnected, connectors, connect]);
 
-    // Removed dead useEffect for transaction receipt as we use API now
-
     const handleJoinClick = () => {
         // Validation format check only if provided
         if (inviteCode && !inviteCode.startsWith("BASE-")) {
@@ -63,16 +48,16 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         setShowPayment(true);
     };
 
-    const { writeContractAsync } = useWriteContract();
-
-    // ... imports above
-
     const handleConfirmPayment = async () => {
         setIsProcessing(true);
+        setErrorMessage(null);
 
         try {
-            // 1. Validate Invite & Get Referrer via API
-            const response = await fetch('/api/auth/join-with-invite', {
+            console.log("--- STARTING JOIN FLOW ---");
+
+            // 1. PREPARE (DB)
+            console.log("Step 1: Preparing DB Record...");
+            const prepRes = await fetch('/api/auth/prepare-join', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -82,65 +67,88 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                 })
             });
 
-            const data = await response.json();
+            if (!prepRes.ok) throw new Error("Failed to prepare user record");
+            const prepData = await prepRes.json();
 
-            if (!response.ok) {
-                if (data.error === 'User already exists') {
-                    console.log("User already exists in DB, checking on-chain...");
-                    // Proceed to try on-chain join anyway, or skip if handled?
-                    // For now, we assume if in DB, they might need to mint if txn failed previously.
-                } else {
-                    throw new Error(data.error || 'Failed to join');
-                }
+            // If user already exists in DB, we treat it as success (login)
+            if (prepData.isNewUser === false) {
+                console.log("User already exists in DB. Logging in...");
+                setIsProcessing(false);
+                setShowPayment(false);
+                onJoin(inviteCode);
+                return;
             }
 
-            // Default to Zero Address if API returns null (Open Access mode)
-            const referrer = data.referrerAddress || "0x0000000000000000000000000000000000000000";
+            const referrer = prepData.referrerAddress || "0x0000000000000000000000000000000000000000";
+            console.log("Referrer:", referrer);
 
             const contractAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
             if (!contractAddress) {
-                alert("DEBUG ERROR: NEXT_PUBLIC_CARTEL_CORE_ADDRESS is missing!");
-                throw new Error("Contract address is not configured");
+                alert("CONFIG ERROR: Missing Contract Address");
+                throw new Error("Missing config");
             }
 
-            // 2. Execute On-Chain Join (Mint Shares)
-            // ALERT FOR DEBUGGING
-            alert(`Ready to Join!\nContract: ${contractAddress}\nReferrer: ${referrer}\n\nCheck your wallet for a popup!`);
+            // 2. SIMULATE (Chain Check) & 3. EXECUTE
+            console.log("Step 2/3: Executing Join...");
 
-            console.log("Minting shares on-chain at:", contractAddress);
+            try {
+                // We attempt to write directly. 
+                // If the user is already joined on-chain, this will throw an error (Simulation Revert).
+                const hash = await writeContractAsync({
+                    address: contractAddress,
+                    abi: CartelCoreABI,
+                    functionName: 'join',
+                    args: [referrer]
+                });
+                console.log("Tx Hash:", hash);
+                // We rely on the indexer sync below.
 
-            const hash = await writeContractAsync({
-                address: contractAddress,
-                abi: CartelCoreABI,
-                functionName: 'join',
-                args: [referrer] // Ensure this is a formatted address string
+            } catch (txError: any) {
+                const msg = (txError.message || "").toLowerCase();
+                console.log("Tx Error:", msg);
+
+                // RECOVERY LOGIC (The Safety Net)
+                if (msg.includes("alreadyjoined") || msg.includes("execution reverted") || msg.includes("reverted")) {
+                    console.warn("User already joined! Attempting recovery...");
+                    alert("⚠️ You are already in the Cartel on-chain.\n\nRecovering your account settings...");
+
+                    // Trigger Sync to fixing "Zombie State"
+                    await fetch('/api/cartel/sync', {
+                        method: 'POST',
+                        body: JSON.stringify({ address: address }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    // Success after recovery
+                    setIsProcessing(false);
+                    setShowPayment(false);
+                    setIsLoading(true);
+                    setTimeout(() => onJoin(inviteCode), 1500);
+                    return;
+                }
+
+                throw txError; // Re-throw other errors (user rejected, etc)
+            }
+
+            // 4. SYNC (FinalConsistency)
+            console.log("Step 4: Syncing State...");
+            // We force a sync for this user to ensure the new shares appear immediately
+            await fetch('/api/cartel/sync', {
+                method: 'POST',
+                body: JSON.stringify({ address: address }),
+                headers: { 'Content-Type': 'application/json' }
             });
-            console.log("Join txn submitted:", hash);
 
-            // 3. Success UI
+            // FINISH
             setIsProcessing(false);
             setShowPayment(false);
             setIsLoading(true);
+            setTimeout(() => onJoin(inviteCode), 2000);
 
-            // FORCE LOG UPDATES
-            console.log("Triggering indexer sync...");
-            try {
-                await fetch('/api/cartel/sync', { method: 'POST' });
-            } catch (e) {
-                console.error("Sync trigger failed", e);
-            }
-
-            setTimeout(() => {
-                onJoin(inviteCode);
-            }, 2000);
-
-        } catch (error) {
-            console.error("Join failed:", error);
-            // Explicitly alert the error to the user
-            alert(`JOIN FAILED:\n${(error as any).message || JSON.stringify(error)}`);
-
+        } catch (error: any) {
+            console.error("Join Flow Failed:", error);
+            alert(`JOIN FAILED:\n${error.message || "Unknown error"}`);
             setIsProcessing(false);
-            setErrorMessage((error as any).message || "Transaction failed");
         }
     };
 
@@ -226,7 +234,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                                 onClick={handleJoinClick}
                                 disabled={isLoading}
                             >
-                                {isLoading ? "Joining..." : "Join the Cartel"}
+                                {isLoading ? "Joining..." : "Join the Cartel (v2.0 Fix)"}
                             </Button>
                         </>
                     )}
