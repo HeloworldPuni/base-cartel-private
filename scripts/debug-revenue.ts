@@ -1,4 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+const envPath = path.join(process.cwd(), '.env.local');
+console.log(`Loading env from: ${envPath}`);
+dotenv.config({ path: envPath });
+
 const prisma = new PrismaClient();
 
 async function main() {
