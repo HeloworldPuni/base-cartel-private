@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
-const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
+const CARTEL_SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS || "";
 
 // Fallback chain: Env Var -> Next Public Env Var -> Reliable Public Node -> Base Sepolia Official
 const RPC_URL = process.env.BASE_RPC_URL ||
@@ -48,21 +48,22 @@ export async function GET(request: Request) {
         }
 
         // 3. User has no invites. Verify Membership ON-CHAIN.
-        // We use a provider to check the contract state directly.
-        // This is the "Source of Truth" check.
+        console.log(`[InvitesV5] Verifying ${walletAddress} shares on chain (RPC: ${RPC_URL})...`);
         const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const contract = new ethers.Contract(CARTEL_CORE_ADDRESS, ABI, provider);
+        const contract = new ethers.Contract(CARTEL_SHARES_ADDRESS, ABI, provider);
 
         let balance = BigInt(0);
         try {
             balance = await contract.balanceOf(walletAddress, SHARES_ID);
+            console.log(`[InvitesV5] Balance for ${walletAddress}: ${balance.toString()}`);
         } catch (chainError) {
             console.error("Chain verification failed:", chainError);
             return NextResponse.json({
                 error: "Unable to verify membership on-chain",
                 details: String(chainError),
                 rpcUsed: RPC_URL,
-                contractConfigured: !!CARTEL_CORE_ADDRESS
+                contractAddress: CARTEL_SHARES_ADDRESS,
+                contractConfigured: !!CARTEL_SHARES_ADDRESS
             }, { status: 503 });
         }
 
