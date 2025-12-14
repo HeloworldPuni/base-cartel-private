@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import prisma from './prisma';
 import { v4 as uuidv4 } from 'uuid';
 
-const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
+const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8E9b929b1a8c43075CDD7580a4a717C0D5530E208";
 const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
 
 const CORE_ABI = [
@@ -114,7 +114,10 @@ async function processEventBatch(events: any[]) {
             // A. Create Event Record
             await tx.cartelEvent.upsert({
                 where: { txHash: event.txHash },
-                update: {},
+                update: {
+                    feePaid: event.fee,
+                    processed: true
+                },
                 create: {
                     txHash: event.txHash,
                     blockNumber: event.blockNumber,
