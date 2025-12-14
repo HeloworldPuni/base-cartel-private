@@ -6,10 +6,12 @@ import { v4 as uuidv4 } from 'uuid';
 export const dynamic = 'force-dynamic';
 
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
-// Fallback chain: Env Var -> Next Public Env Var -> Base Sepolia (Testnet Default) -> Base Mainnet
+
+// Fallback chain: Env Var -> Next Public Env Var -> Reliable Public Node -> Base Sepolia Official
 const RPC_URL = process.env.BASE_RPC_URL ||
     process.env.NEXT_PUBLIC_RPC_URL ||
-    'https://sepolia.base.org'; // Default to Testnet for this phase
+    'https://base-sepolia-rpc.publicnode.com';
+
 
 
 const ABI = [
@@ -56,8 +58,12 @@ export async function GET(request: Request) {
             balance = await contract.balanceOf(walletAddress, SHARES_ID);
         } catch (chainError) {
             console.error("Chain verification failed:", chainError);
-            // If chain is unreachable, we can't verify. Fail safe.
-            return NextResponse.json({ error: "Unable to verify membership on-chain" }, { status: 503 });
+            return NextResponse.json({
+                error: "Unable to verify membership on-chain",
+                details: String(chainError),
+                rpcUsed: RPC_URL,
+                contractConfigured: !!CARTEL_CORE_ADDRESS
+            }, { status: 503 });
         }
 
         if (balance === BigInt(0)) {
