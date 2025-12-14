@@ -29,8 +29,11 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            const ref = params.get('ref');
-            if (ref) setInviteCode(ref);
+            const ref = params.get('ref') || params.get('invite'); // Support both
+            // STRICT: Ignore if it looks like a wallet address (starts with 0x)
+            if (ref && !ref.startsWith('0x')) {
+                setInviteCode(ref);
+            }
         }
     }, []);
     const [showPayment, setShowPayment] = useState(false);

@@ -23,9 +23,6 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
             setIsLoadingCode(true);
             const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://basecartel.in';
 
-            // Default fallback
-            setInviteLink(`${baseUrl}?ref=${address}`);
-
             // Fetch actual Invite Code
             fetch(`/api/me/invites?walletAddress=${address}`)
                 .then(res => res.json())
@@ -34,6 +31,9 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
                         const code = data.invites[0].code; // Use the first code
                         setInviteCode(code);
                         setInviteLink(`${baseUrl}?ref=${code}`);
+                    } else {
+                        // Handle no invites - Prompt user to wait or generating
+                        setInviteLink(""); // Clear link if no code
                     }
                 })
                 .catch(e => console.error("Failed to load invite code", e))
@@ -89,19 +89,27 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
                     <div className="space-y-2">
                         <label className="text-zinc-400 text-xs font-medium">Your Referral Link {isLoadingCode && "(Loading...)"}</label>
                         <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={inviteLink}
-                                readOnly
-                                className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-300 font-mono focus:outline-none"
-                            />
-                            <Button
-                                onClick={handleCopyLink}
-                                variant="outline"
-                                className="px-4 border-[#4FF0E6]/40 bg-[#4FF0E6]/10 hover:bg-[#4FF0E6]/20 text-[#4FF0E6]"
-                            >
-                                {copied ? "✓" : "Copy"}
-                            </Button>
+                            {inviteLink ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={inviteLink}
+                                        readOnly
+                                        className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-300 font-mono focus:outline-none"
+                                    />
+                                    <Button
+                                        onClick={handleCopyLink}
+                                        variant="outline"
+                                        className="px-4 border-[#4FF0E6]/40 bg-[#4FF0E6]/10 hover:bg-[#4FF0E6]/20 text-[#4FF0E6]"
+                                    >
+                                        {copied ? "✓" : "Copy"}
+                                    </Button>
+                                </>
+                            ) : (
+                                <div className="flex-1 bg-[#0B0E12] border border-dashed border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-500 font-mono flex items-center justify-center">
+                                    {isLoadingCode ? "Fetching code..." : "Invites being generated..."}
+                                </div>
+                            )}
                         </div>
                     </div>
 
