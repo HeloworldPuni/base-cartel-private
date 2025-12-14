@@ -9,15 +9,15 @@ export async function GET(request: Request) {
         console.log("[Backfill] Starting invite code backfill...");
 
         // 1. Find users with 0 invites
-        // Prisma doesn't support filtering by relation count easily in findMany where clause in all versions,
-        // but we can fetch all and filter or use a raw query.
-        // Let's fetch all active users and their invite count.
+        // Limit to 50 users per run to avoid Vercel timeouts (10s limit on hobby)
         const users = await prisma.user.findMany({
             where: { active: true },
             include: { invites: true }
         });
 
-        const usersNeedingInvites = users.filter(u => u.invites.length === 0);
+        // Filter in memory for now, or could use raw query for speed
+        // finding users with empty invites is hard in standard prisma without 'none'
+        const usersNeedingInvites = users.filter(u => u.invites.length === 0).slice(0, 50);
         console.log(`[Backfill] Found ${usersNeedingInvites.length} users needing invites out of ${users.length} total.`);
 
         let createdCount = 0;
