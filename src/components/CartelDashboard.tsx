@@ -128,15 +128,16 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 .catch(err => console.error("Failed to fetch stats:", err));
         }
 
-        // 2. Global Revenue (Off-chain fallback)
-        fetch('/api/cartel/global-stats')
+        // 2. Global Revenue (V1 System)
+        fetch('/api/cartel/revenue/summary')
             .then(res => res.json())
             .then(data => {
-                if (data.dailyRevenue !== undefined) {
-                    setOffChainRevenue(data.dailyRevenue);
+                if (data.success && data.revenue24h !== undefined) {
+                    // New API returns pre-summed human float, no division needed
+                    setOffChainRevenue(data.revenue24h * 1000000); // Hack: Component divides by 1M later, so multiply here to keep logic compatible
                 }
             })
-            .catch(err => console.error("Failed to fetch global stats:", err));
+            .catch(err => console.error("Failed to fetch revenue summary:", err));
     }, [address]);
 
     const { writeContractAsync } = useWriteContract();

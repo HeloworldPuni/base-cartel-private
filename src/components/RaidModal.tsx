@@ -169,6 +169,20 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             setStep('raiding');
             console.log("Raid Tx:", hash);
 
+            // [NEW] Revenue System V1: Record explicitly
+            // Fire-and-forget (do not block UI)
+            const feeInUSDC = Number(formatUSDC(currentFee));
+            fetch('/api/cartel/revenue/record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    txHash: hash,
+                    amount: feeInUSDC,
+                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES',
+                    actor: address
+                })
+            }).catch(err => console.error("Revenue Record Failed:", err));
+
             // POLL FOR INDEXER CONFIRMATION
             let attempts = 0;
             const maxAttempts = 20; // 60s approx
