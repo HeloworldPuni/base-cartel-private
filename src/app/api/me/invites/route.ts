@@ -23,6 +23,15 @@ const SHARES_ID = 1;
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
+
+        if (searchParams.get('ping') === 'true') {
+            return NextResponse.json({
+                status: 'alive',
+                hasHelper: !!CARTEL_SHARES_ADDRESS,
+                rpc: RPC_URL
+            });
+        }
+
         const walletAddress = searchParams.get('walletAddress');
 
         if (!walletAddress) {

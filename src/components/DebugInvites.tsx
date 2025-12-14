@@ -26,22 +26,35 @@ export default function DebugInvites() {
         } finally {
             setLoading(false);
         }
-    };
+        const pingServer = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/me/invites?ping=true`);
+                const text = await res.text();
+                setDebugData({ type: 'PING', status: res.status, raw: text });
+            } catch (e) {
+                setDebugData({ error: String(e) });
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    if (!address) return null;
+        // ... checkStatus ...
 
-    return (
-        <div className="fixed bottom-4 right-4 bg-black/80 p-4 border border-red-500 rounded text-xs text-white max-w-sm z-[9999]">
-            <h3 className="font-bold text-red-400 mb-2">🕵️ DEBUG: INVITE SYSTEM</h3>
-            <p>Wallet: {address.slice(0, 6)}...</p>
-            <button onClick={checkStatus} className="bg-red-900 px-2 py-1 rounded mt-2">
-                {loading ? "Checking API..." : "Check API Status"}
-            </button>
-            {debugData && (
-                <pre className="mt-2 bg-zinc-900 p-2 rounded overflow-auto max-h-40">
-                    {JSON.stringify(debugData, null, 2)}
-                </pre>
-            )}
-        </div>
-    );
-}
+        if (!address) return null;
+
+        return (
+            <div className="fixed bottom-4 right-4 bg-black/80 p-4 border border-red-500 rounded text-xs text-white max-w-sm z-[9999]">
+                <h3 className="font-bold text-red-400 mb-2">🕵️ DEBUG: INVITE SYSTEM</h3>
+                <p>Wallet: {address.slice(0, 6)}...</p>
+                <button onClick={checkStatus} className="bg-red-900 px-2 py-1 rounded mt-2">
+                    {loading ? "Checking API..." : "Check API Status"}
+                </button>
+                {debugData && (
+                    <pre className="mt-2 bg-zinc-900 p-2 rounded overflow-auto max-h-40">
+                        {JSON.stringify(debugData, null, 2)}
+                    </pre>
+                )}
+            </div>
+        );
+    }

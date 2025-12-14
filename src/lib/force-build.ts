@@ -1,1 +1,1 @@
-export const BUILD_ID = "18260-debug-json-parse";
+export const BUILD_ID = "18270-add-ping-test";
