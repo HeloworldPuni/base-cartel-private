@@ -44,6 +44,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const [rank, setRank] = useState<number | null>(null);
     const [highStakesCount, setHighStakesCount] = useState(0);
     const [offChainRevenue, setOffChainRevenue] = useState<number | null>(null);
+    const [showRevenueChart, setShowRevenueChart] = useState(false);
 
 
     // --- STATE UI (Modals) ---
