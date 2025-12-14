@@ -170,31 +170,32 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         <div className="min-h-screen bg-[#0B0E12] text-white flex items-center justify-center p-4">
             <Card className="w-full max-w-[400px] bg-[#1B1F26] border-[#4A87FF]/30 shadow-2xl">
                 <CardHeader className="text-center pb-8 pt-8">
-                    <div className="mb-6">
-                        <div className="text-6xl mb-4">🎩</div>
-                        <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
-                            ENTER THE CARTEL
+                    <div className="mb-6 relative">
+                        <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full animate-pulse pointer-events-none" />
+                        <div className="text-6xl mb-6 relative z-10 drop-shadow-[0_0_15px_rgba(74,135,255,0.5)]">🎩</div>
+                        <CardTitle className="text-4xl font-black heading-font text-white mb-2 tracking-widest drop-shadow-md">
+                            BASE CARTEL
                         </CardTitle>
-                        <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
-                            V3.0: CHAIN AUTHORITY
-                        </p>
+                        <div className="flex items-center justify-center gap-2 text-[10px] text-[#4FF0E6] font-mono tracking-[0.2em] uppercase opacity-80">
+                            <span className="w-2 h-2 rounded-full bg-[#4FF0E6] animate-pulse" />
+                            Secure Link Established
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6 px-6 pb-8">
-                    <p className="text-center text-zinc-400 text-sm leading-relaxed">
-                        Open Access. Zero Zombie Mode.
-                    </p>
+                    <div className="bg-[#0B0E12]/80 border border-[#4A87FF]/20 p-5 rounded-lg space-y-3 relative overflow-hidden group">
+                        {/* Scanning Line Effect */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#4FF0E6]/50 to-transparent animate-scan-y opacity-50" />
 
-                    <div className="card-glow p-5 rounded-xl space-y-3">
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Entry Fee</span>
-                            <span className="text-[#3DFF72] font-bold text-lg">FREE</span>
+                        <div className="flex justify-between text-xs font-mono uppercase tracking-wider items-center">
+                            <span className="text-zinc-500">Access Level</span>
+                            <span className="text-[#3DFF72] font-bold drop-shadow-[0_0_8px_rgba(61,255,114,0.4)]">Public</span>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Status</span>
-                            <span className="text-white font-bold text-lg">
-                                {shareBalance && Number(shareBalance) > 0 ? "Member" : "Guest"}
+                        <div className="h-px bg-zinc-800" />
+                        <div className="flex justify-between text-xs font-mono uppercase tracking-wider items-center">
+                            <span className="text-zinc-500">Identity Status</span>
+                            <span className={`${isConnected ? "text-[#4FF0E6]" : "text-amber-500"} font-bold`}>
+                                {isConnected ? "Verified" : "Unidentified"}
                             </span>
                         </div>
                     </div>
@@ -229,7 +230,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                                 onClick={handleJoinClick}
                                 disabled={isLoading || (shareBalance && Number(shareBalance) > 0)}
                             >
-                                {isLoading ? "Joining..." : "Join the Cartel (v3)"}
+                                {isLoading ? "Initiating..." : "Initialize Profile"}
                             </Button>
                         </>
                     )}
