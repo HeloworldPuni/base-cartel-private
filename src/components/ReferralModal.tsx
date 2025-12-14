@@ -54,6 +54,13 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleShare = () => {
+        if (!inviteLink) return;
+        const text = "Join me in the Base Cartel. Use my invite code to secure your spot.";
+        const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(inviteLink)}`;
+        window.open(shareUrl, '_blank');
+    };
+
     // ... (rest of logic)
 
     return (
