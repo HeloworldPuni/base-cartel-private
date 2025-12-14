@@ -96,7 +96,7 @@ model CartelEvent {
   user              String? // For RETIRE
   stolenShares      Float?
   selfPenaltyShares Float?
-  feePaid           Float?
+  feePaid           Float?   /// @deprecated Use RevenueTransaction table instead
   payout            Float?
   processed         Boolean     @default(false)
   createdAt         DateTime    @default(now())
@@ -212,4 +212,21 @@ model NotificationToken {
   
   @@unique([fid, token])
   @@index([fid])
+}
+// --- REVENUE SYSTEM V1 (EXPLICIT) ---
+
+model RevenueTransaction {
+  id        String      @id @default(cuid())
+  txHash    String      @unique
+  amount    Float       // Raw USDC amount (e.g. 0.005)
+  type      RevenueType
+  actor     String      // Wallet Address
+  createdAt DateTime    @default(now())
+
+  @@index([createdAt])
+}
+
+enum RevenueType {
+  RAID
+  HIGH_STAKES
 }
