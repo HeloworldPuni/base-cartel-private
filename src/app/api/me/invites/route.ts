@@ -143,10 +143,16 @@ export async function GET(request: Request) {
         log("Generating New Invites...");
 
         // Upsert User
+        // Fix: Removed 'active' field as it does not exist in the schema.
+        // Using 'lastSeenAt' instead to mark activity.
         const dbUser = await prisma.user.upsert({
             where: { walletAddress },
-            update: { active: true },
-            create: { walletAddress, active: true, shares: 100 }
+            update: { lastSeenAt: new Date() },
+            create: {
+                walletAddress,
+                shares: 100, // Default shares for new user (will be synced later)
+                lastSeenAt: new Date()
+            }
         });
 
         const newInvitesData = Array.from({ length: 3 }).map(() => ({
