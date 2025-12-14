@@ -151,13 +151,11 @@ async function handleJoinEvent(tx: any, event: any) {
         where: { walletAddress: playerAddr },
         update: {
             shares: sharesMinted, // Authoritative Source
-            active: true,
             lastSeenAt: event.timestamp
         },
         create: {
             walletAddress: playerAddr,
-            shares: sharesMinted,
-            active: true
+            shares: sharesMinted
         }
     });
 
@@ -173,7 +171,7 @@ async function handleJoinEvent(tx: any, event: any) {
         await tx.user.upsert({
             where: { walletAddress: referrerAddr },
             update: { lastSeenAt: event.timestamp },
-            create: { walletAddress: referrerAddr, active: true }
+            create: { walletAddress: referrerAddr }
         });
 
         // Create Referral Record
