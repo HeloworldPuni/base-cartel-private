@@ -116,12 +116,15 @@ async function processEventBatch(events: any[]) {
         const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
         if (exists && exists.processed) continue;
 
+        console.log(`[Indexer] Processing ${event.type}. FeeRaw: ${event.fee}, Type: ${typeof event.fee}`);
+        const feeFinal = event.fee ? Number(event.fee) : 0;
+
         await prisma.$transaction(async (tx) => {
             // A. Create Event Record
             await tx.cartelEvent.upsert({
                 where: { txHash: event.txHash },
                 update: {
-                    feePaid: event.fee,
+                    feePaid: feeFinal,
                     processed: true
                 },
                 create: {
@@ -133,7 +136,7 @@ async function processEventBatch(events: any[]) {
                     target: event.target,
                     stolenShares: event.stolenShares,
                     selfPenaltyShares: event.penalty, // for High Stakes
-                    feePaid: event.fee,
+                    feePaid: feeFinal,
                     processed: true
                 }
             });
