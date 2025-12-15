@@ -263,11 +263,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
                             </div>
 
-                            {/* TEST: UNCONDITIONAL MOUNT */}
-                            <div className="w-full pt-4 border-t border-zinc-800/50 mt-3">
-                                <RevenueChart />
-                            </div>
                         </StatCard>
+
+                        {/* TEST: STEP 4 - OUTSIDE STATCARD */}
+                        <div className="w-full pt-4 mt-3">
+                            <RevenueChart />
+                        </div>
                     </div>
                 </motion.div>
 

@@ -1,1 +1,1 @@
-export const BUILD_ID = "19221-test-static-content-force";
+export const BUILD_ID = "19234-test-outside-statcard";
