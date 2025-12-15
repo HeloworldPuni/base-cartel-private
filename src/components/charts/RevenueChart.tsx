@@ -30,22 +30,22 @@ export default function RevenueChart({ range = '7d' }: { range?: string }) {
 
     // SCALE LOGIC
     const { points, maxVal, width, height, xLabels } = useMemo(() => {
-        if (!data.length) return { points: [], maxVal: 0, width: 0, height: 0, xLabels: [] };
+        if (!data || data.length < 2) return { points: [], maxVal: 0, width: 0, height: 0, xLabels: [] };
 
         const h = 120; // Internal height
         const w = 400; // Internal width
-        const max = Math.max(...data.map(d => d.revenue), 0.000001) * 1.2;
+        const max = Math.max(...data.map(d => d.revenue || 0), 0.000001) * 1.2;
 
         const pts = data.map((d, i) => {
             const x = (i / (data.length - 1)) * w;
-            const y = h - ((d.revenue / max) * h);
-            return { x, y, val: d.revenue, date: d.date };
+            const y = h - (((d.revenue || 0) / max) * h);
+            return { x, y, val: d.revenue || 0, date: d.date || '??-??' };
         });
 
-        // Generate X-Axis labels (every other date or simpler)
+        // Generate X-Axis labels
         const labels = data.map((d, i) => ({
             x: (i / (data.length - 1)) * w,
-            label: d.date.slice(5) // MM-DD
+            label: (d.date || '2000-01-01').slice(5) // MM-DD
         }));
 
         return { points: pts, maxVal: max, width: w, height: h, xLabels: labels };
@@ -53,7 +53,7 @@ export default function RevenueChart({ range = '7d' }: { range?: string }) {
 
     if (loading) return <div className="h-32 flex items-center justify-center text-xs text-zinc-500 animate-pulse">Loading Chart...</div>;
     if (error) return <div className="h-32 flex items-center justify-center text-xs text-red-500">Unavailable</div>;
-    if (data.length === 0) return <div className="h-32 flex items-center justify-center text-xs text-zinc-500">No data</div>;
+    if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-xs text-zinc-500">Not enough data to display trend</div>;
 
     // SVG PATHS
     const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
