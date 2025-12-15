@@ -1,17 +1,67 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 
+// Wagmi & Data
+import { useReadContracts } from 'wagmi';
+import { formatUnits } from 'viem';
+import CartelPotABI from '@/lib/abi/CartelPot.json';
+import CartelSharesABI from '@/lib/abi/CartelShares.json';
+
 interface CartelDashboardProps {
     address?: string;
 }
 
 export default function CartelDashboard({ address }: CartelDashboardProps) {
+    // --- STATE ---
+    const [revenue24h, setRevenue24h] = useState<number>(0);
+
+    // --- CONTRACT ADDRESSES ---
+    const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
+    const SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
+
+    // --- ON-CHAIN READS ---
+    const { data: contractData } = useReadContracts({
+        contracts: [
+            {
+                address: SHARES_ADDRESS,
+                abi: CartelSharesABI,
+                functionName: 'balanceOf',
+                args: address ? [address, 1n] : undefined // Token ID 1
+            },
+            {
+                address: POT_ADDRESS,
+                abi: CartelPotABI,
+                functionName: 'getBalance',
+            }
+        ],
+        query: {
+            enabled: !!address,
+            staleTime: 5000
+        }
+    });
+
+    // Parse Data (Safe Fallbacks)
+    const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
+    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
+
+    // --- OFF-CHAIN READS ---
+    useEffect(() => {
+        fetch('/api/cartel/revenue/summary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && typeof data.revenue24h === 'number') {
+                    setRevenue24h(data.revenue24h);
+                }
+            })
+            .catch(err => console.error("Failed to fetch revenue:", err));
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-32 relative overflow-hidden">
             {/* Background Elements */}
@@ -45,7 +95,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         <CardTitle className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide">Your Shares</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="text-2xl font-black text-white">157</div>
+                        <div className="text-2xl font-black text-white">{shares}</div>
                         <p className="text-[10px] text-zinc-500">Global Rank #42</p>
                     </CardContent>
                 </StatCard>
@@ -57,7 +107,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         <CardTitle className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide">Cartel Pot</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="text-2xl font-black text-white">$4,291</div>
+                        <div className="text-2xl font-black text-white">${potBalance.toLocaleString()}</div>
                         <p className="text-[10px] text-zinc-500">USDC Vault</p>
                     </CardContent>
                 </StatCard>
@@ -71,7 +121,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide flex items-center gap-1">
                                     Cartel 24h Revenue
                                 </div>
-                                <div className="text-2xl font-black text-[#4FF0E6]">$12.50</div>
+                                <div className="text-2xl font-black text-[#4FF0E6]">${revenue24h.toLocaleString()}</div>
                             </div>
                             <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
                         </div>
