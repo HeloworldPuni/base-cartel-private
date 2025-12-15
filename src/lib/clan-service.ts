@@ -1,178 +1,153 @@
+
 import prisma from './prisma';
 
-export interface ClanMemberStats {
-    address: string;
-    handle?: string;
-    joinedAt: Date;
-    shares: number;
-    raidsBy: number;
-    highStakesBy: number;
+// Helper to sanitize slug
+function createSlug(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
 }
 
-export interface ClanSummary {
-    address: string;
-    directInvitesUsed: number;
-    maxInvites: number | string; // number or "∞"
-    remainingInvites: number | string;
-    totalClanMembers: number;
-    clanTotalShares: number;
-    clanRaidCount: number;
-    directInvitees: ClanMemberStats[];
-}
+export class ClanService {
 
-export async function getClanSummary(address: string): Promise<ClanSummary> {
-    try {
-        // 1. Fetch Direct Invitees
-        const directReferrals = await prisma.cartelReferral.findMany({
-            where: { referrerAddress: address },
+    /**
+     * Create a new clan.
+     * Transaction: Create Clan -> Create Owner Member -> Update User (implicit via relations logic)
+     */
+    static async createClan(userId: string, name: string, tag: string, description: string = '') {
+        const slug = createSlug(name);
+
+        // 1. Validation
+        if (name.length < 3 || name.length > 30) throw new Error("Name must be between 3 and 30 characters");
+        if (tag.length < 2 || tag.length > 5) throw new Error("Tag must be between 2 and 5 characters");
+
+        // Check if user is already in a clan
+        const existingMember = await prisma.clanMember.findUnique({
+            where: { userId }
+        });
+        if (existingMember) throw new Error("User is already in a clan");
+
+        // Check name uniqueness
+        const existingClan = await prisma.clan.findUnique({ where: { slug } });
+        if (existingClan) throw new Error("Clan name is taken");
+
+        // 2. Transaction
+        return await prisma.$transaction(async (tx) => {
+            // Create Clan
+            const clan = await tx.clan.create({
+                data: {
+                    name,
+                    slug,
+                    tag,
+                    description,
+                    ownerId: userId // Set owner relation
+                }
+            });
+
+            // Create Member Record (Owner)
+            await tx.clanMember.create({
+                data: {
+                    clanId: clan.id,
+                    userId: userId,
+                    role: 'OWNER'
+                }
+            });
+
+            return clan;
+        });
+    }
+
+    /**
+     * Join an existing clan.
+     */
+    static async joinClan(userId: string, slug: string) {
+        // 1. Validation
+        const existingMember = await prisma.clanMember.findUnique({ where: { userId } });
+        if (existingMember) throw new Error("User is already in a clan");
+
+        const clan = await prisma.clan.findUnique({ where: { slug } });
+        if (!clan) throw new Error("Clan not found");
+        if (!clan.isActive) throw new Error("Clan is not active");
+
+        // 2. Transaction (Future proofing for member limits etc)
+        return await prisma.$transaction(async (tx) => {
+            return await tx.clanMember.create({
+                data: {
+                    clanId: clan.id,
+                    userId: userId,
+                    role: 'MEMBER'
+                },
+                include: { clan: true }
+            });
+        });
+    }
+
+    /**
+     * Leave current clan.
+     * Owner cannot leave without transferring ownership (simplified: Owner cannot leave).
+     */
+    static async leaveClan(userId: string) {
+        const member = await prisma.clanMember.findUnique({
+            where: { userId },
+            include: { clan: true }
+        });
+
+        if (!member) throw new Error("Not in a clan");
+
+        if (member.role === 'OWNER') {
+            throw new Error("Owner cannot leave the clan. Disband or transfer ownership first.");
+        }
+
+        return await prisma.clanMember.delete({
+            where: { id: member.id }
+        });
+    }
+
+    /**
+     * Get clan details by slug.
+     */
+    static async getClanBySlug(slug: string) {
+        const clan = await prisma.clan.findUnique({
+            where: { slug },
             include: {
-                user: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                walletAddress: true,
+                                farcasterHandle: true,
+                                rep: true
+                            }
+                        }
+                    },
+                    orderBy: { role: 'asc' } // Owner first usually (Enum order: OWNER, OFFICER, MEMBER) is good? Enum is unordered in Prisma string, but alphabetic.
+                    // Actually let's sort logically in UI or fetch owner separately.
+                },
+                owner: {
                     select: {
-                        farcasterId: true,
-                        shares: true,
+                        id: true,
+                        walletAddress: true,
+                        farcasterHandle: true
                     }
                 }
             }
         });
 
-        // 2. Fetch Stats for each direct invitee
-        const directInvitees: ClanMemberStats[] = [];
-        for (const ref of directReferrals) {
-            const raidsBy = await prisma.cartelEvent.count({
-                where: { attacker: ref.userAddress, type: 'RAID' }
-            });
-            const highStakesBy = await prisma.cartelEvent.count({
-                where: { attacker: ref.userAddress, type: 'HIGH_STAKES_RAID' }
-            });
+        if (!clan) return null;
+        return clan;
+    }
 
-            directInvitees.push({
-                address: ref.userAddress,
-                handle: ref.user.farcasterId || undefined,
-                joinedAt: ref.joinedAt,
-                shares: ref.user.shares || 0,
-                raidsBy,
-                highStakesBy
-            });
-        }
-
-        // 3. Calculate Clan Totals (Depth 2 for now as per spec)
-        let totalClanMembers = directReferrals.length;
-        let clanTotalShares = directInvitees.reduce((sum, m) => sum + m.shares, 0);
-        let clanRaidCount = directInvitees.reduce((sum, m) => sum + m.raidsBy + m.highStakesBy, 0);
-
-        const directAddresses = directReferrals.map(r => r.userAddress);
-        if (directAddresses.length > 0) {
-            const depth2Referrals = await prisma.cartelReferral.findMany({
-                where: { referrerAddress: { in: directAddresses } },
-                include: { user: { select: { shares: true } } }
-            });
-
-            totalClanMembers += depth2Referrals.length;
-            clanTotalShares += depth2Referrals.reduce((sum, r) => sum + (r.user.shares || 0), 0);
-
-            const depth2Addresses = depth2Referrals.map(r => r.userAddress);
-            if (depth2Addresses.length > 0) {
-                const depth2Raids = await prisma.cartelEvent.count({
-                    where: { attacker: { in: depth2Addresses }, type: { in: ['RAID', 'HIGH_STAKES_RAID'] } }
-                });
-                clanRaidCount += depth2Raids;
+    /**
+     * Get my clan status.
+     */
+    static async getMyClan(userId: string) {
+        return await prisma.clanMember.findUnique({
+            where: { userId },
+            include: {
+                clan: true
             }
-        }
-
-        // 4. Invites Logic
-        const isFounder = address.toLowerCase() === process.env.NEXT_PUBLIC_DEPLOYER_ADDRESS?.toLowerCase();
-        const maxInvites = isFounder ? "∞" : 3;
-        const directInvitesUsed = directReferrals.length;
-
-        let remainingInvites: number | string = 0;
-        if (maxInvites === "∞") {
-            remainingInvites = "∞";
-        } else {
-            remainingInvites = Math.max(0, (maxInvites as number) - directInvitesUsed);
-        }
-
-        return {
-            address,
-            directInvitesUsed,
-            maxInvites,
-            remainingInvites,
-            totalClanMembers,
-            clanTotalShares,
-            clanRaidCount,
-            directInvitees
-        };
-    } catch (error) {
-        console.warn("Database connection failed (expected on Vercel without Postgres). Returning empty clan stats.", error);
-        return {
-            address,
-            directInvitesUsed: 0,
-            maxInvites: 3,
-            remainingInvites: 3,
-            totalClanMembers: 0,
-            clanTotalShares: 0,
-            clanRaidCount: 0,
-            directInvitees: []
-        };
-    }
-}
-
-export async function indexReferral(userAddress: string, referrerAddress: string, season: number = 1) {
-    // Upsert user to ensure they exist
-    await prisma.user.upsert({
-        where: { walletAddress: userAddress },
-        create: { walletAddress: userAddress },
-        update: {}
-    });
-
-    // Upsert referrer
-    await prisma.user.upsert({
-        where: { walletAddress: referrerAddress },
-        create: { walletAddress: referrerAddress },
-        update: {}
-    });
-
-    // Create referral record
-    await prisma.cartelReferral.create({
-        data: {
-            userAddress,
-            referrerAddress,
-            season
-        }
-    });
-}
-
-export interface ClanTreeNode {
-    address: string;
-    handle?: string;
-    shares: number;
-    children: ClanTreeNode[];
-}
-
-export async function getClanTree(address: string, depth: number = 2): Promise<ClanTreeNode> {
-    // Fetch root user
-    const user = await prisma.user.findUnique({
-        where: { walletAddress: address },
-        select: { farcasterId: true, shares: true }
-    });
-
-    const node: ClanTreeNode = {
-        address,
-        handle: user?.farcasterId || undefined,
-        shares: user?.shares || 0,
-        children: []
-    };
-
-    if (depth > 0) {
-        const referrals = await prisma.cartelReferral.findMany({
-            where: { referrerAddress: address },
-            select: { userAddress: true }
         });
-
-        for (const ref of referrals) {
-            const childNode = await getClanTree(ref.userAddress, depth - 1);
-            node.children.push(childNode);
-        }
     }
-
-    return node;
 }

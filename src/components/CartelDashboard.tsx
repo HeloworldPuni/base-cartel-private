@@ -174,8 +174,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     <Sword className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">Raid</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-400 text-blue-500/80 transition-all cursor-not-allowed opacity-80">
-                    <Users className="w-5 h-5" />
+                <Button
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center gap-2 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-400 text-blue-500/80 transition-all group"
+                    onClick={() => window.location.href = '/clans'}
+                >
+                    <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">Clan</span>
                 </Button>
                 <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10 hover:border-zinc-500/50 hover:text-zinc-400 text-zinc-500/80 transition-all cursor-not-allowed opacity-80">

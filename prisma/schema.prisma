@@ -29,10 +29,6 @@ model User {
   referrals Referral[] @relation("Referrer")
   referred  Referral?  @relation("Referee")
 
-  // Feature 9: Clan System
-  clanMembers    CartelReferral[] @relation("ClanBoss")
-  clanMembership CartelReferral?  @relation("ClanMember")
-
   // Feature 6: Last Seen
   // Feature 6: Last Seen
   lastSeenAt DateTime?
@@ -40,14 +36,68 @@ model User {
   rep        Int       @default(0) // Feature 10: Reputation
   questProgress UserQuestProgress[]
   pendingShares PendingShare[]
+
+  // Feature 9: Clan System V1
+  clanMembership ClanMember?
+  ownedClan      Clan?       @relation("ClanOwner")
+
+  // Legacy Cartel Referrals
+  legacyReferralsAsReferee CartelReferral? @relation("LegacyCartelReferee")
+  legacyReferralsAsReferrer CartelReferral[] @relation("LegacyCartelReferrer")
 }
+
+// ... existing models ...
+
+// --- CLAN SYSTEM V1 ---
+
+model Clan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  tag         String
+  description String?
+  logoUrl     String?
+
+  ownerId     String   @unique
+  owner       User     @relation("ClanOwner", fields: [ownerId], references: [id])
+
+  members     ClanMember[]
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model ClanMember {
+  id        String   @id @default(uuid())
+  clanId    String
+  clan      Clan     @relation(fields: [clanId], references: [id])
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  role      ClanRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  @@index([clanId])
+  @@index([userId])
+}
+
+enum ClanRole {
+  OWNER
+  OFFICER
+  MEMBER
+}
+
 
 model CartelReferral {
   id              String   @id @default(uuid())
   userAddress     String   @unique
-  user            User     @relation("ClanMember", fields: [userAddress], references: [walletAddress])
+  user            User     @relation("LegacyCartelReferee", fields: [userAddress], references: [walletAddress])
   referrerAddress String
-  referrer        User     @relation("ClanBoss", fields: [referrerAddress], references: [walletAddress])
+  referrer        User     @relation("LegacyCartelReferrer", fields: [referrerAddress], references: [walletAddress])
   season          Int      @default(1)
   joinedAt        DateTime @default(now())
 
