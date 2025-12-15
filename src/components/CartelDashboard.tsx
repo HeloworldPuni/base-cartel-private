@@ -265,15 +265,15 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
                             {/* Chart Expand Area */}
                             {showRevenueChart && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="w-full pt-4 border-t border-zinc-800/50 mt-3"
-                                    onClick={(e) => e.stopPropagation()} // Prevent closing when clicking chart
+                                {/* Chart Expand Area - No Motion (Stability Fix) */ }
+                            {showRevenueChart && (
+                                <div
+                                    className="w-full pt-4 border-t border-zinc-800/50 mt-3 animate-in fade-in duration-300"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <RevenueChart />
-                                </motion.div>
+                                </div>
+                            )}
                             )}
                         </StatCard>
                     </div>

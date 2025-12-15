@@ -56,7 +56,13 @@ export default function RevenueChart({ range = '7d' }: { range?: string }) {
     if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-xs text-zinc-500">Not enough data to display trend</div>;
 
     // SVG PATHS
-    const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+    // SVG PATHS
+    // Filter out potential NaNs
+    const validPoints = points.filter(p => !isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y));
+
+    if (validPoints.length < 2) return <div className="h-32 flex items-center justify-center text-xs text-zinc-500">Not enough valid data</div>;
+
+    const linePath = validPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
     // Close the area path
     const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
 
