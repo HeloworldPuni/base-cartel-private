@@ -4,14 +4,16 @@ import React from "react";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 
 interface CartelDashboardProps {
-    address?: string; // Included to satisfy parent TS, unused logic
+    address?: string;
 }
 
 export default function CartelDashboard({ address }: CartelDashboardProps) {
     return (
-        <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-24 relative overflow-hidden">
+        <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-32 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
             <div className="absolute top-[-40px] right-[-40px] text-[10rem] opacity-[0.03] pointer-events-none rotate-12 blur-sm">🎩</div>
@@ -75,7 +77,96 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         </div>
                     </StatCard>
                 </div>
+
+                {/* Your Cut (Profit) - Highlighted */}
+                <div className="col-span-2">
+                    <StatCard className="border-[#3DFF72]/30 bg-gradient-to-b from-[#3DFF72]/5 to-transparent">
+                        <div className="flex justify-between items-center mb-1">
+                            <div>
+                                <h3 className="text-xs text-[#3DFF72] font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#3DFF72] animate-pulse" />
+                                    Your Cut
+                                </h3>
+                                <p className="text-[10px] text-zinc-400">Claimable Dividends</p>
+                            </div>
+                            <div className="text-right flex items-center gap-3">
+                                <div className="text-xl font-bold text-[#3DFF72]">$0.42</div>
+                                <Button size="sm" disabled className="h-7 text-xs bg-[#3DFF72]/20 text-[#3DFF72] border border-[#3DFF72]/50 hover:bg-[#3DFF72]/30">
+                                    Claim
+                                </Button>
+                            </div>
+                        </div>
+                    </StatCard>
+                </div>
             </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="grid grid-cols-3 gap-2">
+                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-red-500/20 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 text-red-500/80 transition-all cursor-not-allowed opacity-80">
+                    <Sword className="w-5 h-5" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Raid</span>
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-400 text-blue-500/80 transition-all cursor-not-allowed opacity-80">
+                    <Users className="w-5 h-5" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Clan</span>
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10 hover:border-zinc-500/50 hover:text-zinc-400 text-zinc-500/80 transition-all cursor-not-allowed opacity-80">
+                    <Skull className="w-5 h-5" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Betray</span>
+                </Button>
+            </div>
+
+            {/* AUTO AGENT */}
+            <div>
+                <StatCard className="border-purple-500/20 bg-[#0F0A1F]">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-500/10">
+                        <Bot className="w-4 h-4 text-purple-400" />
+                        <span className="text-xs font-bold uppercase text-purple-400 tracking-wider">Auto-Agent (Beta)</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="text-[10px] text-zinc-500">Status</div>
+                        <div className="text-[10px] text-purple-300 font-mono bg-purple-500/10 px-2 py-1 rounded">Idle - Waiting for instructions</div>
+                    </div>
+                </StatCard>
+            </div>
+
+            {/* MOST WANTED */}
+            <div>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                    <Crosshair className="w-3 h-3 text-orange-400" />
+                    <span className="text-[10px] font-bold uppercase text-orange-400 tracking-widest">Most Wanted</span>
+                </div>
+                <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded bg-zinc-900/50 border border-zinc-800/50">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center text-[10px]">👤</div>
+                                <div className="text-[10px] text-zinc-400">Target-{1000 + i}</div>
+                            </div>
+                            <div className="text-[10px] text-orange-400 font-mono">$1,000</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* LIVE WIRE */}
+            <div>
+                <div className="flex items-center gap-2 mb-2 px-1 text-zinc-500">
+                    <Radio className="w-3 h-3" />
+                    <span className="text-[10px] uppercase tracking-widest">Live Wire</span>
+                </div>
+                <div className="space-y-2 pl-4 border-l border-zinc-800">
+                    <div className="text-[10px] text-zinc-400">
+                        <span className="text-zinc-600 font-mono mr-2">14:02</span>
+                        Signal intercepted...
+                    </div>
+                    <div className="text-[10px] text-zinc-400">
+                        <span className="text-zinc-600 font-mono mr-2">13:59</span>
+                        New block mined.
+                    </div>
+                </div>
+            </div>
+
         </div>
     );
 }
