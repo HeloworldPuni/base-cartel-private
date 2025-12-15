@@ -6,6 +6,9 @@ import { getUserLevel } from '@/lib/config/levels';
 import { getPendingShares } from '@/lib/quest-service';
 
 export async function GET(request: Request) {
+    // ❌ Legacy quest system — do not use
+    console.warn("Legacy usage of /api/quests detected");
+
     try {
         const { searchParams } = new URL(request.url);
         const address = searchParams.get('address');

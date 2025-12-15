@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma';
 import { completeQuest } from '@/lib/quest-service';
 
 export async function POST(request: Request) {
+    // ❌ Legacy quest system — do not use
+    console.warn("Legacy usage of /api/quests/complete detected");
+
     try {
         const body = await request.json();
         const { address, questSlug } = body;

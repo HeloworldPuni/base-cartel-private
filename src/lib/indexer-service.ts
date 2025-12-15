@@ -9,7 +9,8 @@ const CORE_ABI = [
     "event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee)",
     "event HighStakesRaid(address indexed attacker, address indexed target, uint256 stolenShares, uint256 selfPenaltyShares, uint256 feePaid)",
     "event RetiredFromCartel(address indexed user, uint256 indexed season, uint256 burnedShares, uint256 payout)",
-    "event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee)"
+    "event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee)",
+    "event ProfitClaimed(address indexed user, uint256 amount)"
 ];
 
 export async function indexEvents() {
@@ -36,11 +37,12 @@ export async function indexEvents() {
     console.log(`[Indexer] Indexing blocks ${startBlock} to ${endBlock}...`);
 
     // 2. Query All Events
-    const [raidLogs, highStakesLogs, retireLogs, joinLogs] = await Promise.all([
+    const [raidLogs, highStakesLogs, retireLogs, joinLogs, claimLogs] = await Promise.all([
         contract.queryFilter(contract.filters.Raid(), startBlock, endBlock),
         contract.queryFilter(contract.filters.HighStakesRaid(), startBlock, endBlock),
         contract.queryFilter(contract.filters.RetiredFromCartel(), startBlock, endBlock),
-        contract.queryFilter(contract.filters.Join(), startBlock, endBlock)
+        contract.queryFilter(contract.filters.Join(), startBlock, endBlock),
+        contract.queryFilter(contract.filters.ProfitClaimed(), startBlock, endBlock)
     ]);
 
     const eventsToProcess = [];
@@ -105,6 +107,20 @@ export async function indexEvents() {
         }
     }
 
+    for (const log of claimLogs) {
+        if ('args' in log) {
+            const block = await log.getBlock();
+            eventsToProcess.push({
+                type: 'CLAIM',
+                txHash: log.transactionHash,
+                blockNumber: log.blockNumber,
+                timestamp: new Date(block.timestamp * 1000),
+                attacker: log.args[0], // User
+                fee: safeNumber(log.args[1]) // Actually 'amount'
+            });
+        }
+    }
+
     // 3. Process Batch
     await processEventBatch(eventsToProcess);
 
@@ -117,7 +133,7 @@ async function processEventBatch(events: any[]) {
         const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
         // if (exists && exists.processed) continue; // DISABLED TO FORCE REPAIR
 
-        console.log(`[Indexer] Processing ${event.type}. FeeRaw: ${event.fee}, Type: ${typeof event.fee}`);
+        console.log(`[Indexer] Processing ${event.type}.`);
         const feeFinal = event.fee ? Number(event.fee) : 0;
 
         // DEBUG LOGGING REQUESTED BY USER
@@ -128,7 +144,7 @@ async function processEventBatch(events: any[]) {
         });
 
         await prisma.$transaction(async (tx) => {
-            // A. Create Event Record
+            // A. Create Event Record (Legacy / V1)
             await tx.cartelEvent.upsert({
                 where: { txHash: event.txHash },
                 update: {
@@ -144,16 +160,59 @@ async function processEventBatch(events: any[]) {
                     target: event.target,
                     stolenShares: event.stolenShares,
                     selfPenaltyShares: event.penalty, // for High Stakes
-                    feePaid: feeFinal,
+                    feePaid: feeFinal, // For CLAIM this is amount
                     processed: true
                 }
             });
 
-            // B. Route Logic
+            // B. Route Logic (V1)
             if (event.type === 'JOIN') {
                 await handleJoinEvent(tx, event);
+
+                // V2 QUEST EVENT: JOIN
+                await tx.questEvent.create({
+                    data: {
+                        type: 'JOIN',
+                        actor: event.attacker,
+                        data: {
+                            referrer: event.target,
+                            shares: event.stolenShares
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
+
             } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
                 await handleRaidEvent(tx, event);
+
+                // V2 QUEST EVENT: RAID
+                await tx.questEvent.create({
+                    data: {
+                        type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
+                        actor: event.attacker,
+                        data: {
+                            target: event.target,
+                            stolen: event.stolenShares,
+                            penalty: event.penalty || 0,
+                            success: true // If log exists, it succeeded
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
+            } else if (event.type === 'CLAIM') {
+                await tx.questEvent.create({
+                    data: {
+                        type: 'CLAIM',
+                        actor: event.attacker,
+                        data: {
+                            amount: feeFinal
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
             }
         });
     }
@@ -209,10 +268,20 @@ async function handleJoinEvent(tx: any, event: any) {
             });
             console.log(`[Indexer] Linked ${playerAddr} -> ${referrerAddr}`);
 
-            // Increment Referrer Count
-            // (Wait, we can't increment specific Invite usage because we don't know the code)
-            // But we CAN generic increment database counters if we want.
-            // Or just rely on the count of `CartelReferral` records.
+            // V2 QUEST EVENT: REFER (Triggered for the Referrer)
+            // Note: We create a separate event for the Referrer to count towards "Refer a friend" quest
+            await tx.questEvent.create({
+                data: {
+                    type: 'REFER',
+                    actor: referrerAddr,
+                    data: {
+                        referee: playerAddr,
+                        season: 1
+                    },
+                    processed: false,
+                    createdAt: event.timestamp
+                }
+            });
         }
     }
 
@@ -246,3 +315,4 @@ async function handleRaidEvent(tx: any, event: any) {
         }
     }
 }
+

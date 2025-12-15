@@ -230,3 +230,36 @@ enum RevenueType {
   RAID
   HIGH_STAKES
 }
+
+// --- QUEST SYSTEM V2 (EVENT DRIVEN) ---
+
+model QuestEvent {
+  id        String   @id @default(uuid())
+  type      String   // RAID | JOIN | CLAIM | REFER
+  actor     String   // wallet address
+  data      Json
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([type, processed])
+}
+
+model QuestProgressV2 {
+  id           String   @id @default(uuid())
+  userId       String
+  questId      String
+  seasonId     Int
+  currentCount Int
+  completed    Boolean @default(false)
+  claimed      Boolean @default(false)
+
+  @@unique([userId, questId, seasonId])
+}
+
+model Season {
+  id        Int      @id @default(autoincrement())
+  startAt   DateTime
+  endAt     DateTime
+  active    Boolean
+}
+
