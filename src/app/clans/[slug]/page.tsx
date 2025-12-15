@@ -149,8 +149,8 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                                     <div className="text-[9px] text-zinc-500 uppercase tracking-widest">Members</div>
                                 </div>
                                 <div>
-                                    <div className="text-xl font-bold text-blue-400">#{Math.floor(Math.random() * 100)}</div>
-                                    <div className="text-[9px] text-zinc-500 uppercase tracking-widest">Rank</div>
+                                    <div className="text-xl font-bold text-blue-400">#42</div>
+                                    <div className="text-[9px] text-zinc-500 uppercase tracking-widest">Rank (Beta)</div>
                                 </div>
                             </div>
 
