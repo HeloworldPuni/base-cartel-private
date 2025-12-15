@@ -100,7 +100,7 @@ export default function ClansPage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 pb-32">
+                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 pb-32 max-w-[400px] mx-auto">
                     {/* HERO HEADER - Matches Dashboard */}
                     <header className="flex flex-col items-center pt-2 pb-4 relative z-10 w-full">
                         <div className="relative mb-2">

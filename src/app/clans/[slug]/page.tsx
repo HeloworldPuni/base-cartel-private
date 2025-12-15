@@ -112,7 +112,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 pb-32">
+                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 pb-32 max-w-[400px] mx-auto relative overflow-hidden">
 
                     {/* Header Nav */}
                     <div className="flex items-center gap-2 text-zinc-500 cursor-pointer hover:text-white transition-colors" onClick={() => router.push('/clans')}>
