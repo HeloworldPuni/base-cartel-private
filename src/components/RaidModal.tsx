@@ -172,6 +172,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             // [NEW] Revenue System V1: Record explicitly
             // Fire-and-forget (do not block UI)
             const feeInUSDC = Number(formatUSDC(currentFee));
+
+            // 1. Record Revenue (For Global Charts)
             fetch('/api/cartel/revenue/record', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -182,6 +184,20 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                     actor: address
                 })
             }).catch(err => console.error("Revenue Record Failed:", err));
+
+            // 2. [FIX] Record Heat Event (For Most Wanted)
+            fetch('/api/cartel/events/record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    txHash: hash,
+                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES_RAID',
+                    attacker: address,
+                    target: finalTarget, // Ensure this is the resolved address
+                    payout: 0, // Will be updated by indexer later, but event existence counts for Heat
+                    stolenShares: 0 // Placeholder
+                })
+            }).catch(err => console.error("Heat Event Record Failed:", err));
 
             // POLL FOR INDEXER CONFIRMATION
             let attempts = 0;
