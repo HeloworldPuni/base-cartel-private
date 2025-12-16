@@ -72,7 +72,14 @@ export async function getMostWanted(limit: number = 10, windowHours: number = 24
     });
 
     // 4. Sort
-    results.sort((a, b) => b.threatScore - a.threatScore);
+    // 4. Sort with Tie-Breaking
+    // Priority: Score -> High Stakes Count -> Total Attacks -> Address
+    results.sort((a, b) => {
+        if (b.threatScore !== a.threatScore) return b.threatScore - a.threatScore;
+        if (b.highStakesRaidsInitiated !== a.highStakesRaidsInitiated) return b.highStakesRaidsInitiated - a.highStakesRaidsInitiated;
+        if (b.normalRaidsInitiated !== a.normalRaidsInitiated) return b.normalRaidsInitiated - a.normalRaidsInitiated;
+        return a.address.localeCompare(b.address);
+    });
 
     // 5. Limit
     results = results.slice(0, limit);
