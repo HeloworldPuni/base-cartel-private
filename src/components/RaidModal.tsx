@@ -25,7 +25,6 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const [selfPenalty, setSelfPenalty] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
-    const [showFlash, setShowFlash] = useState(false);
     const [manualTarget, setManualTarget] = useState("");
     const [isFindingTarget, setIsFindingTarget] = useState(false);
 
