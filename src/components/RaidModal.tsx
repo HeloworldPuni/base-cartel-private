@@ -25,7 +25,9 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const [selfPenalty, setSelfPenalty] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
+    const [showFlash, setShowFlash] = useState(false);
     const [manualTarget, setManualTarget] = useState("");
+    const [isFindingTarget, setIsFindingTarget] = useState(false);
 
     const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
@@ -48,6 +50,23 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             setStep('high-stakes-warning');
         } else {
             setStep('payment');
+        }
+    };
+
+    const handleAutoSelectTarget = async () => {
+        setIsFindingTarget(true);
+        try {
+            const res = await fetch(`/api/cartel/targets/random?exclude=${address}`);
+            const data = await res.json();
+            if (data.success && data.target) {
+                setManualTarget(data.target);
+            } else {
+                alert("No suitable targets found. Try again.");
+            }
+        } catch (error) {
+            console.error("Failed to find target:", error);
+        } finally {
+            setIsFindingTarget(false);
         }
     };
 
@@ -336,21 +355,26 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 )}
                             </div>
 
-                            {/* MANUAL TARGET INPUT (Debug/Fallback) */}
+                            {/* MANUAL TARGET INPUT & AUTO SELECT */}
                             {(!targetAddress || targetAddress === "0x0000000000000000000000000000000000000000") && (
                                 <div className="space-y-2">
-                                    <label className="text-xs text-zinc-500 uppercase font-bold">🎯 Manual Target (Debug)</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-xs text-zinc-500 uppercase font-bold">🎯 Target Address</label>
+                                        <button
+                                            onClick={handleAutoSelectTarget}
+                                            disabled={isFindingTarget}
+                                            className="text-[10px] text-blue-400 hover:text-blue-300 uppercase font-bold flex items-center gap-1 disabled:opacity-50"
+                                        >
+                                            {isFindingTarget ? <span className="animate-spin">🌀</span> : "🎲"}
+                                            {isFindingTarget ? "Scanning..." : "Find Random Target"}
+                                        </button>
+                                    </div>
                                     <input
                                         type="text"
-                                        placeholder="0x... or Username (e.g. dwr.eth)"
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-sm text-white focus:outline-none focus:border-zinc-600"
-                                        onChange={(e) => {
-                                            // Quick hack to update the internal target for this session
-                                            // In a real app we might want proper state, but this prop is read-only.
-                                            // So we'll use a local variable or ref, but since we can't easily change props...
-                                            // We will modify step 2 to prefer a local state override.
-                                            setManualTarget(e.target.value);
-                                        }}
+                                        value={manualTarget}
+                                        placeholder="0x..."
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-sm text-white focus:outline-none focus:border-zinc-600 font-mono"
+                                        onChange={(e) => setManualTarget(e.target.value)}
                                     />
                                 </div>
                             )}

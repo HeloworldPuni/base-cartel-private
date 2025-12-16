@@ -93,3 +93,24 @@ export async function getUserRank(address: string): Promise<number | null> {
 
     return higherRankedUsers + 1;
 }
+
+export async function getRandomTarget(excludeAddress?: string): Promise<string | null> {
+    const count = await prisma.user.count();
+    if (count === 0) return null;
+
+    // Fetch a batch of random users to reduce multiple DB calls
+    // We try to pick from the pool of all users
+    const skip = Math.floor(Math.random() * Math.max(0, count - 10));
+
+    const users = await prisma.user.findMany({
+        take: 10,
+        skip: skip,
+        select: { walletAddress: true }
+    });
+
+    // Filter out self
+    const valid = users.filter(u => u.walletAddress !== excludeAddress);
+
+    if (valid.length === 0) return null;
+    return valid[Math.floor(Math.random() * valid.length)].walletAddress;
+}
