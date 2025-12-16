@@ -11,7 +11,7 @@ import RaidModal from "@/components/RaidModal";
 import { ThreatEntry } from '@/lib/threat-service';
 
 // Icons
-import { Sword, Shield, Crosshair, AlertTriangle } from 'lucide-react';
+import { Sword, Shield, Crosshair } from 'lucide-react';
 
 interface PublicProfileProps {
     params: Promise<{ address: string }> | { address: string };
@@ -22,38 +22,26 @@ export default function PublicProfilePage({ params }: PublicProfileProps) {
     const [targetAddress, setTargetAddress] = useState<string>("");
     const [stats, setStats] = useState<ThreatEntry | null>(null);
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
-    const [debugLog, setDebugLog] = useState<string[]>([]);
-
-    const addLog = (msg: string) => setDebugLog(prev => [...prev.slice(-4), msg]);
 
     useEffect(() => {
         // Handle params whether promise or object
         Promise.resolve(params).then((p) => {
             if (p && p.address) {
                 setTargetAddress(p.address);
-                addLog(`Params Resolved: ${p.address}`);
                 fetchStats(p.address);
             }
-        }).catch(e => {
-            console.error("Params Error", e);
-            addLog(`Params Error: ${e.message}`);
-        });
+        }).catch(e => console.error("Params Error", e));
     }, [params]);
 
     const fetchStats = async (addr: string) => {
         try {
-            addLog(`Fetching stats for ${addr}...`);
             const res = await fetch(`/api/cartel/profile/stats?address=${addr}`);
             const data = await res.json();
             if (data.success) {
                 setStats(data.data);
-                addLog(`Stats Loaded: Threat ${data.data.threatScore}`);
-            } else {
-                addLog(`Stats Failed: ${data.error}`);
             }
-        } catch (e: any) {
+        } catch (e) {
             console.error("Failed to fetch stats", e);
-            addLog(`Fetch Error: ${e.message}`);
         }
     }
 
@@ -166,22 +154,6 @@ export default function PublicProfilePage({ params }: PublicProfileProps) {
                                 <span className="animate-pulse text-zinc-700">...</span>
                             )}
                         </div>
-                    </div>
-                </div>
-
-                {/* DEBUG CONSOLE (Requested by User) */}
-                <div className="mt-8 p-4 bg-black border border-red-900/50 font-mono text-[10px] text-red-500/80 rounded">
-                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-red-900/30">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span className="font-bold">SYSTEM DIAGNOSTICS</span>
-                    </div>
-                    <div className="space-y-1">
-                        {debugLog.map((log, i) => (
-                            <div key={i}>{`> ${log}`}</div>
-                        ))}
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-red-900/30 opacity-50">
-                        RAW DATA: {JSON.stringify(stats || "No Data", null, 0)}
                     </div>
                 </div>
 
