@@ -118,6 +118,7 @@ function LeaderboardRow({ player, index, onInternalView }: { player: Player, ind
 
 export default function Leaderboard() {
     const [players, setPlayers] = useState<Player[]>([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchLeaderboard = async (pageNum: number, isLoadMore = false) => {
