@@ -13,7 +13,7 @@ interface BetrayModalProps {
     onClose: () => void;
 }
 
-const EXPECTED_CHAIN_ID = 8453; // Base Mainnet
+const EXPECTED_CHAIN_ID = 84532; // Base Sepolia Testnet
 
 export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
     const [step, setStep] = useState<'warn' | 'confirm' | 'betraying' | 'result'>('warn');

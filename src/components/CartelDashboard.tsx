@@ -10,6 +10,7 @@ import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 // Components
 import RaidModal from "@/components/RaidModal";
 import BetrayModal from "@/components/BetrayModal";
+import MostWantedList from "./MostWantedList";
 
 // Wagmi & Data
 import { useReadContracts } from 'wagmi';
@@ -209,22 +210,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </div>
 
             {/* MOST WANTED */}
-            <div>
-                <div className="flex items-center gap-2 mb-2 px-1">
-                    <Crosshair className="w-3 h-3 text-orange-400" />
-                    <span className="text-[10px] font-bold uppercase text-orange-400 tracking-widest">Most Wanted</span>
-                </div>
-                <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-2 rounded bg-zinc-900/50 border border-zinc-800/50">
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center text-[10px]">👤</div>
-                                <div className="text-[10px] text-zinc-400">Target-{1000 + i}</div>
-                            </div>
-                            <div className="text-[10px] text-orange-400 font-mono">$1,000</div>
-                        </div>
-                    ))}
-                </div>
+            <div className="mt-4">
+                <MostWantedList />
             </div>
 
             {/* LIVE WIRE */}

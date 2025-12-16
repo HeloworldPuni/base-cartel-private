@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server';
 import { getMostWanted } from '@/lib/threat-service';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const limit = Math.min(Number(searchParams.get('limit')) || 10, 20);
-        const windowHours = Math.min(Number(searchParams.get('windowHours')) || 24, 168);
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const windowHours = parseInt(searchParams.get('window') || '24');
 
-        const players = await getMostWanted(limit, windowHours);
+        const mostWanted = await getMostWanted(limit, windowHours);
 
         return NextResponse.json({
-            windowHours,
-            generatedAt: new Date().toISOString(),
-            players
+            success: true,
+            data: mostWanted
         });
     } catch (error) {
-        console.error('Most Wanted API error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('[/api/cartel/most-wanted] Error:', error);
+        return NextResponse.json(
+            { error: 'Failed to fetch most wanted list' },
+            { status: 500 }
+        );
     }
 }
