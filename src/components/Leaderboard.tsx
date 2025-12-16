@@ -130,21 +130,22 @@ export default function Leaderboard() {
             const res = await fetch(`/api/cartel/leaderboard?page=${pageNum}&limit=10`);
             const data = await res.json();
 
-            if (data.data) {
+            if (data.leaderboard) {
                 if (isLoadMore) {
-                    setPlayers(prev => [...prev, ...data.data]);
+                    setPlayers(prev => [...prev, ...data.leaderboard]);
                 } else {
-                    setPlayers(data.data);
+                    setPlayers(data.leaderboard);
                 }
 
                 // Check if we reached the end or max limit (100)
-                const currentTotal = isLoadMore ? players.length + data.data.length : data.data.length;
-                if (currentTotal >= data.totalPlayers || currentTotal >= 100 || data.data.length === 0) {
+                const currentTotal = isLoadMore ? players.length + data.leaderboard.length : data.leaderboard.length;
+                if (currentTotal >= (data.total || 100) || currentTotal >= 100 || data.leaderboard.length === 0) {
                     setHasMore(false);
                 }
             }
         } catch (error) {
             console.error("Failed to fetch leaderboard:", error);
+            // Optionally set an error state here to show UI
         } finally {
             setLoading(false);
             setLoadingMore(false);
@@ -227,6 +228,13 @@ export default function Leaderboard() {
                                 </div>
                             )}
                         </>
+                    )}
+
+                    {!loading && players.length === 0 && (
+                        <div className="text-center py-10 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 m-4">
+                            <p>No agents found.</p>
+                            <p className="text-xs mt-2 text-zinc-700">Debug: Check /api/cartel/leaderboard - {page} </p>
+                        </div>
                     )}
 
                     <div className="mt-6 p-4 bg-[#4A87FF]/5 border border-[#4A87FF]/20 rounded-lg text-center">
