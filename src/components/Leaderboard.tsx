@@ -118,11 +118,7 @@ function LeaderboardRow({ player, index, onInternalView }: { player: Player, ind
 
 export default function Leaderboard() {
     const [players, setPlayers] = useState<Player[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchLeaderboard = async (pageNum: number, isLoadMore = false) => {
         try {
@@ -130,22 +126,27 @@ export default function Leaderboard() {
             const res = await fetch(`/api/cartel/leaderboard?page=${pageNum}&limit=10`);
             const data = await res.json();
 
-            if (data.leaderboard) {
+            console.log("Leaderboard API Data:", data); // Diagnostic Log
+
+            const entries = data.leaderboard?.entries || [];
+            const total = data.leaderboard?.total || 0;
+
+            if (entries) {
                 if (isLoadMore) {
-                    setPlayers(prev => [...prev, ...data.leaderboard]);
+                    setPlayers(prev => [...prev, ...entries]);
                 } else {
-                    setPlayers(data.leaderboard);
+                    setPlayers(entries);
                 }
 
                 // Check if we reached the end or max limit (100)
-                const currentTotal = isLoadMore ? players.length + data.leaderboard.length : data.leaderboard.length;
-                if (currentTotal >= (data.total || 100) || currentTotal >= 100 || data.leaderboard.length === 0) {
+                const currentTotal = isLoadMore ? players.length + entries.length : entries.length;
+                if (currentTotal >= (total || 100) || currentTotal >= 100 || entries.length === 0) {
                     setHasMore(false);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch leaderboard:", error);
-            // Optionally set an error state here to show UI
+            setError(error.message || "Unknown error occurred");
         } finally {
             setLoading(false);
             setLoadingMore(false);
@@ -184,7 +185,15 @@ export default function Leaderboard() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {loading ? (
+                    {error ? (
+                        <div className="p-4 bg-red-900/20 border border-red-500/50 rounded text-red-200 text-center">
+                            <p className="font-bold">Error loading leaderboard</p>
+                            <p className="text-xs mt-2 font-mono">{error}</p>
+                            <Button onClick={() => window.location.reload()} variant="outline" className="mt-4 border-red-500 text-red-500 hover:bg-red-500/10">
+                                Retry
+                            </Button>
+                        </div>
+                    ) : loading ? (
                         <div className="space-y-4 animate-pulse">
                             {[...Array(5)].map((_, i) => (
                                 <div key={i} className="h-16 bg-zinc-900 rounded-lg"></div>
