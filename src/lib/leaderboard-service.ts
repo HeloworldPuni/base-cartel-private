@@ -69,9 +69,27 @@ export function generateLeaderboardPost(entries: LeaderboardEntry[]): string {
     const topPlayer = entries[0];
     const runnersUp = entries.slice(1, 4).map(p => p.name.startsWith("0x") ? `${p.name.slice(0, 6)}...` : `@${p.name}`).join(", ");
 
-    // Option B style (Highlight #1)
     return `👑 **New Cartel Boss Today:**\n` +
         `${topPlayer.name.startsWith("0x") ? topPlayer.name.slice(0, 6) : "@" + topPlayer.name} with ${topPlayer.shares.toLocaleString()} shares on Base.\n\n` +
         `Runners up: ${runnersUp}...\n` +
         `Full board: basecartel.in`;
+}
+
+export async function getUserRank(address: string): Promise<number | null> {
+    const user = await prisma.user.findUnique({
+        where: { walletAddress: address },
+        select: { shares: true }
+    });
+
+    if (!user) return null;
+
+    const higherRankedUsers = await prisma.user.count({
+        where: {
+            shares: {
+                gt: user.shares
+            }
+        }
+    });
+
+    return higherRankedUsers + 1;
 }

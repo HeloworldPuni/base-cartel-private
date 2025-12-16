@@ -59,7 +59,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
 
     // --- OFF-CHAIN READS ---
+    const [userRank, setUserRank] = useState<number>(0);
+
+    // --- OFF-CHAIN READS ---
     useEffect(() => {
+        // 1. Fetch Revenue
         fetch('/api/cartel/revenue/summary')
             .then(res => res.json())
             .then(data => {
@@ -68,7 +72,19 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 }
             })
             .catch(err => console.error("Failed to fetch revenue:", err));
-    }, []);
+
+        // 2. Fetch User Summary (Rank)
+        if (address) {
+            fetch(`/api/cartel/me/summary?address=${address}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && typeof data.rank === 'number') {
+                        setUserRank(data.rank);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch summary:", err));
+        }
+    }, [address]);
 
     const handleRaidClick = () => {
         setIsRaidModalOpen(true);
@@ -114,7 +130,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="text-2xl font-black text-white">{shares}</div>
-                        <p className="text-[10px] text-zinc-500">Global Rank #42</p>
+                        <p className="text-[10px] text-zinc-500">
+                            {userRank > 0 ? `Global Rank #${userRank}` : 'Unranked'}
+                        </p>
                     </CardContent>
                 </StatCard>
 

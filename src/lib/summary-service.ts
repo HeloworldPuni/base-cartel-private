@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { getUserRank } from './leaderboard-service';
 
 export interface LoginSummary {
     address: string;
@@ -9,8 +10,8 @@ export interface LoginSummary {
     raidsByYou: number;
     highStakesByYou: number;
     retired: boolean;
-    currentShares: number; // Placeholder for now
-    rank: number; // Placeholder
+    currentShares: number;
+    rank: number;
     notableEvents: NotableEvent[];
 }
 
@@ -101,6 +102,9 @@ export async function getLoginSummary(address: string): Promise<LoginSummary> {
         data: { lastSeenAt: now }
     });
 
+    // 5. Get Rank
+    const rank = await getUserRank(address) || 0;
+
     return {
         address,
         lastSeenAt: lastSeen ? lastSeen.toISOString() : null,
@@ -110,8 +114,8 @@ export async function getLoginSummary(address: string): Promise<LoginSummary> {
         raidsByYou,
         highStakesByYou,
         retired,
-        currentShares: 0, // TODO: Fetch from contract or indexer
-        rank: 0, // TODO: Fetch from leaderboard
+        currentShares: user.shares || 0,
+        rank,
         notableEvents: notableEvents.slice(0, 3) // Top 3
     };
 }
