@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sdk } from "@farcaster/miniapp-sdk";
 import PaymentModal from "./PaymentModal";
 import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC, CARTEL_POT_ADDRESS, USDC_ADDRESS } from "@/lib/basePay";
-import { useAccount, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
+import { useAccount, useWriteContract, useReadContract, usePublicClient, useSendTransaction } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import ERC20ABI from "@/lib/abi/ERC20.json";
 
@@ -30,6 +30,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
     const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
+    const { sendTransactionAsync } = useSendTransaction();
+
     const publicClient = usePublicClient();
 
     // ALLOWANCE CHECK
@@ -177,11 +179,22 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 }
             }
 
-            const hash = await writeContractAsync({
-                address: CORE_ADDRESS,
+            // [BUILDER CODE INTEGRATION]
+            // We use standard sendTransaction to manually append the capability suffix (Legacy method)
+            const { encodeFunctionData } = await import('viem');
+            const { appendBuilderSuffix } = await import('@/lib/builder-code');
+
+            const data = encodeFunctionData({
                 abi: CartelCoreABI,
                 functionName: functionName,
                 args: [finalTarget]
+            });
+
+            const dataWithSuffix = appendBuilderSuffix(data);
+
+            const hash = await sendTransactionAsync({
+                to: CORE_ADDRESS,
+                data: dataWithSuffix,
             });
 
             setStep('raiding');

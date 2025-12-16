@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useComposeCast } from "@coinbase/onchainkit/minikit";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain, useSendTransaction } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import { decodeEventLog, formatUnits } from 'viem';
 
@@ -26,6 +26,8 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
     const { switchChain } = useSwitchChain();
 
     const { writeContractAsync, isPending: isWriting } = useWriteContract();
+    const { sendTransactionAsync } = useSendTransaction();
+
     const {
         data: receipt,
         isLoading: isWaiting,
@@ -128,14 +130,23 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
         setStep('betraying');
 
         try {
-            const hash = await writeContractAsync({
-                address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+            // [BUILDER CODE INTEGRATION]
+            const { encodeFunctionData } = await import('viem');
+            const { appendBuilderSuffix } = await import('@/lib/builder-code');
+
+            const data = encodeFunctionData({
                 abi: CartelCoreABI,
-                functionName: 'betray', // Updated to match ABI function name 'betray' (or retireFromCartel if alias, sticking to ABI)
-                // ABI has 'betray' and 'retireFromCartel'? User context said ABI has 'betray' and 'retireFromCartel'.
-                // Checking previous code it handled both names. I will use 'betray' based on ABI analysis.
+                functionName: 'betray',
                 args: []
             });
+
+            const dataWithSuffix = appendBuilderSuffix(data);
+
+            const hash = await sendTransactionAsync({
+                to: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+                data: dataWithSuffix,
+            });
+
             setTxHash(hash);
             // Now we wait for receipt loop
         } catch (e: any) {
