@@ -104,7 +104,7 @@ async function main() {
             frequency: 'SEASONAL',
             rewardRep: 0,
             rewardShares: 20,
-            maxCompletions: 9999 // Unlimited, capped by service logic
+            maxCompletions: 1
         },
         {
             slug: 'refer-3',
@@ -114,7 +114,7 @@ async function main() {
             frequency: 'SEASONAL',
             rewardRep: 0,
             rewardShares: 75,
-            maxCompletions: 9999
+            maxCompletions: 3
         },
         {
             slug: 'refer-10',
@@ -124,7 +124,7 @@ async function main() {
             frequency: 'SEASONAL',
             rewardRep: 0,
             rewardShares: 500,
-            maxCompletions: 9999
+            maxCompletions: 10
         }
     ];
 
