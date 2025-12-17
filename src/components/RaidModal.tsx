@@ -308,7 +308,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                     setStep('result');
                     setIsProcessing(false);
                 }
-            }, 3000);
+            }, 1000); // 1s polling for faster UI feedback
 
         } catch (e) {
             console.error("Raid Failed:", e);
