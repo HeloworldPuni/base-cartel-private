@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { getLeaderboard } from '@/lib/leaderboard-service';
 
 export const dynamic = 'force-dynamic';
