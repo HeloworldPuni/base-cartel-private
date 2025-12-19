@@ -67,8 +67,8 @@ export default function MostWantedBoard() {
         try {
             const res = await fetch(`/api/cartel/most-wanted?window=${windowHours}&limit=5`);
             const data = await res.json();
-            if (data.players) {
-                setPlayers(data.players);
+            if (data.data) {
+                setPlayers(data.data);
             }
         } catch (error) {
             console.error("Failed to fetch most wanted:", error);
