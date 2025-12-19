@@ -5,16 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThreatBar } from "@/components/ui/ThreatBar";
-
-interface ThreatEntry {
-    rank: number;
-    address: string;
-    handle?: string;
-    threatScore: number;
-    normalRaidsInitiated: number;
-    highStakesRaidsInitiated: number;
-    timesRaided: number;
-}
+import { useViewProfile } from '@coinbase/onchainkit/minikit';
 
 interface ThreatEntry {
     rank: number;
@@ -26,8 +17,6 @@ interface ThreatEntry {
     timesRaided: number;
     fid?: string; // Add FID to interface
 }
-
-import { useViewProfile } from '@coinbase/onchainkit/minikit';
 
 function ThreatRow({ player, formatAddress }: { player: ThreatEntry, formatAddress: (addr: string) => string }) {
     // Gracefully handle missing hook context
