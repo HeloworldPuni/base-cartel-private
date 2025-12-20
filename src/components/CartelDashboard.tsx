@@ -97,7 +97,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     };
 
     return (
-        <div className="min-h-full space-y-6 relative pb-10">
+        <div className="min-h-full space-y-6 relative pb-10 px-6 py-4">
 
             {/* Background Elements (Inner App) */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
