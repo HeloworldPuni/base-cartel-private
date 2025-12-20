@@ -66,14 +66,14 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Run Hardhat tests
-        run: npx hardhat test --config hardhat.config.cjs
+        run: npx hardhat test
 
       
       - name: Run Solhint
         run: npx solhint 'contracts/**/*.sol'
       
       - name: Compile contracts
-        run: npx hardhat compile --config hardhat.config.cjs
+        run: npx hardhat compile
 
 
   security:
