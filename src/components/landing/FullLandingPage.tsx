@@ -187,7 +187,7 @@ export default function FullLandingPage() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
+            <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden pt-28 md:pt-0">
                 {/* Animated Background */}
                 <div
                     className="absolute inset-0 opacity-30"
@@ -268,8 +268,8 @@ export default function FullLandingPage() {
                             <div
                                 key={index}
                                 className={`group relative bg-gradient-to-b from-white/5 to-white/0 border border-white/10 rounded-2xl p-8 hover:border-white/30 transition-all duration-500 hover:scale-105 ${visibleSections.has("features")
-                                        ? "animate-slide-up"
-                                        : "opacity-0"
+                                    ? "animate-slide-up"
+                                    : "opacity-0"
                                     }`}
                                 style={{
                                     animationDelay: `${index * 100}ms`,
@@ -293,8 +293,8 @@ export default function FullLandingPage() {
             <section className="py-24 px-6" data-scroll-section id="quote">
                 <div
                     className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${visibleSections.has("quote")
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-10"
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-10"
                         }`}
                 >
                     <p
@@ -314,8 +314,8 @@ export default function FullLandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <h2
                         className={`text-4xl md:text-5xl font-bold text-center mb-16 transition-all duration-700 ${visibleSections.has("how-it-works")
-                                ? "opacity-100 translate-y-0"
-                                : "opacity-0 translate-y-10"
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-10"
                             }`}
                     >
                         <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
@@ -328,8 +328,8 @@ export default function FullLandingPage() {
                             <div key={index} className="relative">
                                 <div
                                     className={`bg-gradient-to-b from-white/10 to-white/0 border border-white/10 rounded-2xl p-8 hover:border-white/30 transition-all duration-500 hover:scale-105 ${visibleSections.has("how-it-works")
-                                            ? "animate-slide-up"
-                                            : "opacity-0"
+                                        ? "animate-slide-up"
+                                        : "opacity-0"
                                         }`}
                                     style={{
                                         animationDelay: `${(index + 1) * 150}ms`,
@@ -372,8 +372,8 @@ export default function FullLandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <div
                         className={`text-center mb-16 transition-all duration-700 ${visibleSections.has("interface")
-                                ? "opacity-100 translate-y-0"
-                                : "opacity-0 translate-y-10"
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-10"
                             }`}
                     >
                         <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -389,8 +389,8 @@ export default function FullLandingPage() {
                             <div
                                 key={index}
                                 className={`group relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 hover:scale-105 ${visibleSections.has("interface")
-                                        ? "animate-slide-up"
-                                        : "opacity-0"
+                                    ? "animate-slide-up"
+                                    : "opacity-0"
                                     }`}
                                 style={{
                                     animationDelay: `${index * 150}ms`,
@@ -425,8 +425,8 @@ export default function FullLandingPage() {
             <section className="py-24 px-6" data-scroll-section id="cta">
                 <div
                     className={`max-w-4xl mx-auto text-center transition-all duration-700 ${visibleSections.has("cta")
-                            ? "opacity-100 scale-100"
-                            : "opacity-0 scale-95"
+                        ? "opacity-100 scale-100"
+                        : "opacity-0 scale-95"
                         }`}
                 >
                     <h2 className="text-4xl md:text-5xl font-bold mb-8">
