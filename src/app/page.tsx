@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { LandingHero, FeaturesGrid, HowItWorks, GameplayShowcase, LandingFooter, LandingHeader } from "@/components/landing/LandingSections";
 import { METADATA } from "~/lib/utils";
+import FullLandingPage from "@/components/landing/FullLandingPage";
 
 export const metadata: Metadata = {
   title: "Base Cartel - Rule The Chain",
@@ -43,24 +43,5 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  return (
-    <main className="min-h-screen bg-[#0B0E12] text-white selection:bg-[#3DFF72] selection:text-black">
-      <LandingHeader />
-      <LandingHero />
-      <FeaturesGrid />
-
-      {/* Visual Break / Quote */}
-      <section className="py-20 text-center px-4">
-        <p className="text-2xl md:text-4xl font-serif italic text-zinc-500 opacity-50">
-          "Plata o Plomo."
-        </p>
-      </section>
-
-      <HowItWorks />
-
-      <GameplayShowcase />
-
-      <LandingFooter />
-    </main>
-  );
+  return <FullLandingPage />;
 }
