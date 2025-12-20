@@ -397,7 +397,7 @@ export default function FullLandingPage() {
                                     animationFillMode: "forwards",
                                 }}
                             >
-                                <div className="aspect-video bg-gradient-to-br from-red-950/20 to-orange-950/20 flex items-center justify-center overflow-hidden">
+                                <div className="aspect-[9/19] bg-gradient-to-br from-red-950/20 to-orange-950/20 flex items-center justify-center overflow-hidden">
                                     <img
                                         src={preview.image}
                                         alt={preview.title}
