@@ -35,7 +35,9 @@ jobs:
         run: npm run test
       
       - name: Build application
-        run: npm run build
+        run: npm run build:ci
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
       
       - name: Check for secrets
         run: |
