@@ -167,7 +167,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#0B0E12] text-white flex items-center justify-center p-4">
+        <div className="desktop-body text-white flex items-center justify-center p-4">
             <Card className="w-full max-w-md bg-[#1B1F26] border-[#4A87FF]/30 shadow-2xl">
                 <CardHeader className="text-center pb-8 pt-8">
                     <div className="mb-6 relative">

@@ -110,3 +110,15 @@ h6,
 *::-webkit-scrollbar {
   display: none;
 }
+
+/* Desktop App Frame Background */
+.desktop-body {
+  background-color: #050505;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
