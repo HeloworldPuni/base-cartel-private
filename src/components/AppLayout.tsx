@@ -9,8 +9,8 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
     return (
         <div className="desktop-body w-full">
-            {/* PHONE FRAME */}
-            <div className="w-full max-w-lg h-[100dvh] bg-[#0B0F17] relative flex flex-col shadow-2xl border-x border-zinc-800/50 overflow-hidden">
+            {/* FULL WIDTH FRAME */}
+            <div className="w-full h-[100dvh] bg-[#0B0F17] relative flex flex-col overflow-hidden">
 
                 {/* Scrollable Content Area */}
                 <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
