@@ -8,11 +8,26 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
     return (
-        <div className="min-h-screen bg-[#0B0F17] flex flex-col">
-            <main className="flex-1 pb-20">
-                {children}
-            </main>
-            <BottomNav />
+    return (
+        <div className="desktop-body w-full">
+            {/* PHONE FRAME */}
+            <div className="w-full max-w-md h-[100dvh] bg-[#0B0F17] relative flex flex-col shadow-2xl border-x border-zinc-800/50 overflow-hidden">
+
+                {/* Scrollable Content Area */}
+                <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+                    {children}
+
+                    {/* Spacer for Bottom Nav (since it overlays or sits at bottom?) 
+                        Actually, if we flex-col, Nav can be a block element at bottom.
+                    */}
+                    <div className="h-24" />
+                </main>
+
+                {/* Bottom Nav - Natural Flow or Sticky inside frame */}
+                <div className="absolute bottom-0 left-0 right-0 z-50">
+                    <BottomNav />
+                </div>
+            </div>
         </div>
     );
 }
