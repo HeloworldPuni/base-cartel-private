@@ -97,7 +97,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     };
 
     return (
-        <div className="min-h-full space-y-6 relative pb-10">
+        <div className="min-h-full space-y-6 relative pb-10 w-full max-w-6xl mx-auto px-4 md:px-8">
 
             {/* Background Elements (Inner App) */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
@@ -121,7 +121,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </header>
 
             {/* STATS GRID */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
                 {/* Shares */}
                 <StatCard className="h-full border-[#D4AF37]/20 relative overflow-hidden group">
@@ -150,7 +150,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </StatCard>
 
                 {/* Revenue */}
-                <div className="col-span-2">
+                <div className="col-span-2 md:col-span-2">
                     <StatCard className="border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="flex justify-between items-center w-full">
@@ -166,7 +166,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </div>
 
                 {/* Your Cut (Profit) - Highlighted */}
-                <div className="col-span-2">
+                <div className="col-span-2 md:col-span-4">
                     <StatCard className="border-[#3DFF72]/30 bg-gradient-to-b from-[#3DFF72]/5 to-transparent">
                         <div className="flex justify-between items-center mb-1">
                             <div>
