@@ -70,7 +70,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             .then(data => {
                 if (data.success && typeof data.revenue24h === 'number') {
                     setRevenue24h(data.revenue24h);
-                })
+                }
+            })
             .catch(err => console.error("Failed to fetch revenue:", err));
 
         // 2. Fetch User Summary (Rank)
