@@ -149,37 +149,39 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     </CardContent>
                 </StatCard>
 
-                {/* Revenue (Now Half Width) */}
-                <div className="col-span-1">
-                    <StatCard className="h-full border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between p-4 min-h-[110px]">
+                {/* Revenue */}
+                <div className="col-span-2">
+                    <StatCard className="border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="flex flex-col h-full justify-between">
-                            <div className="text-xs text-zinc-400 font-medium uppercase tracking-wide flex items-center justify-between w-full">
-                                <span>24h Rev</span>
-                                <span className="text-lg opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</span>
+                        <div className="flex justify-between items-center w-full">
+                            <div>
+                                <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide flex items-center gap-1">
+                                    Cartel 24h Revenue
+                                </div>
+                                <div className="text-3xl font-black text-[#4FF0E6]">${revenue24h.toLocaleString()}</div>
                             </div>
-                            <div className="text-3xl font-black text-[#4FF0E6] leading-none">${revenue24h.toLocaleString()}</div>
+                            <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
                         </div>
                     </StatCard>
                 </div>
 
-                {/* Your Cut (Now Half Width) */}
-                <div className="col-span-1">
-                    <StatCard className="h-full border-[#3DFF72]/30 bg-gradient-to-b from-[#3DFF72]/5 to-transparent p-4 min-h-[110px] relative">
-                        <div className="flex flex-col h-full justify-between relative z-10">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="text-xs text-[#3DFF72] font-bold uppercase tracking-widest flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#3DFF72] animate-pulse" />
-                                        Cut
-                                    </h3>
-                                    <p className="text-[10px] text-zinc-400 mt-0.5">Claimable</p>
-                                </div>
-                                <Button size="sm" disabled className="h-6 text-[10px] bg-[#3DFF72]/20 text-[#3DFF72] border border-[#3DFF72]/50 hover:bg-[#3DFF72]/30 px-2">
+                {/* Your Cut (Profit) - Highlighted */}
+                <div className="col-span-2">
+                    <StatCard className="border-[#3DFF72]/30 bg-gradient-to-b from-[#3DFF72]/5 to-transparent">
+                        <div className="flex justify-between items-center mb-1">
+                            <div>
+                                <h3 className="text-xs text-[#3DFF72] font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#3DFF72] animate-pulse" />
+                                    Your Cut
+                                </h3>
+                                <p className="text-[10px] text-zinc-400">Claimable Dividends</p>
+                            </div>
+                            <div className="text-right flex items-center gap-3">
+                                <div className="text-3xl font-bold text-[#3DFF72]">$0.42</div>
+                                <Button size="sm" disabled className="h-8 text-xs bg-[#3DFF72]/20 text-[#3DFF72] border border-[#3DFF72]/50 hover:bg-[#3DFF72]/30 px-4">
                                     Claim
                                 </Button>
                             </div>
-                            <div className="text-3xl font-bold text-[#3DFF72] leading-none mt-1">$0.42</div>
                         </div>
                     </StatCard>
                 </div>
