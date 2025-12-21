@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { StatCard } from "@/components/ui/StatCard";
-import { Badge } from "@/components/ui/badge";
-import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
+import { Crown, Zap, TrendingUp, Swords, Flame, Users, Shield, Copy, Target, Trophy, Activity } from "lucide-react";
 
 // Components
 import RaidModal from "@/components/RaidModal";
@@ -110,158 +106,419 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         refetch();
     };
 
+    const [showCopied, setShowCopied] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const handleCopyAddress = () => {
+        if (address) {
+            navigator.clipboard.writeText(address);
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+        }
+    };
+
     return (
-        <div className="min-h-full space-y-6 relative pb-10 w-full px-6 py-4">
+        <div className="min-h-screen bg-[#020817] text-white w-full overflow-x-hidden relative">
+            {/* Animated Background */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div
+                    className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl"
+                    style={{ animation: "float 20s ease-in-out infinite" }}
+                ></div>
+                <div
+                    className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl"
+                    style={{ animation: "float 25s ease-in-out infinite reverse" }}
+                ></div>
+                <div
+                    className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-[#FF0066] rounded-full opacity-5 blur-3xl"
+                    style={{ animation: "float 30s ease-in-out infinite" }}
+                ></div>
+            </div>
 
-            {/* Background Elements (Inner App) */}
-            <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
-            <div className="absolute top-[-40px] right-[-40px] text-[10rem] opacity-[0.03] pointer-events-none rotate-12 blur-sm">🎩</div>
-
-            {/* HERO HEADER */}
-            <header className="flex flex-col items-center pt-6 pb-4 relative z-10 w-full">
-                <div className="relative mb-2">
-                    <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">🎩</span>
-                </div>
-
-                <div className="flex items-center justify-center gap-3 w-full px-8">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
-                    <Badge variant="outline" className="bg-[#1A1D26] text-[#D4AF37] border-[#D4AF37]/30 text-[10px] tracking-wider uppercase px-3 py-1 shadow-[0_0_10px_rgba(212,175,55,0.1)]">
-                        Season 1 • Live
-                    </Badge>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent" />
-                </div>
-
-                <h2 className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] mt-3 uppercase opacity-70">Empire Earnings Today</h2>
-            </header>
-
-            {/* STATS GRID */}
-            <div className="grid grid-cols-2 gap-4">
-
-                {/* Shares */}
-                <StatCard className="h-full border-[#D4AF37]/20 relative overflow-hidden group min-h-[110px]">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <CardHeader className="p-0 pb-2">
-                        <CardTitle className="text-xs text-zinc-400 font-medium uppercase tracking-wide">Your Shares</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="text-3xl font-black text-white leading-none mb-1">{shares}</div>
-                        <p className="text-[10px] text-zinc-500 font-mono">
-                            {userRank > 0 ? `Global Rank #${userRank}` : 'Unranked'}
-                        </p>
-                    </CardContent>
-                </StatCard>
-
-                {/* Pot */}
-                <StatCard className="h-full border-[#3B82F6]/20 relative overflow-hidden group min-h-[110px]">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <CardHeader className="p-0 pb-2">
-                        <CardTitle className="text-xs text-zinc-400 font-medium uppercase tracking-wide">Cartel Pot</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="text-3xl font-black text-white leading-none mb-1">${potBalance.toLocaleString()}</div>
-                        <p className="text-[10px] text-zinc-500 font-mono">USDC Vault</p>
-                    </CardContent>
-                </StatCard>
-
-                {/* Revenue */}
-                <div className="col-span-2">
-                    <StatCard className="border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="flex justify-between items-center w-full">
-                            <div>
-                                <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide flex items-center gap-1">
-                                    Cartel 24h Revenue
-                                </div>
-                                <div className="text-3xl font-black text-[#4FF0E6]">${revenue24h.toLocaleString()}</div>
-                            </div>
-                            <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
+            {/* Top Header */}
+            <div className="relative z-10 w-full mb-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="text-4xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">🎩</div>
+                        <div>
+                            <h1
+                                className="text-3xl font-bold bg-gradient-to-r from-[#0066FF] via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent"
+                                style={{
+                                    backgroundSize: "200% auto",
+                                    animation: "gradient-shift 3s ease infinite",
+                                }}
+                            >
+                                BASE CARTEL
+                            </h1>
+                            <p className="text-xs text-gray-500 tracking-widest uppercase">
+                                Rule The Chain
+                            </p>
                         </div>
-                    </StatCard>
-                </div>
-
-                {/* Your Cut (Profit) - Highlighted */}
-                <div className="col-span-2">
-                    <StatCard className="border-[#3DFF72]/30 bg-gradient-to-b from-[#3DFF72]/5 to-transparent">
-                        <div className="flex justify-between items-center mb-1">
-                            <div>
-                                <h3 className="text-xs text-[#3DFF72] font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#3DFF72] animate-pulse" />
-                                    Your Cut
-                                </h3>
-                                <p className="text-[10px] text-zinc-400">Claimable Dividends</p>
-                            </div>
-                            <div className="text-right flex items-center gap-3">
-                                <div className="text-3xl font-bold text-[#3DFF72]">$0.42</div>
-                                <Button size="sm" disabled className="h-8 text-xs bg-[#3DFF72]/20 text-[#3DFF72] border border-[#3DFF72]/50 hover:bg-[#3DFF72]/30 px-4">
-                                    Claim
-                                </Button>
-                            </div>
-                        </div>
-                    </StatCard>
+                    </div>
+                    {address && (
+                        <button
+                            onClick={handleCopyAddress}
+                            className="relative px-4 py-2 bg-[#0F172A]/50 backdrop-blur-xl border border-[#1E293B] rounded-lg hover:border-[#0066FF] transition-all duration-300 flex items-center space-x-2 group"
+                        >
+                            <span className="text-sm font-mono text-zinc-400">{address.slice(0, 6)}...{address.slice(-4)}</span>
+                            <Copy
+                                size={14}
+                                className="group-hover:text-[#0066FF] transition-colors"
+                            />
+                            {showCopied && (
+                                <span
+                                    className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#0066FF] px-3 py-1 rounded-lg text-xs whitespace-nowrap"
+                                    style={{ animation: "slideDown 0.3s ease-out" }}
+                                >
+                                    Copied!
+                                </span>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="grid grid-cols-3 gap-2">
-                <Button
-                    variant="outline"
+            {/* Hero Stats Section */}
+            <div className="relative z-10 w-full mb-8">
+                <div
+                    className="relative bg-gradient-to-br from-[#0F172A]/80 via-[#1E293B]/60 to-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-3xl p-8 overflow-hidden"
+                    style={{ animation: mounted ? "scaleIn 0.6s ease-out" : "none" }}
+                >
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#0066FF] opacity-5 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#00D4FF] opacity-5 rounded-full blur-3xl"></div>
+
+                    <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Main Stat - Shares */}
+                        <div className="md:col-span-1 flex flex-col justify-center items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-[#1E293B] pb-8 md:pb-0 md:pr-8">
+                            <div className="flex items-center space-x-2 mb-4">
+                                <Crown className="text-[#FFD700]" size={32} />
+                                <span className="text-xs px-3 py-1 bg-[#FFD700]/10 text-[#FFD700] rounded-full font-semibold">
+                                    RANK #{userRank || '-'}
+                                </span>
+                            </div>
+                            <div className="text-6xl font-bold mb-2 bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent">
+                                {shares.toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-400 uppercase tracking-wide">
+                                Your Shares
+                            </div>
+                        </div>
+
+                        {/* Cartel Pot */}
+                        <div className="md:col-span-1 flex flex-col justify-center items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-[#1E293B] pb-8 md:pb-0 md:pr-8">
+                            <div className="flex items-center space-x-2 mb-4">
+                                <Zap className="text-[#0066FF]" size={32} />
+                                <span className="text-xs px-3 py-1 bg-[#0066FF]/10 text-[#0066FF] rounded-full font-semibold">
+                                    USDC
+                                </span>
+                            </div>
+                            <div className="text-5xl font-bold mb-2 text-white">
+                                ${potBalance.toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-400 uppercase tracking-wide">
+                                Cartel Pot
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                                24h Revenue: ${revenue24h.toLocaleString()}
+                            </div>
+                        </div>
+
+                        {/* Your Cut */}
+                        <div className="md:col-span-1 flex flex-col justify-center items-center md:items-start text-center md:text-left">
+                            <div className="flex items-center space-x-2 mb-4">
+                                <TrendingUp className="text-[#00FF88]" size={32} />
+                            </div>
+                            <div className="text-5xl font-bold mb-2 text-[#00FF88]">
+                                $0.42
+                            </div>
+                            <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
+                                Claimable
+                            </div>
+                            <button className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0066FF]/50 transition-all duration-300 hover:scale-105 text-white">
+                                Claim Dividends
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <button
                     onClick={handleRaidClick}
-                    className="h-24 flex flex-col items-center justify-center gap-2 border-red-500 bg-red-950/30 hover:bg-red-900/50 hover:border-red-400 text-red-400 hover:text-red-300 shadow-[0_0_15px_-3px_rgba(239,68,68,0.2)] transition-all group active:scale-95"
+                    className="group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105"
+                    style={{
+                        animation: mounted
+                            ? "slideUp 0.5s ease-out 0.1s backwards"
+                            : "none",
+                    }}
                 >
-                    <div className="p-2 rounded-full bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
-                        <Sword className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#FF0066]/20 to-transparent rounded-2xl"></div>
+                    <div className="relative flex items-center justify-between mb-3">
+                        <Swords className="text-white" size={28} />
+                        <div
+                            className="w-2 h-2 bg-white rounded-full"
+                            style={{ animation: "pulse 2s ease-in-out infinite" }}
+                        ></div>
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest">Raid</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2 border-blue-500 bg-blue-950/30 hover:bg-blue-900/50 hover:border-blue-400 text-blue-400 hover:text-blue-300 shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)] transition-all group active:scale-95"
-                    onClick={() => window.location.href = '/clans'}
-                >
-                    <div className="p-2 rounded-full bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                        <Users className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <div className="relative text-xl font-bold text-white text-left">Raid</div>
+                    <div className="relative text-xs text-white/80 mt-1 text-left">
+                        Attack rivals
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest">Clan</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2 border-zinc-600 bg-zinc-900/50 hover:bg-zinc-800 hover:border-zinc-400 text-zinc-300 hover:text-white shadow-lg transition-all group active:scale-95"
+                </button>
+
+                <button
                     onClick={() => setIsBetrayModalOpen(true)}
+                    className="group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105"
+                    style={{
+                        animation: mounted
+                            ? "slideUp 0.5s ease-out 0.2s backwards"
+                            : "none",
+                    }}
                 >
-                    <div className="p-2 rounded-full bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
-                        <Skull className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#FF0066]/20 to-transparent rounded-2xl"></div>
+                    <div className="relative flex items-center justify-between mb-3">
+                        <Flame className="text-white" size={28} />
+                        <div
+                            className="w-2 h-2 bg-white rounded-full"
+                            style={{ animation: "pulse 2s ease-in-out infinite 0.5s" }}
+                        ></div>
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest">Betray</span>
-                </Button>
+                    <div className="relative text-xl font-bold text-white text-left">Betray</div>
+                    <div className="relative text-xs text-white/80 mt-1 text-left">
+                        High stakes
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => window.location.href = '/clans'}
+                    className="group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-105"
+                    style={{
+                        animation: mounted
+                            ? "slideUp 0.5s ease-out 0.3s backwards"
+                            : "none",
+                    }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
+                    <div className="relative flex items-center justify-between mb-3">
+                        <Users className="text-white" size={28} />
+                        {/* Mock Members for now or fetch? */}
+                        <span className="text-xs px-2 py-1 bg-white/20 text-white rounded-full font-semibold">
+                            CLAN
+                        </span>
+                    </div>
+                    <div className="relative text-xl font-bold text-white text-left">Clan</div>
+                    <div className="relative text-xs text-white/80 mt-1 text-left">
+                        Join forces
+                    </div>
+                </button>
+
+                <button
+                    className="group relative bg-gradient-to-br from-[#FFD700] via-[#CCB000] to-[#FFD700] backdrop-blur-xl border border-[#FFD700] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105 opacity-80"
+                    style={{
+                        animation: mounted
+                            ? "slideUp 0.5s ease-out 0.4s backwards"
+                            : "none",
+                    }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/20 to-transparent rounded-2xl"></div>
+                    <div className="relative flex items-center justify-between mb-3">
+                        <Shield className="text-white" size={28} />
+                        <span className="text-xs px-2 py-1 bg-white/20 text-white rounded-full font-semibold">
+                            BETA
+                        </span>
+                    </div>
+                    <div className="relative text-xl font-bold text-white text-left">
+                        Auto-Agent
+                    </div>
+                    <div className="relative text-xs text-white/80 mt-1 text-left">Deploy AI</div>
+                </button>
             </div>
 
-            {/* AUTO AGENT */}
-            <div>
-                <StatCard className="border-purple-500/20 bg-[#0F0A1F]">
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-500/10">
-                        <Bot className="w-4 h-4 text-purple-400" />
-                        <span className="text-xs font-bold uppercase text-purple-400 tracking-wider">Auto-Agent (Beta)</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div className="text-[10px] text-zinc-500">Status</div>
-                        <div className="text-[10px] text-purple-300 font-mono bg-purple-500/10 px-2 py-1 rounded">Idle - Waiting for instructions</div>
-                    </div>
-                </StatCard>
-            </div>
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Live Activity - Takes 2 columns */}
+                <div className="lg:col-span-2">
+                    <ActivityFeed />
+                </div>
 
-            {/* MOST WANTED */}
-            <div className="mt-4">
-                <MostWantedList />
-            </div>
+                {/* Right Sidebar */}
+                <div className="lg:col-span-1 space-y-4">
+                    {/* Most Wanted Leaderboard */}
+                    <MostWantedList />
 
-            {/* LIVE ACTIVITY */}
-            <div className="mt-4">
-                <ActivityFeed />
+                    {/* Quick Access */}
+                    <div className="bg-[#0F172A]/40 backdrop-blur-xl border border-[#1E293B] rounded-2xl p-6">
+                        <h3 className="text-lg font-bold mb-4 text-white">Quick Access</h3>
+                        <div className="space-y-3">
+                            <button className="w-full group bg-gradient-to-r from-[#1E293B]/50 to-transparent border border-[#1E293B] rounded-xl px-4 py-3 text-left hover:border-[#0066FF] hover:from-[#0066FF]/10 transition-all duration-300 flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-lg">🏆</span>
+                                    <span className="text-sm font-medium text-zinc-300 group-hover:text-white">Leaderboard</span>
+                                </div>
+                                <div className="w-1.5 h-1.5 bg-[#0066FF] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </button>
+                            <button onClick={() => window.location.href = '/quests'} className="w-full group bg-gradient-to-r from-[#1E293B]/50 to-transparent border border-[#1E293B] rounded-xl px-4 py-3 text-left hover:border-[#0066FF] hover:from-[#0066FF]/10 transition-all duration-300 flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-lg">📜</span>
+                                    <span className="text-sm font-medium text-zinc-300 group-hover:text-white">Quests</span>
+                                </div>
+                                <div className="w-1.5 h-1.5 bg-[#0066FF] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </button>
+                            <button onClick={() => window.location.href = '/profile'} className="w-full group bg-gradient-to-r from-[#1E293B]/50 to-transparent border border-[#1E293B] rounded-xl px-4 py-3 text-left hover:border-[#0066FF] hover:from-[#0066FF]/10 transition-all duration-300 flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-lg">👤</span>
+                                    <span className="text-sm font-medium text-zinc-300 group-hover:text-white">Profile</span>
+                                </div>
+                                <div className="w-1.5 h-1.5 bg-[#0066FF] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Stats Summary - Static for now based on design */}
+                    <div className="relative bg-gradient-to-br from-[#0066FF]/20 via-[#00D4FF]/10 to-[#0066FF]/20 backdrop-blur-xl border border-[#0066FF]/40 rounded-2xl p-6 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#0066FF] opacity-10 rounded-full blur-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#00D4FF] opacity-10 rounded-full blur-2xl"></div>
+
+                        <h3 className="relative text-lg font-bold mb-4 flex items-center space-x-2 text-white">
+                            <Target className="text-[#0066FF]" size={20} />
+                            <span>Performance</span>
+                        </h3>
+                        <div className="relative space-y-4">
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs text-gray-400 uppercase tracking-wide">
+                                        Win Rate
+                                    </span>
+                                    <span className="text-sm font-bold text-[#00FF88]">
+                                        73%
+                                    </span>
+                                </div>
+                                <div className="h-2 bg-[#1E293B] rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full shadow-lg shadow-[#00FF88]/50"
+                                        style={{
+                                            width: "73%",
+                                            animation: "expandWidth 1s ease-out",
+                                        }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* MODALS */}
             <RaidModal isOpen={isRaidModalOpen} onClose={handleModalClose} />
             <BetrayModal isOpen={isBetrayModalOpen} onClose={() => setIsBetrayModalOpen(false)} />
+
+            {/* Animations */}
+            <style jsx global>{`
+                @keyframes float {
+                0%, 100% {
+                    transform: translate(0, 0) scale(1);
+                }
+                33% {
+                    transform: translate(30px, -30px) scale(1.1);
+                }
+                66% {
+                    transform: translate(-20px, 20px) scale(0.9);
+                }
+                }
+
+                @keyframes gradient-shift {
+                0%, 100% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                }
+
+                @keyframes scaleIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                }
+
+                @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                }
+
+                @keyframes slideRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                }
+
+                @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+                }
+
+                @keyframes pulse {
+                0%, 100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.5;
+                    transform: scale(1.2);
+                }
+                }
+
+                @keyframes expandWidth {
+                from {
+                    width: 0;
+                }
+                }
+
+                .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #1E293B;
+                border-radius: 10px;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #0066FF;
+                }
+            `}</style>
         </div>
     );
 }

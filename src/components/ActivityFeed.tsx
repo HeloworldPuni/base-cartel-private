@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from 'date-fns';
+import { Activity } from 'lucide-react';
 
 interface CartelEvent {
     id: string;
@@ -59,64 +59,62 @@ export default function ActivityFeed() {
     };
 
     return (
-        <Card className="card-glow border-zinc-800 bg-zinc-900/50">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-zinc-400 font-normal flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        <div className="bg-[#0F172A]/40 backdrop-blur-xl border border-[#1E293B] rounded-2xl p-6 h-full">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                    <Activity className="text-[#0066FF]" size={24} />
+                    <h2 className="text-xl font-bold text-white">Live Activity</h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <div
+                        className="w-2 h-2 bg-[#00FF88] rounded-full animate-pulse"
+                    ></div>
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">
+                        Live
                     </span>
-                    Live Activity
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-[300px] overflow-y-auto space-y-3 custom-scrollbar">
+                </div>
+            </div>
+
+            <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                 {loading && events.length === 0 ? (
-                    <div className="text-center text-zinc-500 text-xs py-4">Loading feed...</div>
+                    <div className="text-center text-zinc-500 text-xs py-4">Scanning chain data...</div>
                 ) : events.length === 0 ? (
-                    <div className="text-center text-zinc-500 text-xs py-4">No recent activity. Be the first!</div>
+                    <div className="text-center text-zinc-500 text-xs py-4">No recent activity.</div>
                 ) : (
                     <AnimatePresence initial={false}>
-                        {events.map((event) => (
+                        {events.map((event, index) => (
                             <motion.div
                                 key={event.id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.3 }}
-                                className="text-xs border-b border-zinc-800/50 pb-2 last:border-0 last:pb-0"
+                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                className="group relative bg-gradient-to-r from-[#0F172A]/80 to-transparent border-l-2 border-[#0066FF]/50 pl-4 pr-4 py-3 hover:border-[#0066FF] transition-all duration-300 rounded-r-lg"
                             >
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className="text-lg mr-2">{getEventIcon(event.type)}</span>
-                                    <div className="flex-1">
-                                        <p className="text-zinc-300 leading-tight">
+                                <div className="flex items-start space-x-3">
+                                    <div className="text-xl flex-shrink-0 mt-1">
+                                        {getEventIcon(event.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-sm text-gray-300 leading-tight">
                                             {event.type === 'RAID' && (
                                                 <>
-                                                    <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> raided <span className="text-red-400">{formatAddress(event.target)}</span> and stole <span className="text-green-400 font-bold">{event.stolenShares} shares</span>.
+                                                    <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> raided <span className="text-red-400">{formatAddress(event.target)}</span>
                                                 </>
                                             )}
                                             {event.type === 'HIGH_STAKES_RAID' && (
                                                 <>
-                                                    <span className="text-red-500 font-bold">HIGH-STAKES:</span> <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> hit <span className="text-red-400">{formatAddress(event.target)}</span>! Stole <span className="text-green-400 font-bold">{event.stolenShares}</span>, burned <span className="text-orange-400">{event.selfPenaltyShares}</span>.
+                                                    <span className="text-red-500 font-bold">HIGH-STAKES:</span> <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> hit <span className="text-red-400">{formatAddress(event.target)}</span>!
                                                 </>
                                             )}
                                             {event.type === 'RETIRE' && (
                                                 <>
-                                                    <span className="text-zinc-500 font-bold">{formatAddress(event.user)}</span> retired. Cashed out <span className="text-green-400 font-bold">${event.payout} USDC</span>.
+                                                    <span className="text-zinc-500 font-bold">{formatAddress(event.user)}</span> retired.
                                                 </>
                                             )}
-                                        </p>
-                                        <div className="flex justify-between items-center mt-1">
-                                            <span className="text-[10px] text-zinc-600">
-                                                {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
-                                            </span>
-                                            <a
-                                                href={`https://sepolia.basescan.org/tx/${event.txHash}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-[10px] text-zinc-700 hover:text-zinc-500 underline"
-                                            >
-                                                View Tx
-                                            </a>
+                                            <div className="text-xs text-zinc-500 mt-1 flex justify-between">
+                                                <span>{formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}</span>
+                                                {event.stolenShares && <span className="text-green-400 font-mono">+{event.stolenShares} Shares</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -124,7 +122,7 @@ export default function ActivityFeed() {
                         ))}
                     </AnimatePresence>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
