@@ -57,16 +57,14 @@ export default function DashboardPage() {
     return (
         <AuthenticatedRoute>
             {showJoin ? (
-                <JoinCartel onJoin={() => {
-                    setJustJoined(true);
-                    refetch(); // Update balance
-                }} />
-            ) : (
                 <AppLayout>
-                    <motion.div {...motionPage}>
-                        <CartelDashboard address={address} />
-                    </motion.div>
+                    <JoinCartel onJoin={() => {
+                        setJustJoined(true);
+                        refetch(); // Update balance
+                    }} />
                 </AppLayout>
+            ) : (
+                <CartelDashboard address={address} />
             )}
         </AuthenticatedRoute>
     );
