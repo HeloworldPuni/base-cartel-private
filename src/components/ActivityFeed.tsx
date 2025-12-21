@@ -75,7 +75,7 @@ export default function ActivityFeed() {
                 </div>
             </div>
 
-            <div className="space-y-3 max-h-[300px] md:max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+            <div className="space-y-3 max-h-[220px] md:max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                 {loading && events.length === 0 ? (
                     <div className="text-center text-zinc-500 text-xs py-4">Scanning chain data...</div>
                 ) : events.length === 0 ? (
