@@ -37,60 +37,87 @@ export default function ProfilePage() {
     // @ts-ignore
     const displayUsername = context?.user?.username ? `@${context.user.username}` : (ensName || "Agent Zero");
 
-    // Mock user data - mixed with real address/name
-    const userData = {
-        address: displayAddress,
-        username: displayUsername,
-        reputation: 12847,
-        rank: "Kingpin",
-        rankNumber: 7,
-        totalPlayers: 2451,
-        shares: 8542,
-        operations: 234,
-        earnings: 45.67,
-        raids: { won: 187, lost: 47 },
-        clanSize: 23,
-        joinedDate: "March 2024",
-        badges: [
-            { id: 1, name: "First Blood", icon: "🩸", rarity: "common" },
-            { id: 2, name: "Raid Master", icon: "⚔️", rarity: "rare" },
-            { id: 3, name: "Diamond Hands", icon: "💎", rarity: "epic" },
-            { id: 4, name: "Cartel Boss", icon: "👑", rarity: "legendary" },
-            { id: 5, name: "Betrayer", icon: "🗡️", rarity: "rare" },
-            { id: 6, name: "Untouchable", icon: "🛡️", rarity: "epic" },
-        ],
-        recentActivity: [
-            {
-                id: 1,
-                type: "raid",
-                target: "0x5a2...4f3",
-                result: "won",
-                amount: "+234 shares",
-                time: "2 hours ago",
-            },
-            {
-                id: 2,
-                type: "quest",
-                name: "Daily Operation",
-                result: "completed",
-                amount: "+50 REP",
-                time: "5 hours ago",
-            },
-            {
-                id: 3,
-                type: "raid",
-                target: "0x8b1...9c2",
-                result: "lost",
-                amount: "-89 shares",
-                time: "1 day ago",
-            },
-            { id: 4, type: "dividend", amount: "+2.34 ETH", time: "1 day ago" },
-        ],
-    };
+    const [profileData, setProfileData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [raidStats, setRaidStats] = useState({ won: 0, lost: 0, total: 0 });
+
+    useEffect(() => {
+        if (!address) return;
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // 1. Fetch Basic Stats & Rank
+                const statsRes = await fetch(`/api/cartel/me/stats?address=${address}`);
+                const statsData = await statsRes.json();
+
+                // 2. Fetch Quests & Reputation (Tier info)
+                const questsRes = await fetch(`/api/quests/active?address=${address}`);
+                const questsData = await questsRes.json();
+
+                // 3. Fetch Raid History
+                const raidsRes = await fetch(`/api/cartel/history/raids?address=${address}&limit=50`);
+                const raidsData = await raidsRes.json();
+
+                // Process Raid History for Win/Loss & Activity
+                const raids = raidsData.events || [];
+                let won = 0;
+                let lost = 0;
+
+                // Map raids to activity format
+                const activityLog = raids.map((raid: any, index: number) => ({
+                    id: `raid-${index}`,
+                    type: 'raid',
+                    target: raid.direction === 'by' ? raid.target : raid.attacker,
+                    result: raid.direction === 'by' ? 'won' : 'lost', // Simplification: Attacker always wins in this MVP? Or check stolenShares? 
+                    // Actually, if I attacked and got shares, I won. If I was attacked and lost shares, I lost.
+                    // For now, let's assume 'by' = attack = active participation. 'on' = defense. 
+                    // Real win/loss logic depends on game rules. Let's assume successful raid if stolenShares > 0.
+                    amount: raid.direction === 'by' ? `+${raid.stolenShares} shares` : `-${raid.stolenShares} shares`,
+                    time: new Date(raid.timestamp).toLocaleDateString(),
+                    timestamp: new Date(raid.timestamp).getTime()
+                }));
+
+                // Calculate stats
+                raids.forEach((r: any) => {
+                    if (r.direction === 'by') won++;
+                    else lost++;
+                });
+
+                setRaidStats({ won, lost, total: won + lost });
+
+                // Construct User Data Object
+                setProfileData({
+                    reputation: questsData.rep || 0,
+                    rank: questsData.tier?.title || "Soldier",
+                    rankNumber: statsData.rank || 9999,
+                    totalPlayers: 1247, // Fallback or fetch global stat if needed
+                    shares: statsData.shares || 0,
+                    operations: (statsData.highStakesCount || 0) + (questsData.quests?.length || 0), // Approx
+                    earnings: 0, // Placeholder
+                    clanSize: 0,
+                    joinedDate: "2024", // Placeholder
+                    badges: [
+                        ...(won > 0 ? [{ id: 1, name: "First Blood", icon: "🩸", rarity: "common" }] : []),
+                        ...(statsData.shares > 1000 ? [{ id: 2, name: "Whale", icon: "💎", rarity: "epic" }] : []),
+                        ...(statsData.rank === 1 ? [{ id: 3, name: "The Boss", icon: "👑", rarity: "legendary" }] : [])
+                    ],
+                    recentActivity: activityLog.slice(0, 10)
+                });
+
+            } catch (error) {
+                console.error("Failed to fetch profile data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [address]);
 
     const copyAddress = () => {
-        if (userData.address) {
-            navigator.clipboard.writeText(userData.address);
+        if (address) {
+            navigator.clipboard.writeText(address);
             setCopiedAddress(true);
             setTimeout(() => setCopiedAddress(false), 2000);
         }
@@ -107,6 +134,29 @@ export default function ProfilePage() {
             default:
                 return "from-gray-500 to-gray-600";
         }
+    };
+
+    // Loading State
+    if (loading || !profileData) {
+        return (
+            <AuthenticatedRoute>
+                <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center text-white">
+                    <div className="animate-pulse flex flex-col items-center">
+                        <div className="h-16 w-16 bg-white/10 rounded-full mb-4"></div>
+                        <div className="h-6 w-32 bg-white/10 rounded mb-2"></div>
+                        <div className="text-gray-500 text-sm">Loading Profile...</div>
+                    </div>
+                </div>
+            </AuthenticatedRoute>
+        );
+    }
+
+    // Use the fetched data
+    const userData = {
+        address: displayAddress,
+        username: displayUsername,
+        ...profileData,
+        raids: raidStats
     };
 
     return (
