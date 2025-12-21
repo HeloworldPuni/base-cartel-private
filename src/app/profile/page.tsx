@@ -33,7 +33,7 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("stats");
 
     // Derive display data from real sources or fallbacks
-    const displayAddress = address;
+    const displayAddress = address || "";
     // @ts-ignore
     const displayUsername = context?.user?.username ? `@${context.user.username}` : (ensName || "Agent Zero");
 
@@ -144,8 +144,8 @@ export default function ProfilePage() {
                                         </h1>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-sm md:text-base text-gray-400 font-mono">
-                                                {userData.address.slice(0, 8)}...
-                                                {userData.address.slice(-6)}
+                                                {userData.address?.slice(0, 8)}...
+                                                {userData.address?.slice(-6)}
                                             </span>
                                             <button
                                                 onClick={copyAddress}
