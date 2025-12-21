@@ -134,7 +134,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             <div className="relative z-10 w-full mb-8">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-3">
-                        <div className="text-4xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">🎩</div>
+                        <div className="relative w-12 h-12">
+                            <img
+                                src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
+                                alt="Logo"
+                                className="w-full h-full hue-rotate-180 object-contain drop-shadow-[0_0_10px_rgba(74,135,255,0.5)]"
+                            />
+                        </div>
                         <div>
                             <h1
                                 className="text-3xl font-bold bg-gradient-to-r from-[#0066FF] via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent"
@@ -347,7 +353,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     <div className="bg-[#0F172A]/40 backdrop-blur-xl border border-[#1E293B] rounded-2xl p-6">
                         <h3 className="text-lg font-bold mb-4 text-white">Quick Access</h3>
                         <div className="space-y-3">
-                            <button className="w-full group bg-gradient-to-r from-[#1E293B]/50 to-transparent border border-[#1E293B] rounded-xl px-4 py-3 text-left hover:border-[#0066FF] hover:from-[#0066FF]/10 transition-all duration-300 flex items-center justify-between">
+                            <button onClick={() => window.location.href = '/leaderboard'} className="w-full group bg-gradient-to-r from-[#1E293B]/50 to-transparent border border-[#1E293B] rounded-xl px-4 py-3 text-left hover:border-[#0066FF] hover:from-[#0066FF]/10 transition-all duration-300 flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                     <span className="text-lg">🏆</span>
                                     <span className="text-sm font-medium text-zinc-300 group-hover:text-white">Leaderboard</span>
