@@ -19,91 +19,96 @@ export default function LeaderboardPage() {
     const [mounted, setMounted] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const playersPerPage = 8;
-    const totalPlayers = 100;
+    // const totalPlayers = 100; // Will be dynamic
+
+    const [players, setPlayers] = useState<any[]>([]);
+    const [totalPlayers, setTotalPlayers] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    const fetchLeaderboard = async (pageNum: number) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/cartel/leaderboard?page=${pageNum}&limit=${playersPerPage}`);
+            const data = await res.json();
+
+            const entries = data.leaderboard?.entries || [];
+            setTotalPlayers(data.leaderboard?.total || 0);
+
+            const mappedPlayers = entries.map((entry: any) => {
+                let color = "#64748b";
+                let glow = "#64748b";
+                let avatar = entry.rank <= 3 ? (entry.rank === 1 ? "👑" : entry.rank === 2 ? "🥈" : "🥉") : `${entry.rank}`;
+
+                let title = entry.rank === 1 ? "👑 Boss of Bosses" :
+                    entry.rank <= 3 ? "🩸 Caporegime" :
+                        entry.rank <= 10 ? "📜 Consigliere" :
+                            entry.rank <= 25 ? "⚔️ Soldier" : "👤 Associate";
+
+                if (entry.rank === 1) { color = "#fbbf24"; glow = "#fbbf24"; }
+                else if (entry.rank === 2) { color = "#cbd5e1"; glow = "#cbd5e1"; }
+                else if (entry.rank === 3) { color = "#d97706"; glow = "#d97706"; }
+                else if (entry.rank <= 10) { color = "#3b82f6"; glow = "#3b82f6"; }
+                else if (entry.rank <= 25) { color = "#8b5cf6"; glow = "#8b5cf6"; }
+
+                return {
+                    rank: entry.rank,
+                    address: entry.address,
+                    name: entry.name,
+                    title: title,
+                    shares: entry.shares,
+                    claimed: entry.totalClaimed,
+                    avatar,
+                    color,
+                    glow
+                };
+            });
+            setPlayers(mappedPlayers);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
+        fetchLeaderboard(1);
     }, []);
 
-    // Generate 100 mock players with realistic progression
-    const generateLeaderboardData = () => {
-        const titles = [
-            { rank: [1, 1], title: "👑 Boss of Bosses", avatar: "👑" },
-            { rank: [2, 3], title: "🩸 Caporegime", avatar: "🥈" },
-            { rank: [4, 10], title: "📜 Consigliere", avatar: null },
-            { rank: [11, 25], title: "⚔️ Soldier", avatar: null },
-            { rank: [26, 100], title: "👤 Associate", avatar: null },
-        ];
 
-        const players = [];
-        for (let i = 1; i <= totalPlayers; i++) {
-            // @ts-ignore
-            const titleInfo = titles.find((t) => i >= t.rank[0] && i <= t.rank[1]);
-            const shares = Math.max(
-                5,
-                Math.floor(300 - i * 2.5 + Math.random() * 10),
-            );
-            const claimed = shares * 4.8 + Math.random() * 100;
-
-            let color = "#64748b";
-            let glow = "#64748b";
-            let avatar = i <= 3 ? (i === 1 ? "👑" : i === 2 ? "🥈" : "🥉") : `${i}`;
-
-            if (i === 1) {
-                color = "#fbbf24";
-                glow = "#fbbf24";
-            } else if (i === 2) {
-                color = "#cbd5e1";
-                glow = "#cbd5e1";
-            } else if (i === 3) {
-                color = "#d97706";
-                glow = "#d97706";
-            } else if (i <= 10) {
-                color = "#3b82f6";
-                glow = "#3b82f6";
-            } else if (i <= 25) {
-                color = "#8b5cf6";
-                glow = "#8b5cf6";
-            }
-
-            players.push({
-                rank: i,
-                address: `0x${Math.random().toString(16).substring(2, 42)}`,
-                // @ts-ignore
-                title: titleInfo.title,
-                shares,
-                claimed,
-                avatar,
-                color,
-                glow,
-            });
-        }
-        return players;
-    };
-
-    const leaderboardData = generateLeaderboardData();
-    const totalPages = Math.ceil(totalPlayers / playersPerPage);
-    const startIndex = (currentPage - 1) * playersPerPage;
-    const endIndex = startIndex + playersPerPage;
-    const currentPlayers = leaderboardData.slice(startIndex, endIndex);
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage);
+            fetchLeaderboard(nextPage);
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
     };
 
     const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+        // but the new UI design has "Pages".
+        // The user's new UI supports specific pages? 
+        // "handleNextPage" in original code just incremented page for slicing mock array.
+        // My fetch logic appends (Load More style).
+        // Let's implement true pagination (Replace data) to match the UI's "Page X of Y" feel?
+        // Actually, "Load More" is often better for mobile.
+        // But the UI has "Page <X> of <Y>".
+        // Let's stick to replacing data for pagination to match the UI controls.
+
+        // RE-IMPLEMENTING fetch to REPLACE instead of APPEND for pagination support
     };
 
+    // Pagination helpers
+    // Pagination helpers
+    // API returns `total`.
+    const totalPages = Math.ceil(totalPlayers / playersPerPage) || 1;
+    const currentPlayers = players; // Use players directly as they are the current page from API
+
     const stats = {
-        totalPlayers: 1247,
-        totalPot: 125840,
+        totalPlayers: totalPlayers,
+        totalPot: 0, // Placeholder until contract read
         activeSeason: 1,
         endsIn: "14d 6h 23m",
     };
@@ -211,8 +216,9 @@ export default function LeaderboardPage() {
                     <div
                         className={`hidden md:grid grid-cols-3 gap-6 mb-8 transition-all duration-1000 delay-300 ${mounted ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
                     >
-                        {[leaderboardData[1], leaderboardData[0], leaderboardData[2]].map(
+                        {[players[1], players[0], players[2]].map(
                             (player, idx) => {
+                                if (!player) return null; // Safe guard
                                 const actualIndex = idx === 0 ? 1 : idx === 1 ? 0 : 2;
                                 const heights = ["h-64", "h-80", "h-56"];
                                 return (
@@ -276,7 +282,7 @@ export default function LeaderboardPage() {
                                 Full Rankings
                             </h2>
                             <div className="text-sm text-gray-400">
-                                Showing {startIndex + 1}-{Math.min(endIndex, totalPlayers)} of{" "}
+                                Showing {(currentPage - 1) * playersPerPage + 1}-{Math.min(currentPage * playersPerPage, totalPlayers)} of{" "}
                                 {totalPlayers}
                             </div>
                         </div>
@@ -387,8 +393,8 @@ export default function LeaderboardPage() {
                             onClick={handlePrevPage}
                             disabled={currentPage === 1}
                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${currentPage === 1
-                                    ? "bg-white/5 text-gray-600 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 hover:scale-105 border border-amber-500/30"
+                                ? "bg-white/5 text-gray-600 cursor-not-allowed"
+                                : "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 hover:scale-105 border border-amber-500/30"
                                 }`}
                         >
                             <ChevronLeft className="w-5 h-5" />
@@ -408,8 +414,8 @@ export default function LeaderboardPage() {
                             onClick={handleNextPage}
                             disabled={currentPage === totalPages}
                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${currentPage === totalPages
-                                    ? "bg-white/5 text-gray-600 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 hover:scale-105 border border-amber-500/30"
+                                ? "bg-white/5 text-gray-600 cursor-not-allowed"
+                                : "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 hover:scale-105 border border-amber-500/30"
                                 }`}
                         >
                             <span className="hidden sm:inline">Next</span>

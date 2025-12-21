@@ -4,66 +4,69 @@ import { Award, Target, TrendingUp, Lock } from "lucide-react";
 import Link from 'next/link';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
+import { useAccount } from 'wagmi';
+import { useState, useEffect } from 'react';
 
 export default function QuestsPage() {
-    const userRep = 1250;
-    const userRank = "Lieutenant";
-    const nextRankRep = 2000;
-    const repProgress = (userRep / nextRankRep) * 100;
+    const { address } = useAccount();
+    const [quests, setQuests] = useState<any[]>([]);
+    const [rep, setRep] = useState(0);
+    const [tier, setTier] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    const activeQuests = [
-        {
-            id: 1,
-            emoji: "⚔️",
-            category: "Active Operations",
-            title: "Daily Raid",
-            description: "Complete a raid to earn respect.",
-            repReward: 50,
-            sharesReward: 10,
-            progress: 0,
-            total: 1,
-            status: "IN PROGRESS",
-        },
-        {
-            id: 2,
-            emoji: "🔥",
-            category: "Active Operations",
-            title: "Hostile Takeover",
-            description: "Burn 100 shares from rival cartels.",
-            repReward: 150,
-            sharesReward: 25,
-            progress: 47,
-            total: 100,
-            status: "IN PROGRESS",
-        },
-    ];
+    useEffect(() => {
+        if (!address) return;
 
-    const syndicateQuests = [
-        {
-            id: 3,
-            emoji: "🤝",
-            category: "Syndicate Growth",
-            title: "Recruitment Drive",
-            description: "Recruit 3 new members to the cartel.",
-            repReward: 100,
-            sharesReward: 50,
-            progress: 1,
-            total: 3,
-            status: "IN PROGRESS",
-        },
-        {
-            id: 4,
-            emoji: "👥",
-            category: "Syndicate Growth",
-            title: "Build Your Network",
-            description: "Have 10 active members in your clan.",
-            repReward: 300,
-            sharesReward: 100,
-            progress: 4,
-            total: 10,
-            status: "IN PROGRESS",
-        },
-    ];
+        const fetchQuests = async () => {
+            try {
+                const res = await fetch(`/api/quests/active?address=${address}`);
+                const data = await res.json();
+                if (data.quests) {
+                    setQuests(data.quests);
+                    setRep(data.rep);
+                    setTier(data.tier);
+                }
+            } catch (e) {
+                console.error("Failed to load quests", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuests();
+    }, [address]);
+
+    const activeQuests = quests.filter(q => q.category === 'GAMEPLAY').map(q => ({
+        id: q.id,
+        emoji: "⚔️", // Dynamic?
+        title: q.title,
+        description: q.description,
+        repReward: q.rewardRep,
+        sharesReward: q.rewardShares,
+        progress: q.progress.current,
+        total: q.progress.target,
+        status: q.progress.completed ? "COMPLETED" : "IN PROGRESS",
+        category: "Active Operations"
+    }));
+
+    const syndicateQuests = quests.filter(q => q.category === 'REFERRAL' || q.category === 'SOCIAL').map(q => ({
+        id: q.id,
+        emoji: "🤝",
+        title: q.title,
+        description: q.description,
+        repReward: q.rewardRep,
+        sharesReward: q.rewardShares,
+        progress: q.progress.current,
+        total: q.progress.target,
+        status: q.progress.completed ? "COMPLETED" : "IN PROGRESS",
+        category: "Syndicate Growth"
+    }));
+
+    // Dynamic stats
+    const userRep = rep;
+    const userRank = tier?.title || "Soldier"; // Fallback
+    const nextRankRep = 2000; // This should ideally come from backend config
+    const repProgress = Math.min((userRep / nextRankRep) * 100, 100);
 
     const lockedQuests = [
         {
