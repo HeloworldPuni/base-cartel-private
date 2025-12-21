@@ -12,22 +12,32 @@ export const metadata: Metadata = {
     images: ["https://basecartel.in/opengraph-image.png"],
   },
   other: {
-    version: "1",
-    imageUrl: METADATA.bannerImageUrl,
-    button: {
-      title: "Join The Cartel",
-      action: {
-        type: "launch_frame",
-        name: METADATA.name,
-        url: METADATA.homeUrl,
-        splashImageUrl: METADATA.iconImageUrl,
-        splashBackgroundColor: METADATA.splashBackgroundColor,
+    "fc:frame": JSON.stringify({
+      version: "1",
+      imageUrl: "https://basecartel.in/opengraph-image.png",
+      button: {
+        title: "Join The Cartel",
+        action: {
+          type: "launch_frame",
+          name: "Base Cartel",
+          url: "https://basecartel.in",
+          splashImageUrl: "https://basecartel.in/icon.png",
+          splashBackgroundColor: "#000000",
+        },
       },
-    },
-  }),
-},
+    }),
+  },
 };
 
 export default function LandingPage() {
-  return <FullLandingPage />;
+  return (
+    <>
+      <div className="md:hidden">
+        <MobileLandingPage />
+      </div>
+      <div className="hidden md:block">
+        <FullLandingPage />
+      </div>
+    </>
+  );
 }
