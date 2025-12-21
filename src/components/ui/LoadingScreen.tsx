@@ -1,38 +1,20 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
-
-const hatVariants: Variants = {
-    initial: { y: 0, opacity: 0 },
-    animate: {
-        y: [0, -10, 0],
-        opacity: 1,
-        transition: {
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut",
-        },
-    },
-};
-
-const textVariants: Variants = {
-    initial: { opacity: 0 },
-    animate: {
-        opacity: [0.4, 1, 0.4],
-        transition: {
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-        },
-    },
-};
+import React from "react";
 
 export default function LoadingScreen() {
     return (
-        className = "text-base font-medium text-blue-400 tracking-wide"
-        >
-        Loading Cartel Data…
-            </motion.div >
-        </div >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F17]">
+            <div className="flex flex-col items-center animate-pulse">
+                <img
+                    src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
+                    alt="Loading..."
+                    className="w-24 h-24 mb-4 hue-rotate-180"
+                />
+                <div className="text-[#4FF0E6] font-mono text-xs tracking-[0.3em] uppercase">
+                    Loading Cartel Data...
+                </div>
+            </div>
+        </div>
     );
 }
