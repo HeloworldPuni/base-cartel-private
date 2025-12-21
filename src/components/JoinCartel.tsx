@@ -172,7 +172,13 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                 <CardHeader className="text-center pb-8 pt-8">
                     <div className="mb-6 relative">
                         <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full animate-pulse pointer-events-none" />
-                        <div className="text-6xl mb-6 relative z-10 drop-shadow-[0_0_15px_rgba(74,135,255,0.5)]">🎩</div>
+                        <div className="relative z-10 mb-6 drop-shadow-[0_0_15px_rgba(74,135,255,0.5)]">
+                            <img
+                                src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
+                                alt="Logo"
+                                className="w-24 h-24 hue-rotate-180"
+                            />
+                        </div>
                         <CardTitle className="text-4xl font-black heading-font text-white mb-2 tracking-widest drop-shadow-md">
                             BASE CARTEL
                         </CardTitle>
