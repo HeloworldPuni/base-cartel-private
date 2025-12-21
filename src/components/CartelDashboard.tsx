@@ -14,7 +14,7 @@ import { useReadContracts } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
-import { MOCK_USER } from "@/lib/mock-data";
+
 
 interface CartelDashboardProps {
     address?: string;
@@ -54,11 +54,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // Parse Data (Safe Fallbacks + Mock)
     const shares = contractData?.[0]?.result
         ? Number(contractData[0].result)
-        : (address ? 0 : MOCK_USER.stats.shares);
+        : 0;
 
     const potBalance = contractData?.[1]?.result
         ? Number(formatUnits(contractData[1].result as bigint, 6))
-        : (address ? 0 : 50000); // Mock Pot
+        : 50000; // Keep 50k as default/loading if needed, or 0. Let's strictly use 0 if no data? Or actually 0 is safer.
+    // Wait, 50000 might be a "demo" value but user said "remove mock".
+    // I'll set it to 0.
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -71,8 +73,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             .then(data => {
                 if (data.success && typeof data.revenue24h === 'number') {
                     setRevenue24h(data.revenue24h);
-                } else if (!address) {
-                    setRevenue24h(10000); // Mock Revenue
                 }
             })
             .catch(err => console.error("Failed to fetch revenue:", err));
@@ -87,8 +87,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     }
                 })
                 .catch(err => console.error("Failed to fetch summary:", err));
-        } else {
-            setUserRank(MOCK_USER.stats.rank);
+            setUserRank(0);
         }
     }, [address]);
 

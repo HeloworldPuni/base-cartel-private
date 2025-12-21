@@ -20,7 +20,7 @@ import { useAccount, useDisconnect, useEnsName } from 'wagmi';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
 import { useFrameContext } from "@/components/providers/FrameProvider";
-import { MOCK_USER } from "@/lib/mock-data";
+
 
 export default function ProfilePage() {
     const { address } = useAccount();
@@ -33,7 +33,7 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("stats");
 
     // Derive display data from real sources or fallbacks
-    const displayAddress = address || MOCK_USER.address;
+    const displayAddress = address;
     // @ts-ignore
     const displayUsername = context?.user?.username ? `@${context.user.username}` : (ensName || "Agent Zero");
 
@@ -268,8 +268,8 @@ export default function ProfilePage() {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 md:px-6 py-2 md:py-3 rounded-lg uppercase tracking-wider text-sm md:text-base font-semibold transition-all whitespace-nowrap ${activeTab === tab
-                                        ? "bg-gradient-to-r from-[#00d4ff] to-[#0066ff] text-white"
-                                        : "bg-white/5 text-gray-400 hover:bg-white/10"
+                                    ? "bg-gradient-to-r from-[#00d4ff] to-[#0066ff] text-white"
+                                    : "bg-white/5 text-gray-400 hover:bg-white/10"
                                     }`}
                             >
                                 {tab}
@@ -443,12 +443,12 @@ export default function ProfilePage() {
                                     >
                                         <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === "raid"
-                                                    ? activity.result === "won"
-                                                        ? "bg-green-500/20"
-                                                        : "bg-red-500/20"
-                                                    : activity.type === "quest"
-                                                        ? "bg-blue-500/20"
-                                                        : "bg-yellow-500/20"
+                                                ? activity.result === "won"
+                                                    ? "bg-green-500/20"
+                                                    : "bg-red-500/20"
+                                                : activity.type === "quest"
+                                                    ? "bg-blue-500/20"
+                                                    : "bg-yellow-500/20"
                                                 }`}
                                         >
                                             {activity.type === "raid" ? (
@@ -472,8 +472,8 @@ export default function ProfilePage() {
                                         </div>
                                         <div
                                             className={`font-bold ${activity.amount.startsWith("+")
-                                                    ? "text-green-400"
-                                                    : "text-red-400"
+                                                ? "text-green-400"
+                                                : "text-red-400"
                                                 }`}
                                         >
                                             {activity.amount}

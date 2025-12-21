@@ -12,10 +12,9 @@ export default function AuthenticatedRoute({ children }: { children: React.React
     useEffect(() => {
         // Wait a bit for wagmi to initialize
         const timer = setTimeout(() => {
-            // MOCK MODE: Bypass Redirect - RESTORED
-            // if (!isConnected) {
-            //     router.push('/login');
-            // }
+            if (!isConnected) {
+                router.push('/login');
+            }
             setIsChecking(false);
         }, 1000); // 1s grace period for connection check
 
@@ -26,10 +25,9 @@ export default function AuthenticatedRoute({ children }: { children: React.React
         return <LoadingScreen />;
     }
 
-    // MOCK MODE: Commented out guard - RESTORED
-    // if (!isConnected) {
-    //    return null; // Will redirect
-    // }
+    if (!isConnected) {
+        return null; // Will redirect
+    }
 
     return <>{children}</>;
 }
