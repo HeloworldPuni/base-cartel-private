@@ -18,6 +18,7 @@ import { useReadContracts } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
+import { MOCK_USER } from "@/lib/mock-data";
 
 interface CartelDashboardProps {
     address?: string;
@@ -55,7 +56,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     });
 
     // MOCK MODE DATA
-    import { MOCK_USER } from "@/lib/mock-data";
+    // import { MOCK_USER } from "@/lib/mock-data"; // Fixed: Moved to top
 
     // Parse Data (Safe Fallbacks + Mock)
     const shares = contractData?.[0]?.result
