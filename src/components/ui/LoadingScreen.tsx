@@ -27,26 +27,12 @@ const textVariants: Variants = {
     },
 };
 
-export function LoadingScreen() {
+export default function LoadingScreen() {
     return (
-        <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#05060a]">
-            <motion.div
-                variants={hatVariants}
-                initial="initial"
-                animate="animate"
-                className="mb-4"
-            >
-                <span style={{ fontSize: 72 }}>🎩</span>
-            </motion.div>
-
-            <motion.div
-                variants={textVariants}
-                initial="initial"
-                animate="animate"
-                className="text-base font-medium text-blue-400 tracking-wide"
-            >
-                Loading Cartel Data…
-            </motion.div>
-        </div>
+        className = "text-base font-medium text-blue-400 tracking-wide"
+        >
+        Loading Cartel Data…
+            </motion.div >
+        </div >
     );
 }
