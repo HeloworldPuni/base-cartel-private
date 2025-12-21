@@ -54,9 +54,17 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     });
 
-    // Parse Data (Safe Fallbacks)
-    const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
-    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
+    // MOCK MODE DATA
+    import { MOCK_USER } from "@/lib/mock-data";
+
+    // Parse Data (Safe Fallbacks + Mock)
+    const shares = contractData?.[0]?.result
+        ? Number(contractData[0].result)
+        : (address ? 0 : MOCK_USER.stats.shares);
+
+    const potBalance = contractData?.[1]?.result
+        ? Number(formatUnits(contractData[1].result as bigint, 6))
+        : (address ? 0 : 50000); // Mock Pot
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -69,6 +77,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             .then(data => {
                 if (data.success && typeof data.revenue24h === 'number') {
                     setRevenue24h(data.revenue24h);
+                } else if (!address) {
+                    setRevenue24h(10000); // Mock Revenue
                 }
             })
             .catch(err => console.error("Failed to fetch revenue:", err));
@@ -83,6 +93,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     }
                 })
                 .catch(err => console.error("Failed to fetch summary:", err));
+        } else {
+            // MOCK MODE
+            setUserRank(MOCK_USER.stats.rank);
         }
     }, [address]);
 
