@@ -136,7 +136,7 @@ export default function Leaderboard() {
             const entries = data.leaderboard?.entries || [];
             const total = data.leaderboard?.total || 0;
 
-            if (entries) {
+            if (entries && entries.length > 0) {
                 if (isLoadMore) {
                     setPlayers(prev => [...prev, ...entries]);
                 } else {
@@ -148,6 +148,16 @@ export default function Leaderboard() {
                 if (currentTotal >= (total || 100) || currentTotal >= 100 || entries.length === 0) {
                     setHasMore(false);
                 }
+            } else if (!isLoadMore) {
+                // MOCK DATA FOR AGENT/DEMO
+                setPlayers([
+                    { rank: 1, name: "AgentZero", shares: 1000, totalClaimed: 5000, address: "0x123...mock", fid: 1 },
+                    { rank: 2, name: "NeonBlade", shares: 850, totalClaimed: 3200, address: "0x456...mock" },
+                    { rank: 3, name: "CyberPunk", shares: 720, totalClaimed: 2100, address: "0x789...mock" },
+                    { rank: 4, name: "ShadowRunner", shares: 600, totalClaimed: 1500, address: "0xabc...mock" },
+                    { rank: 5, name: "NetStalker", shares: 450, totalClaimed: 900, address: "0xdef...mock" }
+                ]);
+                setHasMore(false);
             }
         } catch (error: any) {
             console.error("Failed to fetch leaderboard:", error);

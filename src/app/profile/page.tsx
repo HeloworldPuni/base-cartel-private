@@ -41,7 +41,7 @@ export default function ProfilePage() {
     // 3. Determine Final Display Data (Priority: Farcaster -> ENS -> Address)
     const displayName = user?.username
         ? `@${user.username}`
-        : (ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member'));
+        : (ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Agent Zero (Mock)'));
 
     // Avatar Priority: Farcaster -> ENS -> Default Placeholder
     const displayAvatar = user?.pfpUrl || ensAvatar;
@@ -49,7 +49,7 @@ export default function ProfilePage() {
     // Subtext: FID -> Full Address
     const displaySubtext = user?.fid
         ? `FID: ${user.fid}`
-        : address;
+        : (address || "0xMock...Address");
 
     useEffect(() => {
         if (address) {
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-zinc-400">Total Recruits</span>
-                                <span className="text-white font-bold">{referralStats?.directInvitesUsed || 0}</span>
+                                <span className="text-white font-bold">{referralStats?.directInvitesUsed || (address ? 0 : 42)}</span>
                             </div>
 
                             <motion.button

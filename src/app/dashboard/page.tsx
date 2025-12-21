@@ -49,9 +49,9 @@ export default function DashboardPage() {
     // If error, maybe network issue? safe to show dashboard or error? 
     // Let's safe-fail to Join screen if we definitively know shares == 0.
 
-    // Strict check: Only show Join if connected but not a member.
-    // If not connected, AuthenticatedRoute handles it (redirects).
+    // MOCK MODE: Allow access without address
     const showJoin = !isLoading && !isMember && !!address && !justJoined;
+    // If !address, showJoin is false, so it shows Dashboard. Correct.
 
     return (
         <AuthenticatedRoute>

@@ -59,7 +59,25 @@ export default function QuestBoard() {
         return () => clearInterval(interval);
     }, [address]);
 
-    if (!address) return <div className="text-zinc-500 text-sm p-4 text-center">Connect wallet to view operations.</div>;
+    // if (!address) return <div className="text-zinc-500 text-sm p-4 text-center">Connect wallet to view operations.</div>;
+    // MOCK MODE: If no address, load mock quests
+    useEffect(() => {
+        if (!address) {
+            setQuests([
+                {
+                    id: 'mock-1', title: 'Daily Raid', description: 'Complete a raid to earn respect.', category: 'GAMEPLAY', rewardRep: 50, rewardShares: 10,
+                    progress: { current: 0, target: 1, completed: false, claimed: false }
+                },
+                {
+                    id: 'mock-2', title: 'Syndicate Growth', description: 'Recruit 3 new members.', category: 'REFERRAL', rewardRep: 100, rewardShares: 50,
+                    progress: { current: 1, target: 3, completed: false, claimed: false }
+                }
+            ]);
+            setRep(1250);
+            setTier({ title: 'Lieutenant', perks: ['Fee Reduction'] });
+            setLoading(false);
+        }
+    }, [address]);
     if (loading) return <div className="text-zinc-500 text-sm p-4 text-center animate-pulse">Loading operations data...</div>;
 
     const gameplayQuests = quests.filter(q => q.category === 'GAMEPLAY');
