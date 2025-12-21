@@ -108,7 +108,7 @@ export default function FullLandingPage() {
                         <img
                             src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
                             alt="Base Cartel Logo"
-                            className="w-10 h-10"
+                            className="w-10 h-10 hue-rotate-180"
                         />
                         <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
                             BASE CARTEL
@@ -214,7 +214,7 @@ export default function FullLandingPage() {
                         <img
                             src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
                             alt="Base Cartel Logo"
-                            className="w-32 h-32 mx-auto"
+                            className="w-32 h-32 mx-auto hue-rotate-180"
                         />
                     </div>
 
