@@ -1,4 +1,3 @@
-```typescript
 import { Metadata } from "next";
 import { METADATA } from "~/lib/utils";
 import FullLandingPage from "@/components/landing/FullLandingPage";
@@ -13,20 +12,20 @@ export const metadata: Metadata = {
     images: ["https://basecartel.in/opengraph-image.png"],
   },
   other: {
-      version: "1",
-      imageUrl: METADATA.bannerImageUrl,
-      button: {
-        title: "Join The Cartel",
-        action: {
-          type: "launch_frame",
-          name: METADATA.name,
-          url: METADATA.homeUrl,
-          splashImageUrl: METADATA.iconImageUrl,
-          splashBackgroundColor: METADATA.splashBackgroundColor,
-        },
+    version: "1",
+    imageUrl: METADATA.bannerImageUrl,
+    button: {
+      title: "Join The Cartel",
+      action: {
+        type: "launch_frame",
+        name: METADATA.name,
+        url: METADATA.homeUrl,
+        splashImageUrl: METADATA.iconImageUrl,
+        splashBackgroundColor: METADATA.splashBackgroundColor,
       },
-    }),
-  },
+    },
+  }),
+},
 };
 
 export default function LandingPage() {
