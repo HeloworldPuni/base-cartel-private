@@ -12,10 +12,10 @@ export default function AuthenticatedRoute({ children }: { children: React.React
     useEffect(() => {
         // Wait a bit for wagmi to initialize
         const timer = setTimeout(() => {
-            // MOCK MODE: Bypass Redirect
-            // if (!isConnected) {
-            //     router.push('/login');
-            // }
+            // MOCK MODE: Bypass Redirect - RESTORED
+            if (!isConnected) {
+                router.push('/login');
+            }
             setIsChecking(false);
         }, 1000); // 1s grace period for connection check
 
@@ -26,10 +26,13 @@ export default function AuthenticatedRoute({ children }: { children: React.React
         return <LoadingScreen />;
     }
 
-    // MOCK MODE: Commented out guard
-    // if (!isConnected) {
-    //     return null; // Will redirect
-    // }
+    // MOCK MODE: Commented out guard - RESTORED
+    if (!isConnected) {
+        // router.push('/login'); // We can let the component return null and useEffect redirect potentially, or just return null if we want to be strict.
+        // Actually line 16 was commented out inside useEffect too.
+        // Let's look at lines 15-18.
+        return null; // Will redirect
+    }
 
     return <>{children}</>;
 }

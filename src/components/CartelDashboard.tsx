@@ -14,7 +14,6 @@ import { useReadContracts } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
-import { MOCK_USER } from "@/lib/mock-data";
 
 interface CartelDashboardProps {
     address?: string;
@@ -51,17 +50,14 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     });
 
-    // MOCK MODE DATA
-    // import { MOCK_USER } from "@/lib/mock-data"; // Fixed: Moved to top
-
-    // Parse Data (Safe Fallbacks + Mock)
+    // Parse Data (Safe Fallbacks)
     const shares = contractData?.[0]?.result
         ? Number(contractData[0].result)
-        : (address ? 0 : MOCK_USER.stats.shares);
+        : 0;
 
     const potBalance = contractData?.[1]?.result
         ? Number(formatUnits(contractData[1].result as bigint, 6))
-        : (address ? 0 : 50000); // Mock Pot
+        : 0;
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -74,10 +70,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             .then(data => {
                 if (data.success && typeof data.revenue24h === 'number') {
                     setRevenue24h(data.revenue24h);
-                } else if (!address) {
-                    setRevenue24h(10000); // Mock Revenue
-                }
-            })
+                })
             .catch(err => console.error("Failed to fetch revenue:", err));
 
         // 2. Fetch User Summary (Rank)
@@ -90,9 +83,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     }
                 })
                 .catch(err => console.error("Failed to fetch summary:", err));
-        } else {
-            // MOCK MODE
-            setUserRank(MOCK_USER.stats.rank);
         }
     }, [address]);
 
