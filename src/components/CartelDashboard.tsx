@@ -14,6 +14,7 @@ import { useReadContracts } from 'wagmi';
 import { formatUnits } from 'viem';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
+import { MOCK_USER } from "@/lib/mock-data";
 
 interface CartelDashboardProps {
     address?: string;
