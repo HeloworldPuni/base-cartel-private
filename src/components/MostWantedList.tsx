@@ -13,7 +13,7 @@ export default function MostWantedList() {
     const { address } = useAccount();
 
     useEffect(() => {
-        fetch('/api/cartel/most-wanted?limit=5')
+        fetch('/api/cartel/most-wanted?limit=50')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -49,7 +49,7 @@ export default function MostWantedList() {
                 ></div>
             </div>
 
-            <div className="relative space-y-2">
+            <div className="relative space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                 {agents.map((agent, i) => {
                     const isSelf = address && agent.address.toLowerCase() === address.toLowerCase();
                     const rank = i + 1;
@@ -103,13 +103,6 @@ export default function MostWantedList() {
                     );
                 })}
             </div>
-
-            <button
-                onClick={() => router.push('/clans')} // temporary link
-                className="relative w-full mt-4 px-4 py-2 bg-gradient-to-r from-[#FF0066] to-[#FF00AA] rounded-lg font-semibold hover:shadow-lg hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105 text-white"
-            >
-                View Full List
-            </button>
         </div>
     );
 }
