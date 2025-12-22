@@ -11,8 +11,9 @@ import {
     ChevronLeft,
     ChevronRight,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import Link from "next/link";
 import AuthenticatedRoute from '@/components/AuthenticatedRoute'; // Integrating Auth Wrapper
+import BottomNav from '@/components/BottomNav';
 
 export default function LeaderboardPage() {
     const [hoveredRank, setHoveredRank] = useState<number | null>(null);
@@ -433,55 +434,8 @@ export default function LeaderboardPage() {
                     </div>
 
                     {/* Bottom Navigation - Mobile Only */}
-                    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/10 px-4 py-3 z-50">
-                        <div className="flex justify-around items-center">
-                            {[
-                                {
-                                    icon: "https://raw.createusercontent.com/912711b4-2426-4697-8c5c-e64255c8d5e2/",
-                                    label: "Home",
-                                    href: "/dashboard",
-                                },
-                                {
-                                    icon: "https://raw.createusercontent.com/1afeeb38-cb92-46d1-a6e7-cebff1aa2a70/",
-                                    label: "Rank",
-                                    href: "/leaderboard",
-                                    active: true,
-                                },
-                                {
-                                    icon: "https://raw.createusercontent.com/5bcd8f59-3702-4ba2-a92c-e0570ecde617/",
-                                    label: "Quests",
-                                    href: "/quests",
-                                },
-                                {
-                                    icon: "https://raw.createusercontent.com/06da9d32-b959-4d32-9fe5-95d26814ddb7/",
-                                    label: "Profile",
-                                    href: "/profile",
-                                },
-                            ].map((nav, i) => (
-                                <a
-                                    key={i}
-                                    href={nav.href}
-                                    className={`flex flex-col items-center gap-1 transition-all duration-300 ${nav.active ? "scale-110" : "opacity-60"}`}
-                                >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={nav.icon}
-                                        alt={nav.label}
-                                        className="w-7 h-7 object-contain"
-                                        style={{
-                                            filter: nav.active
-                                                ? "brightness(1.2) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))"
-                                                : "brightness(0.8)",
-                                        }}
-                                    />
-                                    <span
-                                        className={`text-xs font-medium ${nav.active ? "text-amber-400" : "text-gray-400"}`}
-                                    >
-                                        {nav.label}
-                                    </span>
-                                </a>
-                            ))}
-                        </div>
+                    <div className="md:hidden">
+                        <BottomNav />
                     </div>
                 </div>
 
