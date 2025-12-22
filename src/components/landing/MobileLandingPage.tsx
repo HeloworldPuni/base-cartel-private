@@ -11,11 +11,11 @@ export default function MobileLandingPage() {
 
     React.useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const heroOpacity = Math.max(0, 1 - scrollY / 400); // Faster fade on mobile
+    const heroOpacity = Math.max(0, 1 - scrollY / 300);
 
 
     const features = [
@@ -106,7 +106,7 @@ export default function MobileLandingPage() {
 
                 {/* Scroll Indicator */}
                 <div
-                    className="mt-12 text-gray-500 text-center transition-opacity duration-300"
+                    className="mt-12 text-gray-500 text-center"
                     style={{ opacity: heroOpacity }}
                 >
                     <p className="text-sm mb-2">Scroll to Explore</p>
