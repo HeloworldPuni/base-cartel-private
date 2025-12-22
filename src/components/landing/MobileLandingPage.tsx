@@ -100,7 +100,7 @@ export default function MobileLandingPage() {
                     </Link>
 
                     <a
-                        href="#how-it-works"
+                        href="#how-it-works-mobile"
                         className="w-full border-2 border-white/20 py-4 px-8 rounded-xl active:bg-white/5 transition-colors flex justify-center"
                     >
                         <span className="text-white text-lg font-bold">Learn More</span>
@@ -149,7 +149,7 @@ export default function MobileLandingPage() {
             </div>
 
             {/* How It Works Section */}
-            <div id="how-it-works" className="px-6 pb-16">
+            <div id="how-it-works-mobile" className="px-6 pb-16">
                 <h2 className="text-4xl font-bold text-center mb-10">
                     <span className="text-blue-500">HOW IT </span>
                     <span className="text-cyan-500">WORKS</span>
