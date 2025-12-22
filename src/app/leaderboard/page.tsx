@@ -11,6 +11,7 @@ import {
     ChevronLeft,
     ChevronRight,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import AuthenticatedRoute from '@/components/AuthenticatedRoute'; // Integrating Auth Wrapper
 import BottomNav from '@/components/BottomNav';
