@@ -52,15 +52,14 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     });
 
     // Parse Data (Safe Fallbacks + Mock)
-    const shares = 500; // MOCK FOR SCREENSHOTS
-    const potBalance = 1250000; // MOCK FOR SCREENSHOTS
-    // const shares = contractData?.[0]?.result
-    //     ? Number(contractData[0].result)
-    //     : 0;
+    // Parse Data (Safe Fallbacks)
+    const shares = contractData?.[0]?.result
+        ? Number(contractData[0].result)
+        : 0;
 
-    // const potBalance = contractData?.[1]?.result
-    //     ? Number(formatUnits(contractData[1].result as bigint, 6))
-    //     : 50000;
+    const potBalance = contractData?.[1]?.result
+        ? Number(formatUnits(contractData[1].result as bigint, 6))
+        : 50000;
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -68,13 +67,21 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- OFF-CHAIN READS ---
     useEffect(() => {
         // 1. Fetch Revenue
-        // MOCK FOR SCREENSHOTS
-        setRevenue24h(8500);
+        fetch('/api/cartel/revenue/summary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.revenue24h) setRevenue24h(data.revenue24h);
+            })
+            .catch(err => console.error("Failed to fetch revenue", err));
 
         // 2. Fetch User Summary (Rank)
         if (address) {
-            // MOCK FOR SCREENSHOTS
-            setUserRank(1);
+            fetch(`/api/cartel/me/summary?address=${address}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.rank) setUserRank(data.rank);
+                })
+                .catch(err => console.error("Failed to fetch rank", err));
         }
     }, [address]);
 
