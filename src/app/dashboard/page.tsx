@@ -11,7 +11,9 @@ import CartelSharesABI from '@/lib/abi/CartelShares.json';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-    const { address } = useAccount();
+    const { address: realAddress } = useAccount();
+    // MOCK ADDRESS FOR SCREENSHOTS
+    const address = realAddress || "0x1234567890abcdef1234567890abcdef12345678";
     const [justJoined, setJustJoined] = useState(false);
 
     // CRITICAL: Check membership on chain.

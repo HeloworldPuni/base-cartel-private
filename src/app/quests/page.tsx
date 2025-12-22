@@ -15,7 +15,18 @@ export default function QuestsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!address) return;
+        if (!address) {
+            // MOCK DATA FOR SCREENSHOTS
+            setQuests([
+                { id: 1, title: "Raid Rival Cartel", description: "Attack a rival cartel member and steal their shares.", rewardRep: 100, rewardShares: 50, progress: { current: 1, target: 5, completed: false }, category: 'GAMEPLAY' },
+                { id: 2, title: "Recruit Soldiers", description: "Invite 3 new members to your clan.", rewardRep: 300, rewardShares: 150, progress: { current: 2, target: 3, completed: false }, category: 'REFERRAL' },
+                { id: 3, title: "Daily Check-in", description: "Log in to the cartel dashboard.", rewardRep: 50, rewardShares: 25, progress: { current: 1, target: 1, completed: true }, category: 'SOCIAL' }
+            ]);
+            setRep(1250);
+            setTier({ title: "Soldier" });
+            setLoading(false);
+            return;
+        }
 
         const fetchQuests = async () => {
             try {

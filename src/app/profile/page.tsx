@@ -42,7 +42,31 @@ export default function ProfilePage() {
     const [raidStats, setRaidStats] = useState({ won: 0, lost: 0, total: 0 });
 
     useEffect(() => {
-        if (!address) return;
+        if (!address) {
+            // MOCK DATA FOR SCREENSHOTS
+            setProfileData({
+                reputation: 1250,
+                rank: "Soldier",
+                rankNumber: 42,
+                totalPlayers: 1337,
+                shares: 500,
+                operations: 12,
+                earnings: 4250,
+                clanSize: 5,
+                joinedDate: "Dec 2024",
+                badges: [
+                    { id: 1, name: "First Blood", icon: "🩸", rarity: "common" },
+                    { id: 3, name: "The Boss", icon: "👑", rarity: "legendary" }
+                ],
+                recentActivity: [
+                    { id: 'raid-1', type: 'raid', target: '0xabc...ef12', result: 'won', amount: '+50 shares', time: 'Today', timestamp: Date.now() },
+                    { id: 'quest-1', type: 'quest', name: 'Daily Login', amount: '+50 REP', time: 'Yesterday', timestamp: Date.now() - 86400000 }
+                ]
+            });
+            setRaidStats({ won: 8, lost: 2, total: 10 });
+            setLoading(false);
+            return;
+        }
 
         const fetchData = async () => {
             setLoading(true);
