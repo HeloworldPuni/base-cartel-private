@@ -64,7 +64,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     const potBalance = contractData?.[1]?.result
         ? Number(formatUnits(contractData[1].result as bigint, 6))
-        : 50000;
+        : 0;
 
     const totalShares = contractData?.[2]?.result
         ? Number(contractData[2].result)
