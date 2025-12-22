@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 
 export default function MobileLandingPage() {
     const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+    const [scrollY, setScrollY] = React.useState(0);
+
+    React.useEffect(() => {
+        const handleScroll = () => setScrollY(window.scrollY);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    const heroOpacity = Math.max(0, 1 - scrollY / 400); // Faster fade on mobile
+
 
     const features = [
         {
@@ -92,6 +102,17 @@ export default function MobileLandingPage() {
                     <button className="w-full border-2 border-white/20 py-4 px-8 rounded-xl active:bg-white/5 transition-colors">
                         <span className="text-white text-lg font-bold">Learn More</span>
                     </button>
+                </div>
+
+                {/* Scroll Indicator */}
+                <div
+                    className="mt-12 text-gray-500 text-center transition-opacity duration-300"
+                    style={{ opacity: heroOpacity }}
+                >
+                    <p className="text-sm mb-2">Scroll to Explore</p>
+                    <div className="w-6 h-10 border-2 border-gray-500 rounded-full mx-auto flex justify-center">
+                        <div className="w-1 h-3 bg-gray-500 rounded-full mt-2 animate-bounce"></div>
+                    </div>
                 </div>
             </div>
 
