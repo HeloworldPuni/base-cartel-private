@@ -43,6 +43,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 address: POT_ADDRESS,
                 abi: CartelPotABI,
                 functionName: 'getBalance',
+            },
+            {
+                address: SHARES_ADDRESS,
+                abi: CartelSharesABI,
+                functionName: 'totalSupply',
+                args: [1n]
             }
         ],
         query: {
@@ -51,7 +57,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     });
 
-    // Parse Data (Safe Fallbacks + Mock)
     // Parse Data (Safe Fallbacks)
     const shares = contractData?.[0]?.result
         ? Number(contractData[0].result)
@@ -60,6 +65,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const potBalance = contractData?.[1]?.result
         ? Number(formatUnits(contractData[1].result as bigint, 6))
         : 50000;
+
+    const totalShares = contractData?.[2]?.result
+        ? Number(contractData[2].result)
+        : 1;
+
+    // Calculate Claimable: (User Shares / Total Shares) * Pot Balance
+    const claimable = totalShares > 0 ? (shares / totalShares) * potBalance : 0;
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -230,7 +242,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 <TrendingUp className="text-[#00FF88]" size={32} />
                             </div>
                             <div className="text-5xl font-bold mb-2 text-[#00FF88]">
-                                $4,250
+                                ${claimable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                             <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
                                 Claimable
