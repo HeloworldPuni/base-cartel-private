@@ -176,13 +176,13 @@ export default function MobileLandingPage() {
                 ].map((preview, index) => (
                     <div
                         key={index}
-                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg"
                     >
-                        <div className="w-full bg-blue-900/20">
+                        <div className="w-full aspect-video bg-blue-900/20">
                             <img
                                 src={preview.image}
                                 alt={`${preview.title} Preview`}
-                                className="w-full h-auto object-cover"
+                                className="w-full h-full object-cover"
                             />
                         </div>
                         <div className="p-4">
