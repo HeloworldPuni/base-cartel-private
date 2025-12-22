@@ -3,42 +3,53 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Home, Trophy, ScrollText, User } from "lucide-react";
 
 const NAV_ITEMS = [
-    { href: "/dashboard", label: "Home", icon: "https://raw.createusercontent.com/912711b4-2426-4697-8c5c-e64255c8d5e2/" },
-    { href: "/leaderboard", label: "Rank", icon: "https://raw.createusercontent.com/1afeeb38-cb92-46d1-a6e7-cebff1aa2a70/" },
-    { href: "/quests", label: "Quests", icon: "https://raw.createusercontent.com/5bcd8f59-3702-4ba2-a92c-e0570ecde617/" },
-    { href: "/profile", label: "Profile", icon: "https://raw.createusercontent.com/06da9d32-b959-4d32-9fe5-95d26814ddb7/" },
+    { href: "/dashboard", label: "Home", Icon: Home },
+    { href: "/leaderboard", label: "Rank", Icon: Trophy },
+    { href: "/quests", label: "Quests", Icon: ScrollText },
+    { href: "/profile", label: "Profile", Icon: User },
 ];
 
 export default function BottomNav() {
     const pathname = usePathname();
 
     return (
-        <div className="bg-[#0B0F17]/95 backdrop-blur-lg border-t border-[#262A33] pb-safe w-full">
-            <div className="flex justify-around items-center h-16 w-full max-w-2xl mx-auto px-4">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#060813]/90 backdrop-blur-xl border-t border-white/10 pb-safe">
+            <div className="flex justify-around items-center h-20 w-full max-w-2xl mx-auto px-4 pb-2">
                 {NAV_ITEMS.map((item) => {
                     const isActive = pathname === item.href;
+                    const Icon = item.Icon;
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-200",
+                                "flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300",
                                 isActive ? "text-[#FFD700]" : "text-zinc-500 hover:text-zinc-300"
                             )}
                         >
-                            <img
-                                src={item.icon}
-                                alt={item.label}
-                                className={cn(
-                                    "w-7 h-7 object-contain transition-all duration-200",
-                                    isActive
-                                        ? "brightness(110%) drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]"
-                                        : "brightness-75 opacity-70 grayscale"
-                                )}
-                            />
-                            <span className={cn("text-[10px] font-bold tracking-wide font-display", isActive ? "opacity-100" : "opacity-70")}>
+                            <div className={cn(
+                                "relative p-2 rounded-xl transition-all duration-300",
+                                isActive && "bg-[#FFD700]/10"
+                            )}>
+                                <Icon
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                    className={cn(
+                                        "w-6 h-6 transition-all duration-300",
+                                        isActive
+                                            ? "drop-shadow-[0_0_8px_rgba(255,215,0,0.6)] scale-110"
+                                            : "opacity-70"
+                                    )}
+                                    // Optional: Fill active icons for that "bold" look
+                                    fill={isActive ? "currentColor" : "none"}
+                                />
+                            </div>
+                            <span className={cn(
+                                "text-[10px] font-bold tracking-wide font-display transition-all duration-300",
+                                isActive ? "opacity-100 translate-y-0" : "opacity-70 translate-y-0.5"
+                            )}>
                                 {item.label}
                             </span>
                         </Link>
