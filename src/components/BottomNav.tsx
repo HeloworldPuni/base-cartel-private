@@ -25,15 +25,20 @@ export default function BottomNav() {
                             href={item.href}
                             className={cn(
                                 "flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-200",
-                                isActive ? "text-[#3B82F6]" : "text-zinc-500 hover:text-zinc-300"
+                                isActive ? "text-[#FFD700]" : "text-zinc-500 hover:text-zinc-300"
                             )}
                         >
                             <img
                                 src={item.icon}
                                 alt={item.label}
-                                className={cn("w-7 h-7 object-contain transition-all duration-200", isActive ? "brightness(110%) drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "brightness-75 opacity-70")}
+                                className={cn(
+                                    "w-7 h-7 object-contain transition-all duration-200",
+                                    isActive
+                                        ? "brightness(110%) drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]"
+                                        : "brightness-75 opacity-70 grayscale"
+                                )}
                             />
-                            <span className={cn("text-[10px] font-medium tracking-wide", isActive ? "opacity-100" : "opacity-70")}>
+                            <span className={cn("text-[10px] font-bold tracking-wide font-display", isActive ? "opacity-100" : "opacity-70")}>
                                 {item.label}
                             </span>
                         </Link>
