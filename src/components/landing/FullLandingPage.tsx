@@ -397,7 +397,7 @@ export default function FullLandingPage() {
                                     animationFillMode: "forwards",
                                 }}
                             >
-                                <div className="aspect-[9/19] bg-gradient-to-br from-blue-950/20 to-cyan-950/20 flex items-center justify-center overflow-hidden">
+                                <div className="w-full bg-gradient-to-br from-blue-950/20 to-cyan-950/20 flex items-center justify-center overflow-hidden">
                                     <img
                                         src={preview.image}
                                         alt={preview.title}

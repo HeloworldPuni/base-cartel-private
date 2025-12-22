@@ -168,52 +168,56 @@ export default function MobileLandingPage() {
                     PROVEN GAME LOOP
                 </p>
 
-                <div className="flex flex-col gap-4">
-                    {["Dashboard", "Raid Screen", "Clan", "Earnings"].map(
-                        (title, index) => (
-                            <div
-                                key={index}
-                                className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
-                            >
-                                <div className="h-48 bg-blue-900/20 flex items-center justify-center">
-                                    <span className="text-gray-500 text-base">
-                                        {title} Preview
-                                    </span>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="text-white text-lg font-bold">
-                                        {title}
-                                    </h3>
-                                </div>
-                            </div>
-                        )
-                    )}
-                </div>
-            </div>
-
-            {/* Final CTA Section */}
-            <div className="px-6 pb-16 text-center">
-                <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-                    Ready to Rule the Chain?
-                </h2>
-                <p className="text-lg text-gray-400 mb-8 leading-relaxed">
-                    Join the cartel, raid rivals, and earn daily dividends.
-                </p>
-
-                <Link href="/login" className="w-full">
-                    <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 py-5 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
-                        <span className="text-white text-xl font-bold">JOIN THE CARTEL</span>
-                        <ArrowRight className="text-white" size={24} />
+                {[
+                    { title: "Dashboard", image: "/img/dashboard_preview.png" },
+                    { title: "Raid Screen", image: "/img/raid_preview.png" },
+                    { title: "Clan", image: "/img/clan_preview.png" },
+                    { title: "Earnings", image: "/img/earnings_preview.png" },
+                ].map((preview, index) => (
+                    <div
+                        key={index}
+                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                    >
+                        <div className="w-full bg-blue-900/20">
+                            <img
+                                src={preview.image}
+                                alt={`${preview.title} Preview`}
+                                className="w-full h-auto object-cover"
+                            />
+                        </div>
+                        <div className="p-4">
+                            <h3 className="text-white text-lg font-bold">
+                                {preview.title}
+                            </h3>
+                        </div>
                     </div>
-                </Link>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-white/10 py-8 px-6">
-                <p className="text-gray-500 text-center">
-                    Base Cartel - Rule The Chain
-                </p>
+                ))}
             </div>
         </div>
+
+            {/* Final CTA Section */ }
+    <div className="px-6 pb-16 text-center">
+        <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
+            Ready to Rule the Chain?
+        </h2>
+        <p className="text-lg text-gray-400 mb-8 leading-relaxed">
+            Join the cartel, raid rivals, and earn daily dividends.
+        </p>
+
+        <Link href="/login" className="w-full">
+            <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 py-5 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+                <span className="text-white text-xl font-bold">JOIN THE CARTEL</span>
+                <ArrowRight className="text-white" size={24} />
+            </div>
+        </Link>
+    </div>
+
+    {/* Footer */ }
+    <div className="border-t border-white/10 py-8 px-6">
+        <p className="text-gray-500 text-center">
+            Base Cartel - Rule The Chain
+        </p>
+    </div>
+        </div >
     );
 }

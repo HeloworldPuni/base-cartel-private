@@ -11,9 +11,7 @@ import CartelSharesABI from '@/lib/abi/CartelShares.json';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-    const { address: realAddress } = useAccount();
-    // MOCK ADDRESS FOR SCREENSHOTS
-    const address = realAddress || "0x1234567890abcdef1234567890abcdef12345678";
+    const { address } = useAccount();
     const [justJoined, setJustJoined] = useState(false);
 
     // CRITICAL: Check membership on chain.
@@ -45,17 +43,13 @@ export default function DashboardPage() {
         }
     }, [address, shareBalance]);
 
-    // MOCK MODE: Allow access without address
-    // FORCE MEMBER TRUE for screenshots
-    const isMember = true; // shareBalance && Number(shareBalance) > 0;
+    const isMember = shareBalance && Number(shareBalance) > 0;
 
     // If loading or just joined, assume member to prevent flash
     // If error, maybe network issue? safe to show dashboard or error? 
     // Let's safe-fail to Join screen if we definitively know shares == 0.
 
-    // showJoin: !isLoading && !isMember && !!address && !justJoined
-    // With isMember=true, showJoin will be false, showing dashboard.
-    const showJoin = false;
+    const showJoin = !isLoading && !isMember && !!address && !justJoined;
 
     return (
         <AuthenticatedRoute>
