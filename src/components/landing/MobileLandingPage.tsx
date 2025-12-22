@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function MobileLandingPage() {
+    const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+
     const features = [
         {
             icon: Swords,
@@ -170,20 +172,26 @@ export default function MobileLandingPage() {
 
                 {[
                     { title: "Dashboard", image: "/img/dashboard_preview.png" },
-                    { title: "Raid Screen", image: "/img/raid_preview.png" },
-                    { title: "Clan", image: "/img/clan_preview.png" },
-                    { title: "Earnings", image: "/img/earnings_preview.png" },
+                    { title: "Quest Screen", image: "/img/raid_preview.png" },
+                    { title: "Leaderboard", image: "/img/clan_preview.png" },
+                    { title: "Profile", image: "/img/earnings_preview.png" },
                 ].map((preview, index) => (
                     <div
                         key={index}
-                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg"
+                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg active:scale-95 transition-transform"
+                        onClick={() => setSelectedImage(preview.image)}
                     >
-                        <div className="w-full aspect-video bg-blue-900/20">
+                        <div className="w-full aspect-video bg-blue-900/20 relative">
                             <img
                                 src={preview.image}
                                 alt={`${preview.title} Preview`}
                                 className="w-full h-full object-cover"
                             />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                <span className="text-white/80 text-xs font-bold border border-white/40 px-3 py-1 rounded-full backdrop-blur-sm">
+                                    Tap to enlarge
+                                </span>
+                            </div>
                         </div>
                         <div className="p-4">
                             <h3 className="text-white text-lg font-bold">
@@ -193,6 +201,27 @@ export default function MobileLandingPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Lightbox Modal */}
+            {selectedImage && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-2"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-white/10 rounded-full"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <ArrowRight size={24} className="rotate-45" /> {/* Close icon using ArrowRight rotated or replace if X available */}
+                    </button>
+                    <img
+                        src={selectedImage}
+                        alt="Full size preview"
+                        className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
 
 
             {/* Final CTA Section */}

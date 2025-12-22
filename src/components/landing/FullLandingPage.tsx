@@ -7,6 +7,7 @@ export default function FullLandingPage() {
     const [scrollY, setScrollY] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [visibleSections, setVisibleSections] = useState(new Set());
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
@@ -385,10 +386,15 @@ export default function FullLandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {previews.map((preview, index) => (
+                        {[
+                            { title: "Dashboard", image: "/img/dashboard_preview.png" },
+                            { title: "Quest Screen", image: "/img/raid_preview.png" },
+                            { title: "Leaderboard", image: "/img/clan_preview.png" },
+                            { title: "Profile", image: "/img/earnings_preview.png" },
+                        ].map((preview, index) => (
                             <div
                                 key={index}
-                                className={`group relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 hover:scale-105 ${visibleSections.has("interface")
+                                className={`group relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 hover:scale-105 cursor-pointer ${visibleSections.has("interface")
                                     ? "animate-slide-up"
                                     : "opacity-0"
                                     }`}
@@ -396,8 +402,9 @@ export default function FullLandingPage() {
                                     animationDelay: `${index * 150}ms`,
                                     animationFillMode: "forwards",
                                 }}
+                                onClick={() => setSelectedImage(preview.image)}
                             >
-                                <div className="aspect-video w-full bg-gradient-to-br from-blue-950/20 to-cyan-950/20 flex items-center justify-center overflow-hidden">
+                                <div className="aspect-video w-full bg-gradient-to-br from-blue-950/20 to-cyan-950/20 flex items-center justify-center overflow-hidden relative">
                                     <img
                                         src={preview.image}
                                         alt={preview.title}
@@ -411,6 +418,11 @@ export default function FullLandingPage() {
                                             e.target.parentElement.innerHTML = `<div class="text-gray-500 text-lg">${preview.title} Preview</div>`;
                                         }}
                                     />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                                        <span className="text-white font-bold border-2 border-white px-4 py-2 rounded-full">
+                                            VIEW FULL SIZE
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold">{preview.title}</h3>
@@ -420,6 +432,27 @@ export default function FullLandingPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Lightbox Modal */}
+            {selectedImage && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button
+                        className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <X size={40} />
+                    </button>
+                    <img
+                        src={selectedImage}
+                        alt="Full size preview"
+                        className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
 
             {/* CTA Section */}
             <section className="py-24 px-6" data-scroll-section id="cta">
