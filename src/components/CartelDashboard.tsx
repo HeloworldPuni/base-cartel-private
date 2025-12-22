@@ -52,15 +52,15 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     });
 
     // Parse Data (Safe Fallbacks + Mock)
-    const shares = contractData?.[0]?.result
-        ? Number(contractData[0].result)
-        : 0;
+    const shares = 500; // MOCK FOR SCREENSHOTS
+    const potBalance = 1250000; // MOCK FOR SCREENSHOTS
+    // const shares = contractData?.[0]?.result
+    //     ? Number(contractData[0].result)
+    //     : 0;
 
-    const potBalance = contractData?.[1]?.result
-        ? Number(formatUnits(contractData[1].result as bigint, 6))
-        : 50000; // Keep 50k as default/loading if needed, or 0. Let's strictly use 0 if no data? Or actually 0 is safer.
-    // Wait, 50000 might be a "demo" value but user said "remove mock".
-    // I'll set it to 0.
+    // const potBalance = contractData?.[1]?.result
+    //     ? Number(formatUnits(contractData[1].result as bigint, 6))
+    //     : 50000;
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
@@ -68,26 +68,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- OFF-CHAIN READS ---
     useEffect(() => {
         // 1. Fetch Revenue
-        fetch('/api/cartel/revenue/summary')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && typeof data.revenue24h === 'number') {
-                    setRevenue24h(data.revenue24h);
-                }
-            })
-            .catch(err => console.error("Failed to fetch revenue:", err));
+        // MOCK FOR SCREENSHOTS
+        setRevenue24h(8500);
 
         // 2. Fetch User Summary (Rank)
         if (address) {
-            fetch(`/api/cartel/me/summary?address=${address}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && typeof data.rank === 'number') {
-                        setUserRank(data.rank);
-                    }
-                })
-                .catch(err => console.error("Failed to fetch summary:", err));
-            setUserRank(0);
+            // MOCK FOR SCREENSHOTS
+            setUserRank(1);
         }
     }, [address]);
 
@@ -236,7 +223,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 <TrendingUp className="text-[#00FF88]" size={32} />
                             </div>
                             <div className="text-5xl font-bold mb-2 text-[#00FF88]">
-                                $0.42
+                                $4,250
                             </div>
                             <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
                                 Claimable
