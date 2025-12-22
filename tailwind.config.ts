@@ -12,6 +12,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['DM Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Russo One', 'sans-serif'],
       },
       colors: {
         background: 'var(--background)',

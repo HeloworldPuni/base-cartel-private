@@ -56,12 +56,12 @@ export default function DashboardPage() {
     return (
         <AuthenticatedRoute>
             {showJoin ? (
-                <AppLayout>
+                <div className="min-h-screen bg-cartel-dark text-white">
                     <JoinCartel onJoin={() => {
                         setJustJoined(true);
                         refetch(); // Update balance
                     }} />
-                </AppLayout>
+                </div>
             ) : (
                 <CartelDashboard address={address} />
             )}

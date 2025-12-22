@@ -161,20 +161,11 @@ export default function ProfilePage() {
 
     return (
         <AuthenticatedRoute>
-            <div className="min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#0f1435] to-[#0a0e27] text-white pb-24 md:pb-8 overflow-x-hidden">
+            <div className="min-h-screen bg-cartel-dark text-white pb-24 md:pb-8 overflow-x-hidden">
                 {/* Hero Section */}
                 <div className="relative overflow-hidden">
                     {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                backgroundImage:
-                                    "radial-gradient(circle at 2px 2px, rgba(0, 212, 255, 0.3) 1px, transparent 0)",
-                                backgroundSize: "40px 40px",
-                            }}
-                        ></div>
-                    </div>
+                    <div className="absolute inset-0 opacity-10 mafia-pattern pointer-events-none"></div>
 
                     {/* Header */}
                     <motion.div
@@ -185,11 +176,11 @@ export default function ProfilePage() {
                         <div className="max-w-7xl mx-auto">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#00d4ff] to-[#0066ff] rounded-full flex items-center justify-center">
+                                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#00d4ff] to-[#0066ff] rounded-full flex items-center justify-center glow-text-blue">
                                         <User className="w-6 h-6 md:w-8 md:h-8" />
                                     </div>
                                     <div>
-                                        <h1 className="text-2xl md:text-4xl font-bold tracking-wider uppercase">
+                                        <h1 className="text-2xl md:text-4xl font-display tracking-wider uppercase">
                                             {userData.username}
                                         </h1>
                                         <div className="flex items-center gap-2 mt-1">
@@ -220,11 +211,11 @@ export default function ProfilePage() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.1 }}
-                                className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/10 mb-6"
+                                className="glass-card p-6 md:p-8 mb-6"
                             >
                                 <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                                     <div>
-                                        <div className="text-sm md:text-base text-gray-400 uppercase tracking-wider mb-2">
+                                        <div className="text-sm md:text-base text-gray-400 uppercase tracking-wider mb-2 font-display">
                                             Reputation
                                         </div>
                                         <div className="flex items-baseline gap-2">
@@ -232,23 +223,23 @@ export default function ProfilePage() {
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ delay: 0.3 }}
-                                                className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-[#00d4ff] to-[#0066ff] bg-clip-text text-transparent"
+                                                className="text-5xl md:text-7xl font-bold text-gradient-blue font-display"
                                             >
                                                 {userData.reputation.toLocaleString()}
                                             </motion.div>
-                                            <span className="text-xl md:text-2xl text-gray-400">
+                                            <span className="text-xl md:text-2xl text-gray-400 font-display">
                                                 REP
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col justify-center">
-                                        <div className="text-sm md:text-base text-gray-400 uppercase tracking-wider mb-2">
+                                        <div className="text-sm md:text-base text-gray-400 uppercase tracking-wider mb-2 font-display">
                                             Current Rank
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Shield className="w-8 h-8 md:w-10 md:h-10 text-[#ffd700]" />
                                             <div>
-                                                <div className="text-2xl md:text-3xl font-bold text-[#ffd700] uppercase tracking-wider">
+                                                <div className="text-2xl md:text-3xl font-bold text-gold uppercase tracking-wider font-display">
                                                     {userData.rank}
                                                 </div>
                                                 <div className="text-sm text-gray-400">
@@ -273,36 +264,36 @@ export default function ProfilePage() {
                         transition={{ delay: 0.2 }}
                         className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6"
                     >
-                        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-white/10 hover:border-[#00d4ff]/50 transition-all hover:scale-105">
+                        <div className="glass-card-hover p-4 md:p-6 hover:border-[#00d4ff]/50">
                             <Coins className="w-6 h-6 md:w-8 md:h-8 text-[#00d4ff] mb-2" />
-                            <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">
+                            <div className="text-xs md:text-sm text-gray-400 uppercase tracking-wider mb-1 font-display">
                                 Shares
                             </div>
                             <div className="text-2xl md:text-3xl font-bold">
                                 {userData.shares.toLocaleString()}
                             </div>
                         </div>
-                        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-white/10 hover:border-[#00d4ff]/50 transition-all hover:scale-105">
+                        <div className="glass-card-hover p-4 md:p-6 hover:border-[#00d4ff]/50">
                             <Target className="w-6 h-6 md:w-8 md:h-8 text-[#ff6b6b] mb-2" />
-                            <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">
+                            <div className="text-xs md:text-sm text-gray-400 uppercase tracking-wider mb-1 font-display">
                                 Operations
                             </div>
                             <div className="text-2xl md:text-3xl font-bold">
                                 {userData.operations}
                             </div>
                         </div>
-                        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-white/10 hover:border-[#00d4ff]/50 transition-all hover:scale-105">
+                        <div className="glass-card-hover p-4 md:p-6 hover:border-[#00d4ff]/50">
                             <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-[#4ade80] mb-2" />
-                            <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">
+                            <div className="text-xs md:text-sm text-gray-400 uppercase tracking-wider mb-1 font-display">
                                 Earnings
                             </div>
                             <div className="text-2xl md:text-3xl font-bold">
                                 {userData.earnings} Ξ
                             </div>
                         </div>
-                        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-white/10 hover:border-[#00d4ff]/50 transition-all hover:scale-105">
+                        <div className="glass-card-hover p-4 md:p-6 hover:border-[#00d4ff]/50">
                             <Users className="w-6 h-6 md:w-8 md:h-8 text-[#ffd700] mb-2" />
-                            <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">
+                            <div className="text-xs md:text-sm text-gray-400 uppercase tracking-wider mb-1 font-display">
                                 Clan
                             </div>
                             <div className="text-2xl md:text-3xl font-bold">
@@ -312,13 +303,13 @@ export default function ProfilePage() {
                     </motion.div>
 
                     {/* Tabs */}
-                    <div className="flex gap-2 md:gap-4 mb-6 overflow-x-auto">
+                    <div className="flex gap-2 md:gap-4 mb-6 overflow-x-auto no-scrollbar">
                         {["stats", "badges", "activity"].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg uppercase tracking-wider text-sm md:text-base font-semibold transition-all whitespace-nowrap ${activeTab === tab
-                                    ? "bg-gradient-to-r from-[#00d4ff] to-[#0066ff] text-white"
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-xl uppercase tracking-wider text-sm md:text-base font-display transition-all whitespace-nowrap ${activeTab === tab
+                                    ? "bg-gradient-to-r from-[#00d4ff] to-[#0066ff] text-white shadow-lg shadow-blue-500/20"
                                     : "bg-white/5 text-gray-400 hover:bg-white/10"
                                     }`}
                             >
@@ -335,10 +326,10 @@ export default function ProfilePage() {
                             className="grid md:grid-cols-2 gap-4 md:gap-6"
                         >
                             {/* Raid Stats */}
-                            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
+                            <div className="glass-card p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <Trophy className="w-6 h-6 text-[#ffd700]" />
-                                    <h3 className="text-xl font-bold uppercase tracking-wider">
+                                    <h3 className="text-xl font-bold uppercase tracking-wider font-display">
                                         Raid Record
                                     </h3>
                                 </div>
@@ -385,7 +376,7 @@ export default function ProfilePage() {
                                             <span className="font-bold text-[#00d4ff]">
                                                 {(
                                                     (userData.raids.won /
-                                                        (userData.raids.won + userData.raids.lost)) *
+                                                        (userData.raids.won + userData.raids.lost || 1)) * // safe div
                                                     100
                                                 ).toFixed(1)}
                                                 %
@@ -396,23 +387,23 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Member Since */}
-                            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
+                            <div className="glass-card p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <Award className="w-6 h-6 text-[#00d4ff]" />
-                                    <h3 className="text-xl font-bold uppercase tracking-wider">
+                                    <h3 className="text-xl font-bold uppercase tracking-wider font-display">
                                         Cartel Member
                                     </h3>
                                 </div>
                                 <div className="space-y-4">
                                     <div>
                                         <div className="text-gray-400 mb-2">Joined</div>
-                                        <div className="text-2xl font-bold">
+                                        <div className="text-2xl font-bold font-mono">
                                             {userData.joinedDate}
                                         </div>
                                     </div>
                                     <div>
                                         <div className="text-gray-400 mb-2">Total Operations</div>
-                                        <div className="text-2xl font-bold">
+                                        <div className="text-2xl font-bold font-mono">
                                             {userData.operations}
                                         </div>
                                     </div>
@@ -431,11 +422,11 @@ export default function ProfilePage() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10"
+                            className="glass-card p-6"
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <Award className="w-6 h-6 text-[#ffd700]" />
-                                <h3 className="text-xl font-bold uppercase tracking-wider">
+                                <h3 className="text-xl font-bold uppercase tracking-wider font-display">
                                     Achievements
                                 </h3>
                                 <span className="ml-auto text-gray-400">
@@ -443,25 +434,26 @@ export default function ProfilePage() {
                                 </span>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                                {userData.badges.map((badge, index) => (
+                                {userData.badges.map((badge: any, index: number) => (
                                     <motion.div
                                         key={badge.id}
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: index * 0.1 }}
-                                        className={`relative bg-gradient-to-br ${getRarityColor(badge.rarity)} p-[2px] rounded-xl hover:scale-110 transition-transform cursor-pointer group`}
+                                        className={`relative bg-gradient-to-br ${getRarityColor(badge.rarity)} p-[1px] rounded-xl hover:scale-105 transition-transform cursor-pointer group`}
                                     >
-                                        <div className="bg-[#0a0e27] rounded-xl p-4 h-full flex flex-col items-center justify-center">
+                                        <div className="bg-[#0a0e27] rounded-xl p-4 h-full flex flex-col items-center justify-center relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             <div className="text-4xl mb-2">{badge.icon}</div>
-                                            <div className="text-xs text-center font-semibold">
+                                            <div className="text-xs text-center font-bold font-display">
                                                 {badge.name}
                                             </div>
-                                            <div className="text-xs text-gray-400 uppercase mt-1">
+                                            <div className="text-[10px] text-gray-400 uppercase mt-1">
                                                 {badge.rarity}
                                             </div>
                                         </div>
                                         {/* Tooltip */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                             {badge.name}
                                         </div>
                                     </motion.div>
@@ -474,25 +466,25 @@ export default function ProfilePage() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10"
+                            className="glass-card p-6"
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <TrendingUp className="w-6 h-6 text-[#00d4ff]" />
-                                <h3 className="text-xl font-bold uppercase tracking-wider">
+                                <h3 className="text-xl font-bold uppercase tracking-wider font-display">
                                     Recent Activity
                                 </h3>
                             </div>
                             <div className="space-y-3">
-                                {userData.recentActivity.map((activity, index) => (
+                                {userData.recentActivity.map((activity: any, index: number) => (
                                     <motion.div
                                         key={activity.id}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.1 }}
-                                        className="flex items-center gap-4 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                                        className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/10"
                                     >
                                         <div
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === "raid"
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.type === "raid"
                                                 ? activity.result === "won"
                                                     ? "bg-green-500/20"
                                                     : "bg-red-500/20"
@@ -511,17 +503,17 @@ export default function ProfilePage() {
                                                 <Coins className="w-5 h-5 text-yellow-400" />
                                             )}
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-semibold truncate">
                                                 {activity.type === "raid" &&
-                                                    `Raid ${activity.result} vs ${activity.target}`}
+                                                    `Raid ${activity.result} vs ${activity.target.slice(0, 6)}...`}
                                                 {activity.type === "quest" && `Quest: ${activity.name}`}
                                                 {activity.type === "dividend" && "Dividend Claimed"}
                                             </div>
                                             <div className="text-sm text-gray-400">{activity.time}</div>
                                         </div>
                                         <div
-                                            className={`font-bold ${activity.amount.startsWith("+")
+                                            className={`font-bold whitespace-nowrap ${activity.amount.startsWith("+")
                                                 ? "text-green-400"
                                                 : "text-red-400"
                                                 }`}
@@ -540,7 +532,7 @@ export default function ProfilePage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5 }}
-                        className="w-full md:w-auto mt-8 px-8 py-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl font-semibold uppercase tracking-wider flex items-center justify-center gap-3 transition-all border border-red-500/30 hover:border-red-500/50"
+                        className="w-full md:w-auto mt-8 px-8 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-display uppercase tracking-wider flex items-center justify-center gap-3 transition-all border border-red-500/20 hover:border-red-500/40"
                     >
                         <LogOut className="w-5 h-5" />
                         Disconnect Wallet

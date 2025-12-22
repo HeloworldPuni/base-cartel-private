@@ -119,9 +119,10 @@ export default function LeaderboardPage() {
 
     return (
         <AuthenticatedRoute>
-            <div className="min-h-screen bg-gradient-to-b from-[#060813] via-[#0a0e27] to-[#060813] text-white overflow-x-hidden">
-                {/* Animated Background Effects */}
+            <div className="min-h-screen bg-cartel-dark text-white overflow-x-hidden">
+                {/* Background Effects */}
                 <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                     <div
                         className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"
                         style={{ animationDuration: "4s" }}
@@ -129,10 +130,6 @@ export default function LeaderboardPage() {
                     <div
                         className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"
                         style={{ animationDuration: "6s", animationDelay: "1s" }}
-                    ></div>
-                    <div
-                        className="absolute top-1/2 left-1/2 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse"
-                        style={{ animationDuration: "8s", animationDelay: "2s" }}
                     ></div>
                 </div>
 
@@ -303,7 +300,7 @@ export default function LeaderboardPage() {
 
                                 {/* Card */}
                                 <div
-                                    className={`relative bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 transition-all duration-300 ${hoveredRank === player.rank ? "scale-[1.02] border-white/30" : ""}`}
+                                    className={`relative glass-card p-4 md:p-6 transition-all duration-300 ${hoveredRank === player.rank ? "scale-[1.02] border-white/30" : ""}`}
                                 >
                                     <div className="flex items-center gap-4">
                                         {/* Rank Badge */}

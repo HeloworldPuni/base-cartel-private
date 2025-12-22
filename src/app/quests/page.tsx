@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Target, TrendingUp, Lock } from "lucide-react";
+import { Play, Check, Lock, Trophy, Shield, Target, Coins, Award } from "lucide-react";
 import Link from 'next/link';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
@@ -81,46 +81,64 @@ export default function QuestsPage() {
         },
     ];
 
+    // Placeholder for new header variables
+    const userReputation = userRep; // Using existing userRep
+    const currentRank = { title: userRank }; // Using existing userRank
+    const nextRank = { title: "Boss" }; // Placeholder, should come from backend
+    const rankProgress = repProgress; // Using existing repProgress
+
     return (
         <AuthenticatedRoute>
-            <div className="min-h-screen bg-[#0a0e1a] text-white overflow-x-hidden pb-24">
-                {/* Navigation - Desktop */}
-                <nav className="border-b border-[#1e2a45] bg-[#0a0e1a] sticky top-0 z-50 hidden md:block">
-                    <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="min-h-screen bg-cartel-dark text-white pb-24 md:pb-8 overflow-x-hidden">
+                {/* Background Effects */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
+                </div>
+
+                {/* Sticky Header with Stats */}
+                <div className="sticky top-0 z-40 bg-cartel-dark/80 backdrop-blur-xl border-b border-white/10">
+                    <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-2xl">🎩</span>
-                                <h1 className="text-xl font-bold tracking-wider">BASE CARTEL</h1>
+                            <div className="flex items-center gap-3">
+                                <Trophy className="w-6 h-6 md:w-8 md:h-8 text-[#ffd700]" />
+                                <h1 className="text-xl md:text-2xl font-display uppercase tracking-wider">
+                                    Active Quests
+                                </h1>
                             </div>
-                            <div className="flex items-center gap-6">
-                                <Link
-                                    href="/dashboard"
-                                    className="text-sm text-[#666666] hover:text-[#4FC3F7] transition-colors"
-                                >
-                                    Dashboard
-                                </Link>
-                                <Link
-                                    href="/leaderboard"
-                                    className="text-sm text-[#666666] hover:text-[#4FC3F7] transition-colors"
-                                >
-                                    Leaderboard
-                                </Link>
-                                <Link
-                                    href="/quests"
-                                    className="text-sm text-[#4FC3F7] font-semibold border-b-2 border-[#4FC3F7] pb-1"
-                                >
-                                    Quests
-                                </Link>
-                                <Link
-                                    href="/profile"
-                                    className="text-sm text-[#666666] hover:text-[#4FC3F7] transition-colors"
-                                >
-                                    Profile
-                                </Link>
+                            <div className="flex items-center gap-4">
+                                <div className="text-right hidden md:block">
+                                    <div className="text-sm text-gray-400">Your Reputation</div>
+                                    <div className="text-xl font-bold text-gradient-blue font-display">
+                                        {userReputation.toLocaleString()} REP
+                                    </div>
+                                </div>
+                                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                    <span className="text-lg font-bold text-[#ffd700]">
+                                        {Math.floor(userReputation / 1000)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Rank Progress Bar */}
+                        <div className="mt-4 relative pt-2">
+                            <div className="flex justify-between text-xs text-gray-400 mb-1 uppercase tracking-wider font-display">
+                                <span>{currentRank.title}</span>
+                                <span>{nextRank?.title || "Max Rank"}</span>
+                            </div>
+                            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                {/* Assuming motion.div is available, otherwise replace with a standard div */}
+                                <div
+                                    // initial={{ width: 0 }}
+                                    // animate={{ width: `${rankProgress}%` }}
+                                    // transition={{ duration: 1 }}
+                                    className="h-full bg-gradient-to-r from-[#00d4ff] to-[#0066ff]"
+                                    style={{ width: `${rankProgress}%` }} // Fallback style if motion.div is not used
+                                />
                             </div>
                         </div>
                     </div>
-                </nav>
+                </div>
 
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
@@ -320,30 +338,36 @@ export default function QuestsPage() {
                             {lockedQuests.map((quest) => (
                                 <div
                                     key={quest.id}
-                                    className="bg-[#141b2e] border border-[#1e2a45] rounded-xl p-6 opacity-50 relative"
+                                    className="glass-card border-amber-500/20 p-6 relative overflow-hidden"
                                 >
-                                    <div className="absolute top-4 right-4 text-[#666666]">
-                                        <Lock size={20} />
+                                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                                        <Shield className="w-32 h-32 text-amber-500" />
                                     </div>
-                                    <div className="flex items-center gap-3 mb-5">
-                                        <span className="text-3xl">{quest.emoji}</span>
-                                        <h4 className="text-2xl font-bold text-[#666666]">
-                                            {quest.title}
-                                        </h4>
-                                    </div>
-
-                                    <p className="text-[#666666] mb-5">{quest.description}</p>
-
-                                    <div className="flex flex-wrap gap-3">
-                                        <div className="bg-[#1e2a45] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#666666]">
-                                                +{quest.repReward} REP
-                                            </p>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-2 bg-amber-500/20 rounded-lg">
+                                                <Shield className="w-6 h-6 text-amber-500" />
+                                            </div>
+                                            <div>
+                                                <h3 className="tex-lg font-bold text-amber-500 uppercase tracking-wider font-display">
+                                                    Syndicate Operation: Market Manipulation
+                                                </h3>
+                                                <div className="text-sm text-gray-400">Ends in 24h 12m</div>
+                                            </div>
                                         </div>
-                                        <div className="bg-[#1e2a45] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#666666]">
-                                                +{quest.sharesReward} Shares
-                                            </p>
+                                        <p className="text-[#666666] mb-5">{quest.description}</p>
+
+                                        <div className="flex flex-wrap gap-3">
+                                            <div className="bg-[#1e2a45] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#666666]">
+                                                    +{quest.repReward} REP
+                                                </p>
+                                            </div>
+                                            <div className="bg-[#1e2a45] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#666666]">
+                                                    +{quest.sharesReward} Shares
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

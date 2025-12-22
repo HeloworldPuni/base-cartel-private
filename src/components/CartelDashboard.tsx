@@ -117,9 +117,10 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#020817] text-white w-full overflow-x-hidden relative">
+        <div className="min-h-screen bg-transparent text-white w-full overflow-x-hidden relative">
             {/* Animated Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                 <div
                     className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl"
                     style={{ animation: "float 20s ease-in-out infinite" }}
