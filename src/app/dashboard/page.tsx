@@ -45,15 +45,17 @@ export default function DashboardPage() {
         }
     }, [address, shareBalance]);
 
-    const isMember = shareBalance && Number(shareBalance) > 0;
+    // MOCK MODE: Allow access without address
+    // FORCE MEMBER TRUE for screenshots
+    const isMember = true; // shareBalance && Number(shareBalance) > 0;
 
     // If loading or just joined, assume member to prevent flash
     // If error, maybe network issue? safe to show dashboard or error? 
     // Let's safe-fail to Join screen if we definitively know shares == 0.
 
-    // MOCK MODE: Allow access without address
-    const showJoin = !isLoading && !isMember && !!address && !justJoined;
-    // If !address, showJoin is false, so it shows Dashboard. Correct.
+    // showJoin: !isLoading && !isMember && !!address && !justJoined
+    // With isMember=true, showJoin will be false, showing dashboard.
+    const showJoin = false;
 
     return (
         <AuthenticatedRoute>
