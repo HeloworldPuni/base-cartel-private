@@ -112,7 +112,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
     }
 
     const isMember = myMembership;
-    const isMember = myMembership;
+
     const isOwner = clan.members.find(m => m.user.walletAddress === address)?.role === 'OWNER';
 
     return (
@@ -145,8 +145,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
 
                         {/* HERO BANNER */}
                         <div
-                            className="relative overflow-hidden rounded-3xl bg-[#0F172A]/70 border border-zinc-800 backdrop-blur-xl shadow-2xl"
-                            style={{ animation: mounted ? "scaleIn 0.4s ease-out" : "none" }}
+                            className={`relative overflow-hidden rounded-3xl bg-[#0F172A]/70 border border-zinc-800 backdrop-blur-xl shadow-2xl ${mounted ? 'animate-scale-in' : 'opacity-0'}`}
                         >
                             {/* Decorative Gradient Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/5 pointer-events-none" />
