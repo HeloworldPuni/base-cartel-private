@@ -105,12 +105,10 @@ export default function ClansPage() {
                     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                         <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                         <div
-                            className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl"
-                            style={{ animation: "float 20s ease-in-out infinite" }}
+                            className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl animate-float-slow"
                         ></div>
                         <div
-                            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl"
-                            style={{ animation: "float 25s ease-in-out infinite reverse" }}
+                            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl animate-float-reverse-slow"
                         ></div>
                     </div>
 
@@ -174,8 +172,7 @@ export default function ClansPage() {
                             {/* CREATE FORM */}
                             {showCreate && !myClan && (
                                 <div
-                                    className="bg-[#0F172A]/80 border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl"
-                                    style={{ animation: "scaleIn 0.3s ease-out" }}
+                                    className="bg-[#0F172A]/80 border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl animate-scale-in"
                                 >
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
 
@@ -250,8 +247,8 @@ export default function ClansPage() {
                                         <Link
                                             href={`/clans/${clan.slug}`}
                                             key={clan.id}
-                                            className="block group"
-                                            style={{ animation: mounted ? `slideUp 0.5s ease-out ${0.2 + (idx * 0.1)}s backwards` : "none" }}
+                                            className={`block group ${mounted ? 'animate-slide-up' : 'opacity-0'}`}
+                                            style={{ animationDelay: `${0.2 + (idx * 0.1)}s` }}
                                         >
                                             <div className="bg-[#0F172A]/60 backdrop-blur-md border border-zinc-800 rounded-2xl p-4 transition-all duration-300 group-hover:border-blue-500/50 group-hover:bg-[#0F172A]/80 group-hover:shadow-[0_0_20px_rgba(0,102,255,0.1)] group-active:scale-[0.99] flex items-center justify-between">
 

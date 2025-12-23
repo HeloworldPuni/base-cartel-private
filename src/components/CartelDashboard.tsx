@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Crown, Zap, TrendingUp, Swords, Flame, Users, Shield, Copy, Target, Trophy, Activity } from "lucide-react";
+import { Crown, Zap, TrendingUp, Swords, Flame, Users, Shield, Copy, Target } from "lucide-react";
+import Image from "next/image";
 
 // Components
 import RaidModal from "@/components/RaidModal";
@@ -136,16 +137,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                 <div
-                    className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl"
-                    style={{ animation: "float 20s ease-in-out infinite" }}
+                    className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl animate-float"
                 ></div>
                 <div
-                    className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl"
-                    style={{ animation: "float 25s ease-in-out infinite reverse" }}
+                    className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl animate-float-reverse"
                 ></div>
                 <div
-                    className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-[#FF0066] rounded-full opacity-5 blur-3xl"
-                    style={{ animation: "float 30s ease-in-out infinite" }}
+                    className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-[#FF0066] rounded-full opacity-5 blur-3xl animate-float-slow"
                 ></div>
             </div>
 
@@ -154,20 +152,16 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-3">
                         <div className="relative w-12 h-12">
-                            <img
+                            <Image
                                 src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
                                 alt="Logo"
+                                width={48}
+                                height={48}
                                 className="w-full h-full hue-rotate-180 object-contain drop-shadow-[0_0_10px_rgba(74,135,255,0.5)]"
                             />
                         </div>
                         <div>
-                            <h1
-                                className="text-3xl font-bold bg-gradient-to-r from-[#0066FF] via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent"
-                                style={{
-                                    backgroundSize: "200% auto",
-                                    animation: "gradient-shift 3s ease infinite",
-                                }}
-                            >
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#0066FF] via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_auto]">
                                 BASE CARTEL
                             </h1>
                             <p className="text-xs text-gray-500 tracking-widest uppercase">
@@ -186,10 +180,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 className="group-hover:text-[#0066FF] transition-colors"
                             />
                             {showCopied && (
-                                <span
-                                    className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#0066FF] px-3 py-1 rounded-lg text-xs whitespace-nowrap"
-                                    style={{ animation: "slideDown 0.3s ease-out" }}
-                                >
+                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#0066FF] px-3 py-1 rounded-lg text-xs whitespace-nowrap animate-slide-down">
                                     Copied!
                                 </span>
                             )}
@@ -200,10 +191,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
             {/* Hero Stats Section */}
             <div className="relative z-10 w-full mb-8">
-                <div
-                    className="relative bg-gradient-to-br from-[#0F172A]/80 via-[#1E293B]/60 to-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-3xl p-8 overflow-hidden"
-                    style={{ animation: mounted ? "scaleIn 0.6s ease-out" : "none" }}
-                >
+                <div className={`relative bg-gradient-to-br from-[#0F172A]/80 via-[#1E293B]/60 to-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-3xl p-8 overflow-hidden ${mounted ? 'animate-scale-in' : ''}`}>
                     {/* Decorative Elements */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-[#0066FF] opacity-5 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#00D4FF] opacity-5 rounded-full blur-3xl"></div>
@@ -267,20 +255,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <button
                     onClick={handleRaidClick}
-                    className="group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105"
-                    style={{
-                        animation: mounted
-                            ? "slideUp 0.5s ease-out 0.1s backwards"
-                            : "none",
-                    }}
+                    className={`group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105 ${mounted ? 'animate-slide-up-delay-1' : ''}`}
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#FF0066]/20 to-transparent rounded-2xl"></div>
                     <div className="relative flex items-center justify-between mb-3">
                         <Swords className="text-white" size={28} />
-                        <div
-                            className="w-2 h-2 bg-white rounded-full"
-                            style={{ animation: "pulse 2s ease-in-out infinite" }}
-                        ></div>
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                     <div className="relative text-xl font-bold text-white text-left">Raid</div>
                     <div className="relative text-xs text-white/80 mt-1 text-left">
@@ -290,20 +270,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
                 <button
                     onClick={() => setIsBetrayModalOpen(true)}
-                    className="group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105"
-                    style={{
-                        animation: mounted
-                            ? "slideUp 0.5s ease-out 0.2s backwards"
-                            : "none",
-                    }}
+                    className={`group relative bg-gradient-to-br from-[#FF0066] via-[#CC0052] to-[#FF0066] backdrop-blur-xl border border-[#FF0066] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FF0066]/50 transition-all duration-300 hover:scale-105 ${mounted ? 'animate-slide-up-delay-2' : ''}`}
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#FF0066]/20 to-transparent rounded-2xl"></div>
                     <div className="relative flex items-center justify-between mb-3">
                         <Flame className="text-white" size={28} />
-                        <div
-                            className="w-2 h-2 bg-white rounded-full"
-                            style={{ animation: "pulse 2s ease-in-out infinite 0.5s" }}
-                        ></div>
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse-delay"></div>
                     </div>
                     <div className="relative text-xl font-bold text-white text-left">Betray</div>
                     <div className="relative text-xs text-white/80 mt-1 text-left">
@@ -313,12 +285,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
                 <button
                     onClick={() => window.location.href = '/clans'}
-                    className="group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-105"
-                    style={{
-                        animation: mounted
-                            ? "slideUp 0.5s ease-out 0.3s backwards"
-                            : "none",
-                    }}
+                    className={`group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-105 ${mounted ? 'animate-slide-up-delay-3' : ''}`}
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
                     <div className="relative flex items-center justify-between mb-3">
@@ -335,13 +302,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </button>
 
                 <button
-                    onClick={() => window.location.href = '/profile'}
-                    className="group relative bg-gradient-to-br from-[#FFD700] via-[#CCB000] to-[#FFD700] backdrop-blur-xl border border-[#FFD700] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105 opacity-80"
-                    style={{
-                        animation: mounted
-                            ? "slideUp 0.5s ease-out 0.4s backwards"
-                            : "none",
-                    }}
+                    onClick={() => window.location.href = '/agent'}
+                    className={`group relative bg-gradient-to-br from-[#FFD700] via-[#CCB000] to-[#FFD700] backdrop-blur-xl border border-[#FFD700] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105 opacity-80 ${mounted ? 'animate-slide-up-delay-4' : ''}`}
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/20 to-transparent rounded-2xl"></div>
                     <div className="relative flex items-center justify-between mb-3">
@@ -418,11 +380,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 </div>
                                 <div className="h-2 bg-[#1E293B] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full shadow-lg shadow-[#00FF88]/50"
-                                        style={{
-                                            width: "73%",
-                                            animation: "expandWidth 1s ease-out",
-                                        }}
+                                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full shadow-lg shadow-[#00FF88]/50 animate-expand-width"
+                                        style={{ width: "73%" }}
                                     ></div>
                                 </div>
                             </div>
@@ -438,103 +397,61 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             {/* Animations */}
             <style jsx global>{`
                 @keyframes float {
-                0%, 100% {
-                    transform: translate(0, 0) scale(1);
-                }
-                33% {
-                    transform: translate(30px, -30px) scale(1.1);
-                }
-                66% {
-                    transform: translate(-20px, 20px) scale(0.9);
-                }
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    33% { transform: translate(30px, -30px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
                 }
 
                 @keyframes gradient-shift {
-                0%, 100% {
-                    background-position: 0% 50%;
-                }
-                50% {
-                    background-position: 100% 50%;
-                }
+                    0%, 100% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
                 }
 
                 @keyframes scaleIn {
-                from {
-                    opacity: 0;
-                    transform: scale(0.95);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
                 }
 
                 @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-                }
-
-                @keyframes slideRight {
-                from {
-                    opacity: 0;
-                    transform: translateX(-20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
 
                 @keyframes slideDown {
-                from {
-                    opacity: 0;
-                    transform: translate(-50%, -10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translate(-50%, 0);
-                }
+                    from { opacity: 0; transform: translate(-50%, -10px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
                 }
 
                 @keyframes pulse {
-                0%, 100% {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-                50% {
-                    opacity: 0.5;
-                    transform: scale(1.2);
-                }
+                    0%, 100% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.5; transform: scale(1.2); }
                 }
 
                 @keyframes expandWidth {
-                from {
-                    width: 0;
-                }
+                    from { width: 0; }
                 }
 
-                .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
-                }
+                .animate-float { animation: float 20s ease-in-out infinite; }
+                .animate-float-reverse { animation: float 25s ease-in-out infinite reverse; }
+                .animate-float-slow { animation: float 30s ease-in-out infinite; }
+                .animate-gradient-x { animation: gradient-shift 3s ease infinite; }
+                .animate-slide-down { animation: slideDown 0.3s ease-out; }
+                .animate-scale-in { animation: scaleIn 0.6s ease-out; }
+                .animate-pulse-delay { animation: pulse 2s ease-in-out infinite 0.5s; }
+                .animate-expand-width { animation: expandWidth 1s ease-out; }
+                
+                .animate-slide-up-delay-1 { animation: slideUp 0.5s ease-out 0.1s backwards; }
+                .animate-slide-up-delay-2 { animation: slideUp 0.5s ease-out 0.2s backwards; }
+                .animate-slide-up-delay-3 { animation: slideUp 0.5s ease-out 0.3s backwards; }
+                .animate-slide-up-delay-4 { animation: slideUp 0.5s ease-out 0.4s backwards; }
 
-                .custom-scrollbar::-webkit-scrollbar-track {
-                background: transparent;
-                }
-
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #1E293B;
-                border-radius: 10px;
+                    background: #1E293B;
+                    border-radius: 10px;
                 }
-
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #0066FF;
-                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #0066FF; }
             `}</style>
         </div>
     );
