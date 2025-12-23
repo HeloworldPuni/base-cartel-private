@@ -43,12 +43,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 address: POT_ADDRESS,
                 abi: CartelPotABI,
                 functionName: 'getBalance',
-            },
-            {
-                address: SHARES_ADDRESS,
-                abi: CartelSharesABI,
-                functionName: 'totalSupply',
-                args: [1n]
             }
         ],
         query: {
@@ -66,9 +60,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         ? Number(formatUnits(contractData[1].result as bigint, 6))
         : 0;
 
-    const totalShares = contractData?.[2]?.result
-        ? Number(contractData[2].result)
-        : 1;
+    // Total Shares now fetched from API (off-chain aggregation)
+    const [totalShares, setTotalShares] = useState<number>(1);
 
     // Calculate Claimable: (User Shares / Total Shares) * Pot Balance
     const claimable = totalShares > 0 ? (shares / totalShares) * potBalance : 0;
@@ -79,7 +72,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             console.log("--- CARTEL DASHBOARD DEBUG ---");
             console.log("Shares (Index 0):", shares);
             console.log("Pot Balance (Index 1):", potBalance);
-            console.log("Total Shares (Index 2):", totalShares);
+            console.log("Total Shares (API):", totalShares);
             console.log("Calculated Claimable:", claimable);
             console.log("Raw Contract Data:", contractData);
             console.log("------------------------------");
@@ -91,13 +84,15 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- OFF-CHAIN READS ---
     useEffect(() => {
-        // 1. Fetch Revenue
+        // 1. Fetch Revenue & Total Shares
         fetch('/api/cartel/revenue/summary')
             .then(res => res.json())
             .then(data => {
                 if (data.revenue24h) setRevenue24h(data.revenue24h);
+                if (data.totalShares) setTotalShares(data.totalShares);
             })
             .catch(err => console.error("Failed to fetch revenue", err));
+
 
         // 2. Fetch User Summary (Rank)
         if (address) {

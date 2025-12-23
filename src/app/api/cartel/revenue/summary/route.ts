@@ -25,11 +25,18 @@ export async function GET() {
             }
         });
 
+        // Calculate Total Shares (Denominator for Pot)
+        const shareAgg = await prisma.user.aggregate({
+            _sum: { shares: true }
+        });
+        const totalShares = shareAgg._sum.shares || 1; // Default to 1 to avoid div by zero
+
         const revenue24h = agg._sum.amount || 0;
 
         return NextResponse.json({
             revenue24h,
             count24h: count,
+            totalShares,
             success: true
         });
 
