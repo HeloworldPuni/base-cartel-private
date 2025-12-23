@@ -112,7 +112,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
     }
 
     const isMember = myMembership;
-    // @ts-expect-error: Complex optional chaining with find often triggers false positives in this config
+    const isMember = myMembership;
     const isOwner = clan.members.find(m => m.user.walletAddress === address)?.role === 'OWNER';
 
     return (
@@ -123,12 +123,10 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                         <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                         <div
-                            className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-5 blur-3xl"
-                            style={{ animation: "float 25s ease-in-out infinite" }}
+                            className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-5 blur-3xl animate-float"
                         ></div>
                         <div
-                            className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-5 blur-3xl"
-                            style={{ animation: "float 20s ease-in-out infinite reverse" }}
+                            className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-5 blur-3xl animate-float-reverse"
                         ></div>
                     </div>
 
@@ -254,8 +252,8 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                                 {clan.members.map((member, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center justify-between p-4 rounded-2xl bg-[#0F172A]/40 backdrop-blur-md border border-zinc-800/50 hover:border-blue-500/30 hover:bg-[#0F172A]/60 transition-all group"
-                                        style={{ animation: mounted ? `slideUp 0.5s ease-out ${0.1 + (i * 0.05)}s backwards` : "none" }}
+                                        className={`flex items-center justify-between p-4 rounded-2xl bg-[#0F172A]/40 backdrop-blur-md border border-zinc-800/50 hover:border-blue-500/30 hover:bg-[#0F172A]/60 transition-all group ${mounted ? 'animate-slide-up' : 'opacity-0'}`}
+                                        style={{ animationDelay: `${0.1 + (i * 0.05)}s` }}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-lg bg-black/50 flex items-center justify-center text-xs text-zinc-600 font-mono border border-zinc-800/50 group-hover:border-blue-500/20 group-hover:text-blue-500 transition-colors">

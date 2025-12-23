@@ -291,22 +291,6 @@ export default function ClansPage() {
                         </div>
                     </div>
 
-                    {/* Animations Global Styles (Reuse from Dashboard ideally, but inlining for consistency in pages) */}
-                    <style jsx global>{`
-                        @keyframes float {
-                            0%, 100% { transform: translate(0, 0) scale(1); }
-                            33% { transform: translate(30px, -30px) scale(1.1); }
-                            66% { transform: translate(-20px, 20px) scale(0.9); }
-                        }
-                        @keyframes slideUp {
-                            from { opacity: 0; transform: translateY(20px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                         @keyframes scaleIn {
-                            from { opacity: 0; transform: scale(0.95); }
-                            to { opacity: 1; transform: scale(1); }
-                        }
-                    `}</style>
                 </div>
             </AppLayout>
         </AuthenticatedRoute>
