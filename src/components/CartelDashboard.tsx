@@ -73,6 +73,19 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // Calculate Claimable: (User Shares / Total Shares) * Pot Balance
     const claimable = totalShares > 0 ? (shares / totalShares) * potBalance : 0;
 
+    // DEBUG: Trace where the number comes from
+    useEffect(() => {
+        if (contractData) {
+            console.log("--- CARTEL DASHBOARD DEBUG ---");
+            console.log("Shares (Index 0):", shares);
+            console.log("Pot Balance (Index 1):", potBalance);
+            console.log("Total Shares (Index 2):", totalShares);
+            console.log("Calculated Claimable:", claimable);
+            console.log("Raw Contract Data:", contractData);
+            console.log("------------------------------");
+        }
+    }, [contractData, shares, potBalance, totalShares, claimable]);
+
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
 
