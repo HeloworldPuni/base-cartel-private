@@ -1,19 +1,15 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import AuthenticatedRoute from "@/components/AuthenticatedRoute";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StatCard } from "@/components/ui/StatCard";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
-import { Users, Search, Sword } from "lucide-react"; // Import Premium Icons if available or generic
+import { Users, Search, Sword, Crown, Shield, Plus, ArrowRight } from "lucide-react";
 
 // Types
 interface Clan {
@@ -41,6 +37,11 @@ export default function ClansPage() {
     const [newTag, setNewTag] = useState("");
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState("");
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Fetch Data
     useEffect(() => {
@@ -100,136 +101,207 @@ export default function ClansPage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 pb-32 max-w-[400px] mx-auto">
-                    {/* HERO HEADER - Matches Dashboard */}
-                    <header className="flex flex-col items-center pt-2 pb-4 relative z-10 w-full">
-                        <div className="relative mb-2">
-                            <div className="text-4xl filter drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">⚔️</div>
-                        </div>
-
-                        <div className="flex items-center justify-center gap-3 w-full px-8">
-                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
-                            <Badge variant="outline" className="bg-[#1A1D26] text-[#3B82F6] border-[#3B82F6]/30 text-[10px] tracking-wider uppercase px-3 py-1 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
-                                Syndicates
-                            </Badge>
-                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
-                        </div>
-
-                        <h2 className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] mt-3 uppercase opacity-70">
-                            Dominion & Influence
-                        </h2>
-                    </header>
-
-                    {/* Actions */}
-                    <div className="flex justify-between items-center px-1">
-                        {myClan ? (
-                            <Button
-                                className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border border-blue-400/20 shadow-[0_0_20px_rgba(37,99,235,0.2)] text-white font-bold tracking-wider"
-                                onClick={() => router.push(`/clans/${myClan.slug}`)}
-                            >
-                                ENTER MY SYNDICATE
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                className="w-full border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300"
-                                onClick={() => setShowCreate(!showCreate)}
-                            >
-                                {showCreate ? "Cancel Establishment" : "+ Establish New Syndicate"}
-                            </Button>
-                        )}
+                <div className="min-h-screen text-white pb-32 w-full overflow-x-hidden relative">
+                    {/* Animated Background from Dashboard */}
+                    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                        <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
+                        <div
+                            className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl"
+                            style={{ animation: "float 20s ease-in-out infinite" }}
+                        ></div>
+                        <div
+                            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl"
+                            style={{ animation: "float 25s ease-in-out infinite reverse" }}
+                        ></div>
                     </div>
 
-                    {/* Create Section (Styled) */}
-                    {showCreate && !myClan && (
-                        <div className="bg-[#11141D] border border-zinc-800 rounded-xl p-4 space-y-4 shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+                    <div className="relative z-10 max-w-2xl mx-auto p-4 space-y-8">
 
-                            <div className="space-y-3">
-                                <div className="space-y-1">
-                                    <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Syndicate Name</Label>
-                                    <Input
-                                        placeholder="EX: The Iron Bank"
-                                        value={newName}
-                                        onChange={e => setNewName(e.target.value)}
-                                        className="bg-[#0B0E12] border-zinc-700 text-white placeholder:text-zinc-600 focus:border-blue-500/50"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Tag (Ticker)</Label>
-                                    <Input
-                                        placeholder="BANK"
-                                        value={newTag}
-                                        onChange={e => setNewTag(e.target.value.toUpperCase())}
-                                        maxLength={5}
-                                        className="bg-[#0B0E12] border-zinc-700 text-white placeholder:text-zinc-600 focus:border-blue-500/50 font-mono"
-                                    />
-                                </div>
+                        {/* HEADER */}
+                        <header className="flex flex-col items-center pt-8 pb-4 text-center space-y-4">
+                            <div className="relative">
+                                <span className="absolute -inset-4 bg-blue-500/20 rounded-full blur-xl animate-pulse"></span>
+                                <Crown className="w-12 h-12 text-[#FFD700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] relative z-10" />
                             </div>
 
-                            {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 rounded border border-red-500/20">{error}</p>}
+                            <div>
+                                <h1 className="text-4xl font-black tracking-tighter uppercase bg-gradient-to-br from-white via-blue-100 to-zinc-500 bg-clip-text text-transparent">
+                                    Syndicates
+                                </h1>
+                                <p className="text-blue-400 text-xs font-mono tracking-[0.3em] uppercase mt-2">
+                                    Dominion & Influence
+                                </p>
+                            </div>
+                        </header>
 
-                            <Button
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold"
-                                onClick={handleCreate}
-                                disabled={creating}
+                        {/* ACTIONS / MY CLAN */}
+                        <div style={{ animation: mounted ? "slideUp 0.5s ease-out 0.1s backwards" : "none" }}>
+                            {myClan ? (
+                                <div className="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                                    <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
+                                    <div className="relative flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-1">Your Allegiance</p>
+                                            <h3 className="text-2xl font-bold text-white">{myClan.name} <span className="text-zinc-500 text-lg">[{myClan.tag}]</span></h3>
+                                        </div>
+                                        <Link href={`/clans/${myClan.slug}`}>
+                                            <button className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105">
+                                                <ArrowRight className="w-6 h-6" />
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : (
+                                !showCreate && (
+                                    <button
+                                        onClick={() => setShowCreate(true)}
+                                        className="w-full group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-[1.02]"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
+                                        <div className="relative flex items-center justify-center gap-3">
+                                            <Plus className="w-6 h-6 text-white" />
+                                            <span className="text-xl font-bold text-white uppercase tracking-wider">Establish New Syndicate</span>
+                                        </div>
+                                    </button>
+                                )
+                            )}
+                        </div>
+
+                        {/* CREATE FORM */}
+                        {showCreate && !myClan && (
+                            <div
+                                className="bg-[#0F172A]/80 border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl"
+                                style={{ animation: "scaleIn 0.3s ease-out" }}
                             >
-                                {creating ? "Minting Syndicate..." : "Confirm & Create"}
-                            </Button>
-                        </div>
-                    )}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
 
-                    {/* Clan List (Styled) */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 px-1 mb-2">
-                            <Search className="w-3 h-3 text-zinc-500" />
-                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Active Factions</span>
-                        </div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-white">New Syndicate</h3>
+                                    <button onClick={() => setShowCreate(false)} className="text-zinc-500 hover:text-white transition-colors text-sm">Cancel</button>
+                                </div>
 
-                        {loading ? (
-                            <div className="space-y-2 animate-pulse">
-                                {[1, 2, 3].map(i => <div key={i} className="h-16 bg-zinc-900 rounded-xl border border-zinc-800" />)}
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Syndicate Name</Label>
+                                        <Input
+                                            placeholder="The Iron Bank"
+                                            value={newName}
+                                            onChange={e => setNewName(e.target.value)}
+                                            className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 h-12 rounded-xl"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Tag (Ticker)</Label>
+                                        <Input
+                                            placeholder="BANK"
+                                            value={newTag}
+                                            onChange={e => setNewTag(e.target.value.toUpperCase())}
+                                            maxLength={5}
+                                            className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 font-mono h-12 rounded-xl"
+                                        />
+                                    </div>
+                                </div>
+
+                                {error && (
+                                    <div className="mt-4 p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
+                                        <p className="text-red-400 text-xs flex items-center gap-2">
+                                            <span>⚠️</span> {error}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <button
+                                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:grayscale"
+                                    onClick={handleCreate}
+                                    disabled={creating}
+                                >
+                                    {creating ? "Minting Syndicate..." : "Confirm & Create"}
+                                </button>
                             </div>
-                        ) : clans.length === 0 ? (
-                            <div className="text-center py-10 text-zinc-600 text-sm">
-                                <p>No syndicates found.</p>
-                                <p className="text-xs mt-1">Be the first to create one.</p>
-                            </div>
-                        ) : (
-                            clans.map(clan => (
-                                <Link href={`/clans/${clan.slug}`} key={clan.id} className="block group">
-                                    <StatCard className="bg-[#11141D] border-zinc-800 group-hover:border-blue-500/30 transition-all group-active:scale-[0.98]">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                {/* Tag Avatar */}
-                                                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-zinc-800 to-[#1A1D26] flex items-center justify-center border border-zinc-700 shadow-lg group-hover:shadow-blue-500/10 transition-shadow">
-                                                    <span className="text-xs font-black text-white tracking-tighter">{clan.tag}</span>
-                                                </div>
+                        )}
 
-                                                {/* Info */}
-                                                <div>
-                                                    <h3 className="font-bold text-zinc-100 group-hover:text-blue-400 transition-colors text-sm">{clan.name}</h3>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[10px] text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
-                                                            Leader: {clan.owner.farcasterHandle || clan.owner.walletAddress.slice(0, 4)}
-                                                        </span>
+                        {/* CLAN LIST */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 px-1 mb-2 border-b border-zinc-800 pb-2">
+                                <Search className="w-4 h-4 text-zinc-500" />
+                                <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">Active Factions</span>
+                            </div>
+
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="h-24 bg-zinc-900/50 rounded-2xl border border-zinc-800/50 animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : clans.length === 0 ? (
+                                <div className="text-center py-16 bg-[#0F172A]/30 rounded-2xl border border-dashed border-zinc-800">
+                                    <Shield className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+                                    <p className="text-zinc-500 font-medium">No syndicates found.</p>
+                                    <p className="text-xs text-zinc-600 mt-1">Be the first to create one.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-3">
+                                    {clans.map((clan, idx) => (
+                                        <Link
+                                            href={`/clans/${clan.slug}`}
+                                            key={clan.id}
+                                            className="block group"
+                                            style={{ animation: mounted ? `slideUp 0.5s ease-out ${0.2 + (idx * 0.1)}s backwards` : "none" }}
+                                        >
+                                            <div className="bg-[#0F172A]/60 backdrop-blur-md border border-zinc-800 rounded-2xl p-4 transition-all duration-300 group-hover:border-blue-500/50 group-hover:bg-[#0F172A]/80 group-hover:shadow-[0_0_20px_rgba(0,102,255,0.1)] group-active:scale-[0.99] flex items-center justify-between">
+
+                                                <div className="flex items-center gap-4">
+                                                    {/* Avatar */}
+                                                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-zinc-800 to-black flex items-center justify-center border border-zinc-700 shadow-lg group-hover:border-blue-500/30 transition-colors">
+                                                        <span className="text-sm font-black text-white tracking-tighter">{clan.tag}</span>
+                                                    </div>
+
+                                                    {/* Info */}
+                                                    <div>
+                                                        <h3 className="font-bold text-lg text-zinc-100 group-hover:text-blue-400 transition-colors">{clan.name}</h3>
+                                                        <div className="flex items-center gap-3 mt-1">
+                                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/80 border border-zinc-800">
+                                                                <Crown className="w-3 h-3 text-[#FFD700]" />
+                                                                <span className="text-[10px] text-zinc-400 font-mono">
+                                                                    {clan.owner.farcasterHandle || clan.owner.walletAddress.slice(0, 6)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {/* Stats */}
-                                            <div className="text-right">
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-white font-mono font-bold text-sm">{clan.memberCount}</span>
-                                                    <span className="text-[9px] text-zinc-500 uppercase tracking-wide">Members</span>
+                                                {/* Stats */}
+                                                <div className="flex flex-col items-end justify-center pl-4 border-l border-zinc-800/50">
+                                                    <div className="flex items-baseline gap-1">
+                                                        <span className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">{clan.memberCount}</span>
+                                                        <Users className="w-3 h-3 text-zinc-500" />
+                                                    </div>
+                                                    <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-semibold">Members</span>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </StatCard>
-                                </Link>
-                            ))
-                        )}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Animations Global Styles (Reuse from Dashboard ideally, but inlining for consistency in pages) */}
+                    <style jsx global>{`
+                        @keyframes float {
+                            0%, 100% { transform: translate(0, 0) scale(1); }
+                            33% { transform: translate(30px, -30px) scale(1.1); }
+                            66% { transform: translate(-20px, 20px) scale(0.9); }
+                        }
+                        @keyframes slideUp {
+                            from { opacity: 0; transform: translateY(20px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                         @keyframes scaleIn {
+                            from { opacity: 0; transform: scale(0.95); }
+                            to { opacity: 1; transform: scale(1); }
+                        }
+                    `}</style>
                 </div>
             </AppLayout>
         </AuthenticatedRoute>
