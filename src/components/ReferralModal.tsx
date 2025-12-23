@@ -2,19 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { sdk } from "@farcaster/miniapp-sdk";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ReferralModalProps {
     isOpen: boolean;
     onClose: () => void;
     address?: string;
+    // referralCount removed as it was unused in props usage, but if parent passes it, I should keep it in interface but maybe not destructure?
+    // User said: 'referralCount' is assigned a value but never used.
+    // It is in props: export default function ReferralModal({ isOpen, onClose, address, referralCount = 0 }: ReferralModalProps)
+    // I will remove it from destructuring if it's not used.
     referralCount?: number;
 }
 
-export default function ReferralModal({ isOpen, onClose, address, referralCount = 0 }: ReferralModalProps) {
+export default function ReferralModal({ isOpen, onClose, address }: ReferralModalProps) {
     const [error, setError] = useState<string | null>(null);
-    const [inviteCode, setInviteCode] = useState<string | null>(null);
+    // inviteCode was unused
     const [inviteLink, setInviteLink] = useState<string | null>(null);
     const [isLoadingCode, setIsLoadingCode] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -33,7 +36,6 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
                 .then(data => {
                     if (data.invites && data.invites.length > 0) {
                         const code = data.invites[0].code;
-                        setInviteCode(code);
                         setInviteLink(`${baseUrl}?ref=${code}`);
                         setError(null);
                     } else {
@@ -93,6 +95,7 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
                                     value={inviteLink}
                                     readOnly
                                     className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-300 font-mono focus:outline-none"
+                                    aria-label="Referral Link"
                                 />
                                 <Button
                                     onClick={handleCopyLink}

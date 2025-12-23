@@ -206,8 +206,14 @@ export async function getClanSummary(address: string) {
     };
 }
 
+export interface TreeNode {
+    address: string;
+    shares: number;
+    children: TreeNode[];
+}
+
 export async function getClanTree(address: string, maxDepth: number = 2) {
-    async function buildTree(currAddress: string, currentDepth: number): Promise<any[]> {
+    async function buildTree(currAddress: string, currentDepth: number): Promise<TreeNode[]> {
         if (currentDepth > maxDepth) return [];
 
         const referrals = await prisma.cartelReferral.findMany({
@@ -215,7 +221,7 @@ export async function getClanTree(address: string, maxDepth: number = 2) {
             include: { user: true }
         });
 
-        const nodes = [];
+        const nodes: TreeNode[] = [];
         for (const ref of referrals) {
             const children = await buildTree(ref.userAddress, currentDepth + 1);
             nodes.push({
@@ -229,3 +235,5 @@ export async function getClanTree(address: string, maxDepth: number = 2) {
 
     return await buildTree(address, 1);
 }
+
+export type ClanSummary = Awaited<ReturnType<typeof getClanSummary>>;

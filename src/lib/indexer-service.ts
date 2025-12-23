@@ -1,7 +1,5 @@
 import { ethers } from 'ethers';
 import prisma from './prisma';
-import { v4 as uuidv4 } from 'uuid';
-
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8E9b929b1a8c43075CDD7580a4a717C0D5530E208";
 // Fix: Use Sepolia RPC by default for this testnet deployment
 const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
@@ -55,10 +53,10 @@ export async function indexEvents() {
     console.log(`[Indexer] Indexing blocks ${startBlock} to ${endBlock}...`);
 
     // 2. Query All Events
-    const [raidLogs, highStakesLogs, retireLogs, joinLogs, claimLogs] = await Promise.all([
+    const [raidLogs, highStakesLogs, joinLogs, claimLogs] = await Promise.all([
         contract.queryFilter(contract.filters.Raid(), startBlock, endBlock),
         contract.queryFilter(contract.filters.HighStakesRaid(), startBlock, endBlock),
-        contract.queryFilter(contract.filters.RetiredFromCartel(), startBlock, endBlock),
+        // contract.queryFilter(contract.filters.RetiredFromCartel(), startBlock, endBlock), // TODO: Implement Retire logic
         contract.queryFilter(contract.filters.Join(), startBlock, endBlock),
         contract.queryFilter(contract.filters.ProfitClaimed(), startBlock, endBlock)
     ]);

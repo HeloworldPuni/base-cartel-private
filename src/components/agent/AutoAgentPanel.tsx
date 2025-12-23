@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useWriteContract, useSignTypedData, useReadContract } from 'wagmi';
-import { parseEther, formatEther, parseUnits } from 'viem';
+import { formatEther, parseUnits } from 'viem';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,15 @@ const AGENT_VAULT_ADDRESS = process.env.NEXT_PUBLIC_AGENT_VAULT_ADDRESS as `0x${
 
 interface AutoAgentPanelProps {
     compact?: boolean;
+}
+
+interface RaidSuggestion {
+    attacker: string;
+    targetHandle: string;
+    targetAddress: string;
+    estimatedGainShares: number;
+    riskLevel: string;
+    reason: string;
 }
 
 export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps) {
@@ -104,7 +113,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
         try {
             setIsLoading(true);
             setStatusMsg("Withdrawing funds...");
-            const hash = await writeContractAsync({
+            await writeContractAsync({
                 address: AGENT_VAULT_ADDRESS,
                 abi: AGENT_VAULT_ABI,
                 functionName: 'withdraw',
@@ -188,7 +197,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
         }
     };
 
-    const [suggestion, setSuggestion] = useState<any>(null);
+    const [suggestion, setSuggestion] = useState<RaidSuggestion | null>(null);
 
     const handleGetSuggestion = async () => {
         if (!address) return;
@@ -297,6 +306,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                                 value={strategy}
                                 onChange={(e) => setStrategy(e.target.value)}
                                 className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                                aria-label="Strategy Selection"
                             >
                                 <option value="conservative">Conservative (Claim Only)</option>
                                 <option value="balanced">Balanced (Safe Raids)</option>
@@ -336,10 +346,9 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                             {suggestion && (
                                 <div className="text-xs text-zinc-300 bg-black/40 p-2 rounded">
                                     <p>Target: <span className="text-red-400">{suggestion.targetHandle}</span></p>
-                                    <p>Est. Gain: <span className="text-green-400">{suggestion.estimatedGainShares.min}-{suggestion.estimatedGainShares.max} Shares</span></p>
-                                    <p>Confidence: <span className="text-blue-400">{suggestion.confidence}%</span></p>
+                                    <p>Est. Gain: <span className="text-green-400">{suggestion.estimatedGainShares} Shares</span></p>
                                     <p>Risk: <span className="text-yellow-400">{suggestion.riskLevel}</span></p>
-                                    <p className="italic mt-1">"{suggestion.reason}"</p>
+                                    <p className="italic mt-1">&quot;{suggestion.reason}&quot;</p>
                                 </div>
                             )}
                         </div>

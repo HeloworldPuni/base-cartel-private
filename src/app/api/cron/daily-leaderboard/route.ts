@@ -15,7 +15,7 @@ export async function GET(request: Request) {
         const leaderboard = await getLeaderboard(5);
 
         // 2. Build post text
-        const text = generateLeaderboardPost(leaderboard);
+        const text = generateLeaderboardPost(leaderboard.entries);
 
         // 3. If disabled -> log only
         if (!enabled) {

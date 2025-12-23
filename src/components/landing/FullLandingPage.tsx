@@ -81,12 +81,7 @@ export default function FullLandingPage() {
         },
     ];
 
-    const previews = [
-        { title: "Dashboard", image: "/img/dashboard_preview.png" },
-        { title: "Raid Screen", image: "/img/raid_preview.png" },
-        { title: "Clan", image: "/img/clan_preview.png" },
-        { title: "Earnings", image: "/img/earnings_preview.png" },
-    ];
+
 
     const parallaxY = scrollY * 0.5;
     const heroOpacity = Math.max(0, 1 - scrollY / 600);
@@ -138,6 +133,7 @@ export default function FullLandingPage() {
                         <a
                             href="/dashboard"
                             className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all"
+                            aria-label="Open App Dashboard"
                         >
                             Open App
                         </a>
@@ -146,6 +142,7 @@ export default function FullLandingPage() {
                     <button
                         className="md:hidden text-white"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Toggle Menu"
                     >
                         {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
@@ -305,7 +302,7 @@ export default function FullLandingPage() {
                                 "0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(6, 182, 212, 0.6), 0 0 60px rgba(59, 130, 246, 0.4)",
                         }}
                     >
-                        "Plata o Plomo."
+                        &quot;Plata o Plomo.&quot;
                     </p>
                 </div>
             </section>
@@ -442,6 +439,7 @@ export default function FullLandingPage() {
                     <button
                         className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors"
                         onClick={() => setSelectedImage(null)}
+                        aria-label="Close Preview"
                     >
                         <X size={40} />
                     </button>

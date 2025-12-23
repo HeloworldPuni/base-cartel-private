@@ -12,9 +12,28 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import AuthenticatedRoute from '@/components/AuthenticatedRoute'; // Integrating Auth Wrapper
 import BottomNav from '@/components/BottomNav';
+
+interface LeaderboardEntry {
+    rank: number;
+    address: string;
+    name?: string;
+    shares: number;
+    totalClaimed: number;
+}
+
+interface PlayerDisplay {
+    rank: number;
+    address: string;
+    name?: string;
+    title: string;
+    shares: number;
+    claimed: number;
+    avatar: string;
+    color: string;
+    glow: string;
+}
 
 export default function LeaderboardPage() {
     const [hoveredRank, setHoveredRank] = useState<number | null>(null);
@@ -23,7 +42,7 @@ export default function LeaderboardPage() {
     const playersPerPage = 8;
     // const totalPlayers = 100; // Will be dynamic
 
-    const [players, setPlayers] = useState<any[]>([]);
+    const [players, setPlayers] = useState<PlayerDisplay[]>([]);
     const [totalPlayers, setTotalPlayers] = useState(0);
     const [loading, setLoading] = useState(true);
 
@@ -36,7 +55,7 @@ export default function LeaderboardPage() {
             const entries = data.leaderboard?.entries || [];
             setTotalPlayers(data.leaderboard?.total || 0);
 
-            const mappedPlayers = entries.map((entry: any) => {
+            const mappedPlayers = entries.map((entry: LeaderboardEntry) => {
                 let color = "#64748b";
                 let glow = "#64748b";
                 let avatar = entry.rank <= 3 ? (entry.rank === 1 ? "👑" : entry.rank === 2 ? "🥈" : "🥉") : `${entry.rank}`;
@@ -65,10 +84,10 @@ export default function LeaderboardPage() {
                 };
             });
             setPlayers(mappedPlayers);
+            setLoading(false); // Ensure loading is used logically here, though linter warns on read.
 
         } catch (error) {
             console.error(error);
-        } finally {
             setLoading(false);
         }
     };
@@ -137,8 +156,13 @@ export default function LeaderboardPage() {
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 pb-24">
                     {/* Header */}
+                    {loading && (
+                        <div className="text-center mb-8 animate-pulse text-zinc-500">
+                            Updating Ranking Intelligence...
+                        </div>
+                    )}
                     <div
-                        className={`text-center mb-8 md:mb-12 transition-all duration-1000 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
+                        className={`text-center mb-8 md:mb-12 transition-all duration-1000 ${mounted && !loading ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
                     >
                         <div className="inline-block mb-4 relative">
                             <Trophy className="w-16 h-16 md:w-20 md:h-20 text-amber-400 mx-auto drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />

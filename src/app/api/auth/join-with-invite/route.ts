@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 
+import { Prisma } from '@prisma/client';
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
         }
 
         // 3. Create User, Update Invite (if valid), Create Referral (if valid)
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // Create User
             const newUser = await tx.user.create({
                 data: {
@@ -102,13 +104,14 @@ export async function POST(request: Request) {
             }
 
             // Generate 3 new INVITES for the new user (now Referral Codes)
-            const newInvites = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newInvites: any[] = [];
             for (let i = 0; i < 3; i++) {
                 newInvites.push({
                     code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
-                    creatorId: newUser.id,
+                    creator: { connect: { id: newUser.id } }, // Valid Prisma connection object
                     type: 'user',
-                    maxUses: 1000, // Effectively unlimited now, treating as referral code
+                    maxUses: 1000,
                     status: 'unused'
                 });
             }
@@ -126,7 +129,8 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             user: result.user,
-            invites: result.newInvites.map(i => i.code),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            invites: result.newInvites.map((i: any) => i.code),
             referrerAddress: result.referrer?.walletAddress || "0x0000000000000000000000000000000000000000"
         });
 

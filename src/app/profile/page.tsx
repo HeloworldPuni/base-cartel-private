@@ -25,7 +25,6 @@ import { useFrameContext } from "@/components/providers/FrameProvider";
 export default function ProfilePage() {
     const { address } = useAccount();
     const { disconnect } = useDisconnect();
-    // @ts-ignore
     const { data: ensName } = useEnsName({ address, chainId: 8453 }); // Base Chain ID
     const { context } = useFrameContext();
 
@@ -34,10 +33,41 @@ export default function ProfilePage() {
 
     // Derive display data from real sources or fallbacks
     const displayAddress = address || "";
-    // @ts-ignore
     const displayUsername = context?.user?.username ? `@${context.user.username}` : (ensName || "Agent Zero");
 
-    const [profileData, setProfileData] = useState<any>(null);
+    interface Badge {
+        id: number;
+        name: string;
+        icon: string;
+        rarity: string;
+    }
+
+    interface ActivityLog {
+        id: string;
+        type: string;
+        target?: string;
+        result?: string;
+        amount: string;
+        time: string;
+        timestamp: number;
+        name?: string;
+    }
+
+    interface ProfileData {
+        reputation: number;
+        rank: string;
+        rankNumber: number;
+        totalPlayers: number;
+        shares: number;
+        operations: number;
+        earnings: number;
+        clanSize: number;
+        joinedDate: string;
+        badges: Badge[];
+        recentActivity: ActivityLog[];
+    }
+
+    const [profileData, setProfileData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [raidStats, setRaidStats] = useState({ won: 0, lost: 0, total: 0 });
 
@@ -64,8 +94,16 @@ export default function ProfilePage() {
                 let won = 0;
                 let lost = 0;
 
+                interface RaidEvent {
+                    direction: string;
+                    target: string;
+                    attacker: string;
+                    stolenShares: number;
+                    timestamp: string;
+                }
+
                 // Map raids to activity format
-                const activityLog = raids.map((raid: any, index: number) => ({
+                const activityLog: ActivityLog[] = raids.map((raid: RaidEvent, index: number) => ({
                     id: `raid-${index}`,
                     type: 'raid',
                     target: raid.direction === 'by' ? raid.target : raid.attacker,
@@ -79,7 +117,7 @@ export default function ProfilePage() {
                 }));
 
                 // Calculate stats
-                raids.forEach((r: any) => {
+                raids.forEach((r: RaidEvent) => {
                     if (r.direction === 'by') won++;
                     else lost++;
                 });
@@ -201,7 +239,10 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                 </div>
-                                <button className="p-2 md:p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                                <button
+                                    className="p-2 md:p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                                    aria-label="Settings"
+                                >
                                     <Settings className="w-5 h-5 md:w-6 md:h-6" />
                                 </button>
                             </div>
@@ -434,7 +475,7 @@ export default function ProfilePage() {
                                 </span>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                                {userData.badges.map((badge: any, index: number) => (
+                                {userData.badges.map((badge: Badge, index: number) => (
                                     <motion.div
                                         key={badge.id}
                                         initial={{ opacity: 0, scale: 0.8 }}
@@ -475,7 +516,7 @@ export default function ProfilePage() {
                                 </h3>
                             </div>
                             <div className="space-y-3">
-                                {userData.recentActivity.map((activity: any, index: number) => (
+                                {userData.recentActivity.map((activity: ActivityLog, index: number) => (
                                     <motion.div
                                         key={activity.id}
                                         initial={{ opacity: 0, x: -20 }}
@@ -506,7 +547,7 @@ export default function ProfilePage() {
                                         <div className="flex-1 min-w-0">
                                             <div className="font-semibold truncate">
                                                 {activity.type === "raid" &&
-                                                    `Raid ${activity.result} vs ${activity.target.slice(0, 6)}...`}
+                                                    `Raid ${activity.result} vs ${(activity.target || "").slice(0, 6)}...`}
                                                 {activity.type === "quest" && `Quest: ${activity.name}`}
                                                 {activity.type === "dividend" && "Dividend Claimed"}
                                             </div>

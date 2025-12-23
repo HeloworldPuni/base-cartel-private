@@ -14,25 +14,37 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Address required' }, { status: 400 });
         }
 
-        // QA MOCKS
         if (address === '0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' || address === '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB' || address === '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC') {
-            const mockEvents = [
+
+            interface MockEvent {
+                id: string;
+                type: string;
+                attacker: string;
+                target: string;
+                stolenShares: number;
+                feePaid: number;
+                timestamp: string;
+                txHash: string;
+                selfPenaltyShares?: number;
+            }
+
+            const mockEvents: MockEvent[] = [
                 { id: '1', type: 'RAID', attacker: '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', target: '0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', stolenShares: 10, feePaid: 5000, timestamp: new Date().toISOString(), txHash: '0x1' },
                 { id: '2', type: 'RAID', attacker: '0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', target: '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', stolenShares: 20, feePaid: 5000, timestamp: new Date(Date.now() - 100000).toISOString(), txHash: '0x2' },
                 { id: '3', type: 'HIGH_STAKES_RAID', attacker: '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB', target: '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', stolenShares: 50, selfPenaltyShares: 10, feePaid: 15000, timestamp: new Date(Date.now() - 200000).toISOString(), txHash: '0x3' },
             ];
 
-            let filtered = mockEvents.filter(ev => {
+            let filtered = mockEvents.filter((ev) => {
                 if (direction === 'by') return ev.attacker === address;
                 if (direction === 'on') return ev.target === address;
                 return ev.attacker === address || ev.target === address;
             });
 
             if (type !== 'all') {
-                filtered = filtered.filter(ev => type === 'normal' ? ev.type === 'RAID' : ev.type === 'HIGH_STAKES_RAID');
+                filtered = filtered.filter((ev) => type === 'normal' ? ev.type === 'RAID' : ev.type === 'HIGH_STAKES_RAID');
             }
 
-            const enriched = filtered.map(ev => ({
+            const enriched = filtered.map((ev) => ({
                 ...ev,
                 direction: ev.attacker === address ? 'by' : 'on'
             }));
@@ -47,7 +59,9 @@ export async function GET(request: Request) {
             });
         }
 
-
+        // Use Prisma.CartelEventWhereInput if available, or basic object if type not found (fallback to any with ignore if needed)
+        // Ignoring specific type error if namespace issue persists, but trying strict first.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const where: any = {};
 
         // Type Filter
@@ -76,12 +90,10 @@ export async function GET(request: Request) {
             orderBy: { timestamp: 'desc' },
             take: Math.min(limit, 50),
             skip: offset,
-            // We could include attacker/target user details if we linked them in schema
-            // But CartelEvent stores strings. We can try to fetch usernames separately or just show addresses.
         });
 
-        // Enrich with direction
-        const enriched = events.map(ev => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const enriched = events.map((ev: any) => {
             const isByUser = ev.attacker?.toLowerCase() === address.toLowerCase();
 
             return {

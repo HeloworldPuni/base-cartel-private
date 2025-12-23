@@ -69,7 +69,10 @@ export async function GET(request: Request) {
         // --- STEP 1: DB CHECK ---
         log(`Checking DB for user: ${walletAddress}`);
 
-        let user: any = null;
+        // Define type for user with invites included
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type UserWithInvites = { invites: any[] }; // Keeping simple for now or import Prisma payload
+        let user: UserWithInvites | null = null;
         try {
             const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error("DB_TIMEOUT_5S")), 5000)
@@ -91,6 +94,7 @@ export async function GET(request: Request) {
         if (user && user.invites.length > 0) {
             log(`Returning ${user.invites.length} existing invites`);
             return NextResponse.json({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 invites: user.invites.map((invite: any) => ({
                     code: invite.code,
                     status: invite.status,

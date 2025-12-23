@@ -1,5 +1,8 @@
 {
     "extends": "./tsconfig.json",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node"
