@@ -2,6 +2,7 @@ import { createWalletClient, http, parseAbi, encodeAbiParameters, parseAbiParame
 import { baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { AgentSettings } from './db';
+import { getRaidSuggestion } from '../x402-client';
 
 const AGENT_VAULT_ABI = parseAbi([
     'function executeAction(address user, string action, bytes data, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external'
@@ -39,12 +40,25 @@ export async function executeAgentAction(agent: AgentSettings) {
 
     if (agent.strategy === 'aggressive') {
         action = "raid";
-        // Mock target for MVP
-        const target = "0x8342A48694A74044116F330db5050a267b28dD85";
-        data = encodeAbiParameters(
-            parseAbiParameters('address'),
-            [target as `0x${string}`]
-        );
+        try {
+            console.log(`[Agent] Requesting AI strategy for ${agent.userAddress}...`);
+            const suggestion = await getRaidSuggestion(agent.userAddress);
+            const target = suggestion.targetAddress;
+            console.log(`[Agent] AI Targeted: ${suggestion.targetHandle} (${target})`);
+
+            data = encodeAbiParameters(
+                parseAbiParameters('address'),
+                [target as `0x${string}`]
+            );
+        } catch (err) {
+            console.warn("[Agent] AI request failed, using fallback target.", err);
+            // Fallback target for MVP
+            const target = "0x8342A48694A74044116F330db5050a267b28dD85";
+            data = encodeAbiParameters(
+                parseAbiParameters('address'),
+                [target as `0x${string}`]
+            );
+        }
     }
 
     // 2. Parse Signature

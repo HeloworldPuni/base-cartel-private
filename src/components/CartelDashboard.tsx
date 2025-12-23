@@ -335,6 +335,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </button>
 
                 <button
+                    onClick={() => window.location.href = '/profile'}
                     className="group relative bg-gradient-to-br from-[#FFD700] via-[#CCB000] to-[#FFD700] backdrop-blur-xl border border-[#FFD700] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105 opacity-80"
                     style={{
                         animation: mounted

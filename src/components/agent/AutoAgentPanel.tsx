@@ -131,6 +131,10 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
     const handleSave = async () => {
         if (!address) return;
         try {
+            if (!AGENT_VAULT_ADDRESS) {
+                setStatusMsg("Error: Agent Vault Address not configured in environment.");
+                return;
+            }
             setIsLoading(true);
             setStatusMsg("Signing delegation...");
 

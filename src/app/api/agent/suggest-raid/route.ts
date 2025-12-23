@@ -30,21 +30,27 @@ export async function GET(req: NextRequest) {
 
     // TODO: use real logic based on player’s state.
     // For now, return a mocked suggestion in correct shape.
-    const minGain = Math.floor(Math.random() * 20) + 10;
-    const maxGain = minGain + Math.floor(Math.random() * 20) + 5;
-    const confidence = Math.floor(Math.random() * 36) + 50; // 50-85%
+    const estimatedGain = Math.floor(Math.random() * 20) + 10;
+
+    // Determine risk/reason based on gain
+    let risk = "low";
+    let reason = "Safe target with decent yield.";
+
+    if (estimatedGain > 25) {
+        risk = "high";
+        reason = "High reward but active defense. Proceed with caution.";
+    } else if (estimatedGain > 15) {
+        risk = "medium";
+        reason = "Standard target. Moderate gains expected.";
+    }
 
     const result = {
         attacker: address,
         targetHandle: "@UserC",
         targetAddress: "0xTarget...",
-        estimatedGainShares: {
-            min: minGain,
-            max: maxGain
-        },
-        confidence: confidence, // Percentage
-        riskLevel: "high",            // "low" | "medium" | "high"
-        reason: "Target has high pot and low defense.",
+        estimatedGainShares: estimatedGain,
+        riskLevel: risk,
+        reason: reason,
     };
 
     return NextResponse.json(result);
