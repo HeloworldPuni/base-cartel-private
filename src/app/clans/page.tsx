@@ -115,110 +115,113 @@ export default function ClansPage() {
                         ></div>
                     </div>
 
-                    <div className="relative z-10 max-w-2xl mx-auto p-4 space-y-8">
+                    <div className="relative z-10 max-w-7xl mx-auto p-4 space-y-8">
 
-                        {/* HEADER */}
-                        <header className="flex flex-col items-center pt-8 pb-4 text-center space-y-4">
-                            <div className="relative">
-                                <span className="absolute -inset-4 bg-blue-500/20 rounded-full blur-xl animate-pulse"></span>
-                                <Crown className="w-12 h-12 text-[#FFD700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] relative z-10" />
-                            </div>
-
-                            <div>
-                                <h1 className="text-4xl font-black tracking-tighter uppercase bg-gradient-to-br from-white via-blue-100 to-zinc-500 bg-clip-text text-transparent">
-                                    Syndicates
-                                </h1>
-                                <p className="text-blue-400 text-xs font-mono tracking-[0.3em] uppercase mt-2">
-                                    Dominion & Influence
-                                </p>
-                            </div>
-                        </header>
-
-                        {/* ACTIONS / MY CLAN */}
-                        <div style={{ animation: mounted ? "slideUp 0.5s ease-out 0.1s backwards" : "none" }}>
-                            {myClan ? (
-                                <div className="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden group hover:border-blue-500/50 transition-all">
-                                    <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
-                                    <div className="relative flex items-center justify-between">
-                                        <div>
-                                            <p className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-1">Your Allegiance</p>
-                                            <h3 className="text-2xl font-bold text-white">{myClan.name} <span className="text-zinc-500 text-lg">[{myClan.tag}]</span></h3>
-                                        </div>
-                                        <Link href={`/clans/${myClan.slug}`}>
-                                            <button className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105">
-                                                <ArrowRight className="w-6 h-6" />
-                                            </button>
-                                        </Link>
-                                    </div>
+                        {/* HEADER & ACTIONS CONTAINER */}
+                        <div className="max-w-3xl mx-auto space-y-8">
+                            {/* HEADER */}
+                            <header className="flex flex-col items-center pt-8 pb-4 text-center space-y-4">
+                                <div className="relative">
+                                    <span className="absolute -inset-4 bg-blue-500/20 rounded-full blur-xl animate-pulse"></span>
+                                    <Crown className="w-12 h-12 text-[#FFD700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] relative z-10" />
                                 </div>
-                            ) : (
-                                !showCreate && (
-                                    <button
-                                        onClick={() => setShowCreate(true)}
-                                        className="w-full group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-[1.02]"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
-                                        <div className="relative flex items-center justify-center gap-3">
-                                            <Plus className="w-6 h-6 text-white" />
-                                            <span className="text-xl font-bold text-white uppercase tracking-wider">Establish New Syndicate</span>
+
+                                <div>
+                                    <h1 className="text-4xl font-black tracking-tighter uppercase bg-gradient-to-br from-white via-blue-100 to-zinc-500 bg-clip-text text-transparent">
+                                        Syndicates
+                                    </h1>
+                                    <p className="text-blue-400 text-xs font-mono tracking-[0.3em] uppercase mt-2">
+                                        Dominion & Influence
+                                    </p>
+                                </div>
+                            </header>
+
+                            {/* ACTIONS / MY CLAN */}
+                            <div style={{ animation: mounted ? "slideUp 0.5s ease-out 0.1s backwards" : "none" }}>
+                                {myClan ? (
+                                    <div className="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                                        <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
+                                        <div className="relative flex items-center justify-between">
+                                            <div>
+                                                <p className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-1">Your Allegiance</p>
+                                                <h3 className="text-2xl font-bold text-white">{myClan.name} <span className="text-zinc-500 text-lg">[{myClan.tag}]</span></h3>
+                                            </div>
+                                            <Link href={`/clans/${myClan.slug}`}>
+                                                <button className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105">
+                                                    <ArrowRight className="w-6 h-6" />
+                                                </button>
+                                            </Link>
                                         </div>
+                                    </div>
+                                ) : (
+                                    !showCreate && (
+                                        <button
+                                            onClick={() => setShowCreate(true)}
+                                            className="w-full group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-[1.02]"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
+                                            <div className="relative flex items-center justify-center gap-3">
+                                                <Plus className="w-6 h-6 text-white" />
+                                                <span className="text-xl font-bold text-white uppercase tracking-wider">Establish New Syndicate</span>
+                                            </div>
+                                        </button>
+                                    )
+                                )}
+                            </div>
+
+                            {/* CREATE FORM */}
+                            {showCreate && !myClan && (
+                                <div
+                                    className="bg-[#0F172A]/80 border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl"
+                                    style={{ animation: "scaleIn 0.3s ease-out" }}
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-lg font-bold text-white">New Syndicate</h3>
+                                        <button onClick={() => setShowCreate(false)} className="text-zinc-500 hover:text-white transition-colors text-sm">Cancel</button>
+                                    </div>
+
+                                    <div className="space-y-5">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Syndicate Name</Label>
+                                            <Input
+                                                placeholder="The Iron Bank"
+                                                value={newName}
+                                                onChange={e => setNewName(e.target.value)}
+                                                className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 h-12 rounded-xl"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Tag (Ticker)</Label>
+                                            <Input
+                                                placeholder="BANK"
+                                                value={newTag}
+                                                onChange={e => setNewTag(e.target.value.toUpperCase())}
+                                                maxLength={5}
+                                                className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 font-mono h-12 rounded-xl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {error && (
+                                        <div className="mt-4 p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
+                                            <p className="text-red-400 text-xs flex items-center gap-2">
+                                                <span>⚠️</span> {error}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:grayscale"
+                                        onClick={handleCreate}
+                                        disabled={creating}
+                                    >
+                                        {creating ? "Minting Syndicate..." : "Confirm & Create"}
                                     </button>
-                                )
+                                </div>
                             )}
                         </div>
-
-                        {/* CREATE FORM */}
-                        {showCreate && !myClan && (
-                            <div
-                                className="bg-[#0F172A]/80 border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl"
-                                style={{ animation: "scaleIn 0.3s ease-out" }}
-                            >
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
-
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-bold text-white">New Syndicate</h3>
-                                    <button onClick={() => setShowCreate(false)} className="text-zinc-500 hover:text-white transition-colors text-sm">Cancel</button>
-                                </div>
-
-                                <div className="space-y-5">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Syndicate Name</Label>
-                                        <Input
-                                            placeholder="The Iron Bank"
-                                            value={newName}
-                                            onChange={e => setNewName(e.target.value)}
-                                            className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 h-12 rounded-xl"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-blue-400 font-bold uppercase tracking-wider">Tag (Ticker)</Label>
-                                        <Input
-                                            placeholder="BANK"
-                                            value={newTag}
-                                            onChange={e => setNewTag(e.target.value.toUpperCase())}
-                                            maxLength={5}
-                                            className="bg-black/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:border-blue-500/50 font-mono h-12 rounded-xl"
-                                        />
-                                    </div>
-                                </div>
-
-                                {error && (
-                                    <div className="mt-4 p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
-                                        <p className="text-red-400 text-xs flex items-center gap-2">
-                                            <span>⚠️</span> {error}
-                                        </p>
-                                    </div>
-                                )}
-
-                                <button
-                                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:grayscale"
-                                    onClick={handleCreate}
-                                    disabled={creating}
-                                >
-                                    {creating ? "Minting Syndicate..." : "Confirm & Create"}
-                                </button>
-                            </div>
-                        )}
 
                         {/* CLAN LIST */}
                         <div className="space-y-4">
@@ -240,7 +243,7 @@ export default function ClansPage() {
                                     <p className="text-xs text-zinc-600 mt-1">Be the first to create one.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {clans.map((clan, idx) => (
                                         <Link
                                             href={`/clans/${clan.slug}`}

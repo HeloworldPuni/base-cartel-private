@@ -134,7 +134,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                         ></div>
                     </div>
 
-                    <div className="relative z-10 max-w-2xl mx-auto p-4 space-y-6">
+                    <div className="relative z-10 max-w-6xl mx-auto p-4 space-y-6">
 
                         {/* NAV */}
                         <div className="flex items-center gap-2 pt-2">
@@ -249,7 +249,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                                 </div>
                             </div>
 
-                            <div className="grid gap-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {clan.members.map((member, i) => (
                                     <div
                                         key={i}
