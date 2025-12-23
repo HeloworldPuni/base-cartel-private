@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import AuthenticatedRoute from "@/components/AuthenticatedRoute";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
-import { Users, Search, Sword, Crown, Shield, Plus, ArrowRight } from "lucide-react";
+import { Users, Search, Crown, Shield, Plus, ArrowRight } from "lucide-react";
 
 // Types
 interface Clan {
@@ -29,7 +28,7 @@ export default function ClansPage() {
     const router = useRouter();
     const [clans, setClans] = useState<Clan[]>([]);
     const [loading, setLoading] = useState(true);
-    const [myClan, setMyClan] = useState<any>(null);
+    const [myClan, setMyClan] = useState<Clan | null>(null);
     const [showCreate, setShowCreate] = useState(false);
 
     // Create Form
@@ -91,8 +90,8 @@ export default function ClansPage() {
             } else {
                 setError(data.error || "Failed to create clan");
             }
-        } catch (e: any) {
-            setError(e.message);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "An error occurred");
         } finally {
             setCreating(false);
         }
@@ -147,7 +146,10 @@ export default function ClansPage() {
                                                 <h3 className="text-2xl font-bold text-white">{myClan.name} <span className="text-zinc-500 text-lg">[{myClan.tag}]</span></h3>
                                             </div>
                                             <Link href={`/clans/${myClan.slug}`}>
-                                                <button className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105">
+                                                <button
+                                                    className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105"
+                                                    aria-label={`View ${myClan.name}`}
+                                                >
                                                     <ArrowRight className="w-6 h-6" />
                                                 </button>
                                             </Link>

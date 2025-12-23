@@ -3,11 +3,9 @@
 import { useEffect, useState, use } from "react";
 import AppLayout from "@/components/AppLayout";
 import AuthenticatedRoute from "@/components/AuthenticatedRoute";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
-import { Copy, Shield, LogOut, ArrowLeft, Users, Crown, Calendar, Trophy } from "lucide-react";
+import { Shield, LogOut, ArrowLeft, Users, Crown, Calendar, Trophy } from "lucide-react";
 
 // Types
 interface ClanDetail {
@@ -33,7 +31,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
     const router = useRouter();
 
     const [clan, setClan] = useState<ClanDetail | null>(null);
-    const [myMembership, setMyMembership] = useState<any>(null);
+    const [myMembership, setMyMembership] = useState<boolean | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState("");
@@ -78,7 +76,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
             });
             if (res.ok) window.location.reload();
             else setError("Failed to join");
-        } catch (e) { setError("Failed to join"); }
+        } catch { setError("Failed to join"); }
         finally { setActionLoading(false); }
     };
 
@@ -92,7 +90,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
             });
             if (res.ok) router.push('/clans');
             else setError("Failed to leave");
-        } catch (e) { setError("Failed to leave"); }
+        } catch { setError("Failed to leave"); }
         finally { setActionLoading(false); }
     };
 
@@ -114,7 +112,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
     }
 
     const isMember = myMembership;
-    // @ts-ignore
+    // @ts-expect-error: Complex optional chaining with find often triggers false positives in this config
     const isOwner = clan.members.find(m => m.user.walletAddress === address)?.role === 'OWNER';
 
     return (
@@ -232,6 +230,9 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                                                 {!actionLoading && <Shield className="w-4 h-4 ml-1 group-hover:rotate-12 transition-transform" />}
                                             </span>
                                         </button>
+                                    )}
+                                    {error && (
+                                        <div className="mt-3 text-red-400 text-xs font-bold text-center animate-pulse">{error}</div>
                                     )}
                                 </div>
                             </div>
