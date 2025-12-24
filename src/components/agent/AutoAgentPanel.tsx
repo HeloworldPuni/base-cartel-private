@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useWriteContract, useSignTypedData, useReadContract, usePublicClient } from 'wagmi';
-import { formatEther, parseUnits, erc20Abi } from 'viem';
+import { formatEther, parseUnits, erc20Abi, formatUnits } from 'viem';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -316,7 +316,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                     <div>
                         <p className="text-xs text-zinc-500 uppercase font-bold">Vault Balance</p>
                         <p className="text-xl font-mono text-[#4FF0E6]">
-                            {vaultBalance ? formatEther(vaultBalance) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
+                            {vaultBalance ? formatUnits(vaultBalance, 6) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
                         </p>
                     </div>
                     <div className="flex gap-2">
