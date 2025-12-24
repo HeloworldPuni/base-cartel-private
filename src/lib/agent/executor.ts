@@ -42,7 +42,7 @@ export async function executeAgentAction(agent: AgentSettings) {
         action = "raid";
         try {
             console.log(`[Agent] Requesting AI strategy for ${agent.userAddress}...`);
-            const suggestion = await getRaidSuggestion(agent.userAddress);
+            const suggestion = await getRaidSuggestion(agent.userAddress, process.env.CRON_SECRET);
             const target = suggestion.targetAddress;
             console.log(`[Agent] AI Targeted: ${suggestion.targetHandle} (${target})`);
 

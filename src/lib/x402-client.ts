@@ -64,11 +64,20 @@ export async function callPaidEndpoint<T = any>(endpoint: string): Promise<T> {
 
 // Auto-agent helpers
 
-export async function getRaidSuggestion(address: string) {
+export async function getRaidSuggestion(address: string, secret?: string) {
     const isClient = typeof window !== 'undefined';
     // Use relative URL on client, absolute on server
     const baseUrl = isClient ? '' : (process.env.BASE_CARTEL_API_URL || "http://localhost:3000");
     const url = `${baseUrl}/api/agent/suggest-raid?address=${address}`;
+
+    // If internal secret provided, bypass payment wrapper and call directly
+    if (secret) {
+        const res = await fetch(url, {
+            headers: { 'X-CRON-SECRET': secret }
+        });
+        if (!res.ok) throw new Error("Internal raid suggestion failed");
+        return await res.json();
+    }
 
     return callPaidEndpoint<{
         attacker: string;

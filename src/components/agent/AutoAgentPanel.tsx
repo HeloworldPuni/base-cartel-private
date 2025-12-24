@@ -240,11 +240,57 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
         if (!address) return;
         try {
             setIsLoading(true);
-            setStatusMsg("Requesting paid raid suggestion...");
+            setStatusMsg("Step 1: Paying 0.005 USDC...");
 
-            // Dynamically import to avoid server-side issues if any
-            const { getRaidSuggestion } = await import('@/lib/x402-client');
-            const result = await getRaidSuggestion(address);
+            // 1. Pay via Wallet
+            if (!publicClient) throw new Error("Wallet not connected");
+
+            // Check allowance for Payment
+            const allowance = await publicClient.readContract({
+                address: USDC_ADDRESS as `0x${string}`,
+                abi: erc20Abi,
+                functionName: 'allowance',
+                args: [address as `0x${string}`, process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`]
+            });
+
+            const COST = parseUnits("0.005", 6);
+
+            if (allowance < COST) {
+                setStatusMsg("Approving Payment Token...");
+                await writeContractAsync({
+                    address: USDC_ADDRESS as `0x${string}`,
+                    abi: erc20Abi,
+                    functionName: 'approve',
+                    args: [process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`, COST]
+                });
+                setStatusMsg("Approved. Now Paying...");
+            }
+
+            // Pay to Pot
+            // Note: In real setup, backend verifies tx. For MVP, we send to Pot and use hash.
+            const txHash = await writeContractAsync({
+                address: USDC_ADDRESS as `0x${string}`,
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`, COST]
+            });
+
+            setStatusMsg("Payment Sent! Fetching Suggestion...");
+
+            // 2. Fetch with Payment Proof (Header)
+            // We manually call the API here to pass the header, bypassing the simplified helper for now
+            const res = await fetch(`/api/agent/suggest-raid?address=${address}`, {
+                headers: {
+                    'X-PAYMENT': JSON.stringify({
+                        txHash,
+                        amount: COST.toString(),
+                        receiver: process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS
+                    })
+                }
+            });
+
+            if (!res.ok) throw new Error("API Limit or Payment Invalid");
+            const result = await res.json();
 
             setSuggestion(result);
             setStatusMsg("Suggestion received!");
@@ -308,6 +354,33 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                     >
                         {enabled ? "ON" : "OFF"}
                     </Button>
+                    {enabled && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-2 h-7 text-xs border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
+                            onClick={async () => {
+                                if (!address) return;
+                                setStatusMsg("Triggering Strategy...");
+                                setIsLoading(true);
+                                try {
+                                    const res = await fetch(`/api/cron/agent?user=${address}`);
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        setStatusMsg("Strategy Executed! Check Activity.");
+                                    } else {
+                                        setStatusMsg("Failed: " + data.error);
+                                    }
+                                } catch (e) {
+                                    setStatusMsg("Error: " + String(e));
+                                } finally {
+                                    setIsLoading(false);
+                                }
+                            }}
+                        >
+                            Run Now
+                        </Button>
+                    )}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

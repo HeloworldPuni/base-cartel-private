@@ -1,11 +1,16 @@
 import { AgentDB } from './db';
 import { executeAgentAction } from './executor';
 
-export async function runAgentScheduler() {
+export async function runAgentScheduler(targetUser?: string) {
     const agents = AgentDB.getAll();
-    const activeAgents = agents.filter(a => a.enabled && a.delegation);
+    let activeAgents = agents.filter(a => a.enabled && a.delegation);
 
-    console.log(`[AgentScheduler] Found ${activeAgents.length} active agents`);
+    // If targeting a specific user, filter for them
+    if (targetUser) {
+        activeAgents = activeAgents.filter(a => a.userAddress.toLowerCase() === targetUser.toLowerCase());
+    }
+
+    console.log(`[AgentScheduler] Found ${activeAgents.length} active agents${targetUser ? ` (Targeting ${targetUser})` : ''}`);
 
     const results = [];
 
@@ -14,8 +19,8 @@ export async function runAgentScheduler() {
         const now = Date.now();
         const ONE_DAY = 24 * 60 * 60 * 1000;
 
-        // If never run or run more than 24h ago
-        if (!agent.lastRun || (now - agent.lastRun > ONE_DAY)) {
+        // If never run or run more than 24h ago OR forced via targetUser
+        if (targetUser || !agent.lastRun || (now - agent.lastRun > ONE_DAY)) {
             try {
                 console.log(`[AgentScheduler] Running for ${agent.userAddress}`);
                 const result = await executeAgentAction(agent);

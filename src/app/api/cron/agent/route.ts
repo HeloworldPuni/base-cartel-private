@@ -9,8 +9,11 @@ export async function GET(request: Request) {
         // Optional: Add Bearer token check for Cron jobs if needed in production
         // const auth = request.headers.get('Authorization');
 
-        console.log("[Cron] Triggering Agent Scheduler...");
-        const results = await runAgentScheduler();
+        const { searchParams } = new URL(request.url);
+        const targetUser = searchParams.get('user'); // Optional: Run for specific user only
+
+        console.log(`[Cron] Triggering Agent Scheduler${targetUser ? ` for ${targetUser}` : ''}...`);
+        const results = await runAgentScheduler(targetUser || undefined);
 
         return NextResponse.json({
             success: true,
