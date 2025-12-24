@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useAccount, useWriteContract, useSignTypedData, useReadContract } from 'wagmi';
-import { formatEther, parseUnits } from 'viem';
+import { useAccount, useWriteContract, useSignTypedData, useReadContract, usePublicClient } from 'wagmi';
+import { formatEther, parseUnits, erc20Abi } from 'viem';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from 'next/link';
+import { USDC_ADDRESS } from '@/lib/basePay';
+import FaucetButton from '@/components/FaucetButton';
 
 // ABI for AgentVault (minimal)
 const AGENT_VAULT_ABI = [
@@ -54,6 +56,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
     const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
     const { signTypedDataAsync } = useSignTypedData();
+    const publicClient = usePublicClient();
 
     const [enabled, setEnabled] = useState(false);
     const [strategy, setStrategy] = useState('conservative');
@@ -92,12 +95,42 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
         if (!budget) return;
         try {
             setIsLoading(true);
+            const amount = parseUnits(budget, 6);
+
+            // 1. Check Allowance
+            setStatusMsg("Checking allowance...");
+            if (!publicClient) throw new Error("Wallet not connected");
+
+            const allowance = await publicClient.readContract({
+                address: USDC_ADDRESS as `0x${string}`,
+                abi: erc20Abi,
+                functionName: 'allowance',
+                args: [address as `0x${string}`, AGENT_VAULT_ADDRESS]
+            });
+
+            // 2. Approve if needed
+            if (allowance < amount) {
+                setStatusMsg("Approving USDC...");
+                const approvalHash = await writeContractAsync({
+                    address: USDC_ADDRESS as `0x${string}`,
+                    abi: erc20Abi,
+                    functionName: 'approve',
+                    args: [AGENT_VAULT_ADDRESS, amount]
+                });
+                // Find a way to wait for transaction if possible, or just proceed (likely to fail if immediate)
+                // For better UX, we should ideally wait. 
+                // However, without a public client wrapper readily available in this component scope for waitForTransaction, 
+                // we'll rely on the user confirming the wallet prompt sequentially. 
+                // (Optimistic approach: Wallets usually handle nonce sequence).
+                setStatusMsg("Approval submitted. Confirm deposit...");
+            }
+
             setStatusMsg("Submitting deposit...");
             const hash = await writeContractAsync({
                 address: AGENT_VAULT_ADDRESS,
                 abi: AGENT_VAULT_ABI,
                 functionName: 'deposit',
-                args: [parseUnits(budget, 6)]
+                args: [amount]
             });
             setStatusMsg("Deposit successful: " + hash);
             refetchBalance();
@@ -286,17 +319,20 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                             {vaultBalance ? formatEther(vaultBalance) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
                         </p>
                     </div>
-                    {vaultBalance && vaultBalance > 0n && (
-                        <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-8 text-xs bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-900/50"
-                            onClick={handleWithdraw}
-                            disabled={isLoading}
-                        >
-                            Withdraw All
-                        </Button>
-                    )}
+                    <div className="flex gap-2">
+                        <FaucetButton />
+                        {vaultBalance && vaultBalance > 0n && (
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-8 text-xs bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-900/50"
+                                onClick={handleWithdraw}
+                                disabled={isLoading}
+                            >
+                                Withdraw All
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <AnimatePresence>

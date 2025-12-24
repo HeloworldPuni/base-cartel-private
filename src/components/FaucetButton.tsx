@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount, useWriteContract } from "wagmi";
-import ERC20ABI from "@/lib/abi/ERC20.json";
+import { parseAbi } from "viem";
 import { USDC_ADDRESS } from "@/lib/basePay";
+
+const MINT_ABI = parseAbi([
+    "function mint(address to, uint256 amount) public"
+]);
 
 export default function FaucetButton() {
     const { address } = useAccount();
@@ -17,7 +21,7 @@ export default function FaucetButton() {
         try {
             const tx = await writeContractAsync({
                 address: USDC_ADDRESS as `0x${string}`,
-                abi: ERC20ABI,
+                abi: MINT_ABI,
                 functionName: "mint",
                 args: [address, BigInt(1000 * 1e6)] // Mint 1000 USDC
             });
@@ -35,10 +39,10 @@ export default function FaucetButton() {
         <Button
             onClick={handleMint}
             disabled={isLoading}
-            variant="outline"
-            className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+            variant="ghost"
+            className="text-xs text-green-500 hover:text-green-400 hover:bg-green-900/20 border border-green-900/50"
         >
-            {isLoading ? "Minting..." : "💵 Get Test USDC"}
+            {isLoading ? "Wait..." : "+ Test USDC"}
         </Button>
     );
 }
