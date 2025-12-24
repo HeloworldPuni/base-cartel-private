@@ -14,7 +14,6 @@ module.exports = {
         "base-sepolia": {
             url: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || "https://sepolia.base.org",
             accounts: process.env.WALLET_PRIVATE_KEY ? [process.env.WALLET_PRIVATE_KEY] : [],
-            gasPrice: 1000000000,
         },
     },
 };

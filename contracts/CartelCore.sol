@@ -58,10 +58,12 @@ contract CartelCore is Ownable {
     uint256 public lastDistributionTime;
     uint256 public constant DISTRIBUTION_INTERVAL = 24 hours;
 
-    // Claim-based distribution (gas efficient)
-    uint256 public cumulativeRewardPerShare; // scaled by 1e18
-    mapping(address => uint256) public lastClaimedRewardPerShare;
-    mapping(address => uint256) public pendingRewards;
+    // MasterChef Logic (Global Accumulator)
+    uint256 public accUSDCPerShare; // Precision: 1e12
+    mapping(address => uint256) public rewardDebt; // Tracks debt per user
+    
+    event Claim(address indexed user, uint256 amount);
+    event ShareTransferProcessed(address indexed from, address indexed to);
 
     event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee);
     event Referred(address indexed referrer, address indexed referred);
@@ -126,7 +128,7 @@ contract CartelCore is Ownable {
         // Fee Logic
         if (JOIN_FEE > 0) {
             pot.depositFrom(msg.sender, JOIN_FEE);
-            dailyRevenuePool += JOIN_FEE;
+            distribute(JOIN_FEE);
             emit RevenueAdded(JOIN_FEE, "join");
         }
         
@@ -156,68 +158,79 @@ contract CartelCore is Ownable {
         return referralCount[user];
     }
 
-    // Daily Profit Distribution
-    function distributeDailyProfits() external {
-        require(block.timestamp >= lastDistributionTime + DISTRIBUTION_INTERVAL, "Too soon");
-        require(dailyRevenuePool > 0, "No revenue to distribute");
+    // Internal Distribution (Updates Global Accumulator)
+    function distribute(uint256 amount) internal {
+        uint256 supply = sharesContract.totalSupply(1);
+        if (supply == 0) return;
         
-        uint256 totalShares = sharesContract.totalSupply(1);
-        require(totalShares > 0, "No shares exist");
+        accUSDCPerShare += (amount * 1e12) / supply;
+        emit ProfitDistributed(amount, accUSDCPerShare);
+    }
+
+    // --- MasterChef Claim Logic ---
+
+    // Called by CartelShares BEFORE share transfer (override _update)
+    function onShareTransfer(address from, address to) external {
+        require(msg.sender == address(sharesContract), "Only shares contract");
         
-        // Calculate reward per share (scaled by 1e18 for precision)
-        uint256 rewardPerShare = (dailyRevenuePool * 1e18) / totalShares;
-        cumulativeRewardPerShare += rewardPerShare;
+        // Force claim for both parties to settle pending rewards
+        if (from != address(0)) {
+            _claim(from);
+        }
+        if (to != address(0)) {
+            _claim(to);
+        }
         
-        emit ProfitDistributed(dailyRevenuePool, rewardPerShare);
+        // Note: Debt is updated in _claim based on current (pre-transfer) balance.
+        // We need to re-update debt AFTER transfer if balance changes?
+        // Actually, the standard pattern is:
+        // 1. Claim pending (using old balance)
+        // 2. User balance changes (outside this fn)
+        // 3. User debt must be reset to newBalance * acc (to prevent double claiming)
+        // Since we can't easily hook "after" transfer efficiently, we rely on the fact that
+        // _claim sets debt = balance * acc.
+        // IF balance changes immediately after, debt is STALE (wrong).
+        // WE NEED A SYNC function called AFTER transfer, OR we need Shares to pass new balances?
+        // Easier: Just calling _claim uses current balance.
         
-        dailyRevenuePool = 0;
-        lastDistributionTime = block.timestamp;
+        emit ShareTransferProcessed(from, to);
+    }
+    
+    // Sync function called by Shares AFTER transfer to fix debt
+    function syncRewardDebt(address user, uint256 newBalance) external {
+         require(msg.sender == address(sharesContract), "Only shares contract");
+         rewardDebt[user] = (newBalance * accUSDCPerShare) / 1e12;
     }
 
     function claimProfit() external nonReentrant {
-        _updatePendingRewards(msg.sender);
-        
-        uint256 amount = pendingRewards[msg.sender];
-        require(amount > 0, "No profits to claim");
-        
-        pendingRewards[msg.sender] = 0;
-        pot.withdraw(msg.sender, amount);
-        
-        emit ProfitClaimed(msg.sender, amount);
+        _claim(msg.sender);
     }
 
     function claimProfitFor(address user) external nonReentrant onlyAgent {
-        _updatePendingRewards(user);
-        
-        uint256 amount = pendingRewards[user];
-        require(amount > 0, "No profits to claim");
-        
-        pendingRewards[user] = 0;
-        pot.withdraw(user, amount);
-        
-        emit ProfitClaimed(user, amount);
+        _claim(user);
     }
 
-    function _updatePendingRewards(address user) internal {
-        uint256 userShares = sharesContract.balanceOf(user, 1);
-        if (userShares == 0) return;
+    function _claim(address user) internal {
+        uint256 balance = sharesContract.balanceOf(user, 1);
+        if (balance == 0) return;
+
+        uint256 pending = (balance * accUSDCPerShare) / 1e12 - rewardDebt[user];
+        if (pending > 0) {
+            pot.withdraw(user, pending); // Transfer USDC
+            emit Claim(user, pending);
+        }
         
-        uint256 rewardDelta = cumulativeRewardPerShare - lastClaimedRewardPerShare[user];
-        uint256 newRewards = (userShares * rewardDelta) / 1e18;
-        
-        pendingRewards[user] += newRewards;
-        lastClaimedRewardPerShare[user] = cumulativeRewardPerShare;
+        // Reset debt
+        rewardDebt[user] = (balance * accUSDCPerShare) / 1e12;
     }
 
-    function getPendingProfit(address user) external view returns (uint256) {
-        uint256 userShares = sharesContract.balanceOf(user, 1);
-        if (userShares == 0) return pendingRewards[user];
-        
-        uint256 rewardDelta = cumulativeRewardPerShare - lastClaimedRewardPerShare[user];
-        uint256 newRewards = (userShares * rewardDelta) / 1e18;
-        
-        return pendingRewards[user] + newRewards;
+    function getClaimable(address user) external view returns (uint256) {
+        uint256 balance = sharesContract.balanceOf(user, 1);
+        if (balance == 0) return 0;
+        return (balance * accUSDCPerShare) / 1e12 - rewardDebt[user];
     }
+
+
 
     // Admin sponsor function
     function sponsorRevenue(uint256 amount) external {
@@ -238,7 +251,7 @@ contract CartelCore is Ownable {
         require(raider != target, "Cannot raid self");
         // Collect raid fee
         pot.depositFrom(msg.sender, RAID_FEE);
-        dailyRevenuePool += RAID_FEE;
+        distribute(RAID_FEE);
         emit RevenueAdded(RAID_FEE, "raid");
         
         // Steal shares logic
@@ -288,7 +301,7 @@ contract CartelCore is Ownable {
         // 2. Charge high-stakes raid fee
         {
             pot.depositFrom(msg.sender, HIGH_STAKES_RAID_FEE);
-            dailyRevenuePool += HIGH_STAKES_RAID_FEE;
+            distribute(HIGH_STAKES_RAID_FEE);
             emit RevenueAdded(HIGH_STAKES_RAID_FEE, "high_stakes_raid");
         }
 

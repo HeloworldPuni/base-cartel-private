@@ -135,7 +135,7 @@
     },
     {
         "inputs": [],
-        "name": "claimYield",
+        "name": "claimProfit",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

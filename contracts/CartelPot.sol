@@ -29,7 +29,7 @@ contract CartelPot is Ownable {
         emit Deposit(from, amount);
     }
 
-    function withdraw(address to, uint256 amount) external onlyOwner {
+    function withdraw(address to, uint256 amount) external onlyCore {
         require(usdc.transfer(to, amount), "Transfer failed");
         emit Withdrawal(to, amount);
     }

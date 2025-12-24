@@ -114,6 +114,15 @@ contract AgentVault is EIP712, Ownable {
              cartelCore.claimYieldFor(params.user);
              emit ActionExecuted(params.user, "claim", 0);
         }
+        else if (keccak256(bytes(params.action)) == keccak256(bytes("transfer"))) {
+            (address to, uint256 amount) = abi.decode(params.data, (address, uint256));
+            
+            require(balances[params.user] >= amount, "Insufficient funds");
+            balances[params.user] -= amount;
+            
+            require(usdc.transfer(to, amount), "Transfer failed");
+            emit ActionExecuted(params.user, "transfer", amount);
+        }
         else {
             revert("Unknown action");
         }

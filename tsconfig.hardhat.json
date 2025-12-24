@@ -11,6 +11,6 @@
         "contracts",
         "test",
         "scripts",
-        "hardhat.config.cjs"
+        "hardhat.config.ts"
     ]
 }

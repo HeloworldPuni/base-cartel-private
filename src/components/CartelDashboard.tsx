@@ -11,10 +11,12 @@ import MostWantedList from "./MostWantedList";
 import ActivityFeed from "./ActivityFeed";
 
 // Wagmi & Data
-import { useReadContracts } from 'wagmi';
+import { useReadContracts, useWriteContract } from 'wagmi';
 import { formatUnits } from 'viem';
+import { toast } from 'sonner';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
+import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 
 interface CartelDashboardProps {
@@ -131,6 +133,32 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     };
 
+    // --- CLAIM LOGIC ---
+    const { writeContractAsync } = useWriteContract();
+    const [isClaiming, setIsClaiming] = useState(false);
+
+    const handleClaim = async () => {
+        if (!address) return;
+        setIsClaiming(true);
+        try {
+            const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+            if (!CORE_ADDRESS) throw new Error("Missing Core Address");
+
+            await writeContractAsync({
+                address: CORE_ADDRESS,
+                abi: CartelCoreABI,
+                functionName: 'claimProfit',
+            });
+            toast.success("Rewards claimed successfully!");
+            refetch(); // Update UI
+        } catch (error) {
+            console.error("Claim failed", error);
+            toast.error("Failed to claim rewards");
+        } finally {
+            setIsClaiming(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-transparent text-white w-full overflow-x-hidden relative">
             {/* Animated Background */}
@@ -243,8 +271,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                             <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
                                 Claimable
                             </div>
-                            <button className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0066FF]/50 transition-all duration-300 hover:scale-105 text-white">
-                                Claim Dividends
+                            <button
+                                onClick={handleClaim}
+                                disabled={isClaiming || claimable <= 0}
+                                className={`w-full md:w-auto px-8 py-3 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-xl font-semibold transition-all duration-300 text-white ${isClaiming || claimable <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-[#0066FF]/50 hover:scale-105'}`}
+                            >
+                                {isClaiming ? "Claiming..." : "Claim Dividends"}
                             </button>
                         </div>
                     </div>

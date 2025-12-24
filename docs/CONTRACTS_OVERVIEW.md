@@ -91,32 +91,8 @@ This document provides a technical overview of the Base Cartel smart contract sy
 
 ---
 
+---
+
 ## 5. Future Upgrades (V2)
 
-### Autonomous Agent Payments
-
-**Problem**: In V1, the `AgentVault` only supports `raid`, `highStakesRaid`, and `claim`. It cannot perform generic transfers, meaning the Agent cannot pay for services (like Raid Suggestions) directly from the Vault. Users have to pay from their wallet.
-
-**Solution**: Add a `transfer` capability to the `executeAction` function in `AgentVault`.
-
-```solidity
-// AgentVault.sol V2
-if (keccak256(bytes(params.action)) == keccak256(bytes("transfer"))) {
-    (address to, uint256 amount) = abi.decode(params.data, (address, uint256));
-    require(balances[msg.sender] >= amount, "Insufficient funds");
-    balances[msg.sender] -= amount;
-    usdc.transfer(to, amount);
-}
-```
-
-### Batch Actions
-
-**Problem**: Submitting multiple raids requires multiple signatures and transactions.
-
-**Solution**: Add `executeBatch` to allow an array of actions to be executed in a single transaction.
-
-### Dynamic Fees
-
-**Problem**: Fees are currently hardcoded in `CartelCore` but readable.
-
-**Solution**: Allow Governance/Owner to update fees without redeployment.
+See [CONTRACTS_V2_PLAN.md](./CONTRACTS_V2_PLAN.md) for the active upgrade roadmap.

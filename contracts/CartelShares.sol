@@ -5,6 +5,11 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+interface ICartelCore {
+    function onShareTransfer(address from, address to) external;
+    function syncRewardDebt(address user, uint256 newBalance) external;
+}
+
 contract CartelShares is ERC1155, ERC1155Supply, Ownable {
     uint256 public constant SHARE_ID = 1;
     
@@ -40,6 +45,27 @@ contract CartelShares is ERC1155, ERC1155Supply, Ownable {
         internal
         override(ERC1155, ERC1155Supply)
     {
+        // 1. Pre-Update Hook: Claim rewards for both parties (uses OLD balances)
+        if (owner() != address(0)) { // Ensure owner/core is set
+             // We assume owner() is CartelCore or minter? 
+             // Actually, CartelCore OWNS CartelShares.
+             // So we cast owner() to ICartelCore.
+             try ICartelCore(owner()).onShareTransfer(from, to) {} catch {}
+        }
+
+        // 2. Perform Transfer (Balances change)
         super._update(from, to, ids, values);
+        
+        // 3. Post-Update Hook: Sync Debt (uses NEW balances)
+        if (owner() != address(0)) {
+            // Sync sender debt
+            if (from != address(0)) {
+                 try ICartelCore(owner()).syncRewardDebt(from, balanceOf(from, SHARE_ID)) {} catch {}
+            }
+            // Sync receiver debt
+            if (to != address(0)) {
+                 try ICartelCore(owner()).syncRewardDebt(to, balanceOf(to, SHARE_ID)) {} catch {}
+            }
+        }
     }
 }
