@@ -37,7 +37,7 @@ const AGENT_VAULT_ABI = [
     }
 ] as const;
 
-const AGENT_VAULT_ADDRESS = process.env.NEXT_PUBLIC_AGENT_VAULT_ADDRESS as `0x${string}`;
+const AGENT_VAULT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_AGENT_ADDRESS as `0x${string}`;
 
 interface AutoAgentPanelProps {
     compact?: boolean;

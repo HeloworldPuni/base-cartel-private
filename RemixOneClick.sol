@@ -210,7 +210,15 @@ contract CartelShares is Ownable {
     // Events
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
 
+    // Metadata for Wallets
+    string public name = "Base Cartel Shares";
+    string public symbol = "CARTEL";
+
     constructor() Ownable(msg.sender) {}
+
+    function uri(uint256) public pure returns (string memory) {
+        return "https://basecartel.com/api/metadata/shares.json";
+    }
 
     function setMinter(address _minter) external onlyOwner {
         minter = _minter;
