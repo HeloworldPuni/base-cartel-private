@@ -13,7 +13,7 @@ const PRIVATE_KEY = (process.env.PAYMENT_ADDRESS || process.env.DEPLOYER_PRIVATE
 
 export async function POST(req: NextRequest) {
     try {
-        const { requestId, secret, salt } = await req.json();
+        const { requestId, secret, salt, target } = await req.json();
 
         if (!requestId || !secret || !salt) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
                                     timestamp: new Date(),
                                     type: 'RAID', // Default to RAID. Can enhance later.
                                     attacker: raider,
-                                    target: 'Unknown', // Reveal event doesn't emit Target. We'd need to query Contract.raids(requestId).
+                                    target: target || 'Unknown', // Use Propagated Target
                                     stolenShares: Number(stealed), // "stealed" in ABI event
                                     payout: 0
                                 }
