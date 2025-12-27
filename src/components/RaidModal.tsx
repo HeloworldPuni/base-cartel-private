@@ -293,15 +293,17 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 throw new Error("Public Client missing.");
             }
             setIsProcessing(false);
-        } catch (e) {
+        } catch (e: any) {
             console.error("Raid Failed:", e);
-            // Handle specific errors
-            // @ts-ignore
+
+            // Ignore user rejection, but ALERT everything else
             if (e?.message?.includes("User rejected")) {
-                // stay on payment step or go back
+                // stay on payment step
+            } else {
+                if (e?.message) alert("Error: " + e.message); // Show the REAL error
+                setResult('fail');
+                setStep('result');
             }
-            setResult('fail');
-            setStep('result');
             setIsProcessing(false);
         }
     };
