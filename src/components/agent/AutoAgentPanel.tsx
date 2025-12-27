@@ -95,7 +95,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
         if (!budget) return;
         try {
             setIsLoading(true);
-            const amount = parseUnits(budget, 6);
+            const amount = parseUnits(budget, 18);
 
             // 1. Check Allowance
             setStatusMsg("Checking allowance...");
@@ -389,7 +389,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                     <div>
                         <p className="text-xs text-zinc-500 uppercase font-bold">Vault Balance</p>
                         <p className="text-xl font-mono text-[#4FF0E6]">
-                            {vaultBalance ? formatUnits(vaultBalance, 6) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
+                            {vaultBalance ? formatUnits(vaultBalance, 18) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
                         </p>
                     </div>
                     <div className="flex gap-2">
