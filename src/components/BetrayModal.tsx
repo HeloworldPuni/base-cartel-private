@@ -73,7 +73,7 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
                         if (event.eventName === 'Betrayal') {
                             // event Betrayal(address indexed traitor, uint256 amountStolen)
                             const args = event.args as unknown as { amountStolen: bigint };
-                            betrayalPayout = formatUnits(args.amountStolen, 6); // Assuming USDC (6 decimals)
+                            betrayalPayout = formatUnits(args.amountStolen, 18);
                             break;
                         }
                     } catch { continue; }
@@ -137,7 +137,7 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
             const data = encodeFunctionData({
                 abi: CartelCoreABI,
                 functionName: 'betray',
-                args: []
+                args: [0n] // minPayout (Slippage protection, 0 for now)
             });
 
             const dataWithSuffix = appendBuilderSuffix(data);
