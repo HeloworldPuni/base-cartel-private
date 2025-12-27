@@ -60,7 +60,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         : 0;
 
     const potBalance = contractData?.[1]?.result
-        ? Number(formatUnits(contractData[1].result as bigint, 6))
+        ? Number(formatUnits(contractData[1].result as bigint, 18))
         : 0;
 
     // Total Shares now fetched from API (off-chain aggregation)
