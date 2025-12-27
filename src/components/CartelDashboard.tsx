@@ -77,6 +77,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const potBalance = safeFormat(contractData?.[1]);
     const rawPending = safeFormat(contractData?.[2]);
 
+    // RESTORED STATE
+    const [totalShares, setTotalShares] = useState<number>(1);
+
     useEffect(() => {
         if (rawPending !== undefined) setPendingWithdrawal(rawPending);
     }, [rawPending]);
