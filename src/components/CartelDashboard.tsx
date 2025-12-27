@@ -125,6 +125,57 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     };
 
+    // --- OFF-CHAIN READS ---
+    const [userRank, setUserRank] = useState<number>(0);
+
+    // --- OFF-CHAIN READS ---
+    useEffect(() => {
+        // 1. Fetch Revenue & Total Shares
+        fetch('/api/cartel/revenue/summary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.revenue24h) setRevenue24h(data.revenue24h);
+                if (data.totalShares) setTotalShares(data.totalShares);
+            })
+            .catch(err => console.error("Failed to fetch revenue", err));
+
+
+        // 2. Fetch User Summary (Rank)
+        if (address) {
+            fetch(`/api/cartel/me/summary?address=${address}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.rank) setUserRank(data.rank);
+                })
+                .catch(err => console.error("Failed to fetch rank", err));
+        }
+    }, [address]);
+
+    const handleRaidClick = () => {
+        setIsRaidModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsRaidModalOpen(false);
+        // Optimistic/Lazy refetch on close to see updated stats
+        refetch();
+    };
+
+    const [showCopied, setShowCopied] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const handleCopyAddress = () => {
+        if (address) {
+            navigator.clipboard.writeText(address);
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-transparent text-white w-full overflow-x-hidden relative">
             {/* Animated Background */}
