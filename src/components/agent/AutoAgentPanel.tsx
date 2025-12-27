@@ -253,7 +253,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 args: [address as `0x${string}`, process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`]
             });
 
-            const COST = parseUnits("0.005", 6);
+            const COST = parseUnits("0.005", 18);
 
             if (allowance < COST) {
                 setStatusMsg("Approving Payment Token...");
