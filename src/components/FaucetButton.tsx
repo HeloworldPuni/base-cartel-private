@@ -23,10 +23,10 @@ export default function FaucetButton() {
                 address: USDC_ADDRESS as `0x${string}`,
                 abi: MINT_ABI,
                 functionName: "mint",
-                args: [address, BigInt(1000 * 1e6)] // Mint 1000 USDC
+                args: [address, BigInt(1000 * 1e18)] // Mint 1000 USDC (18 decimals)
             });
             console.log("Mint Tx:", tx);
-            alert("Minted 1000 Test USDC! 💰");
+            alert("Minted 1000 Test USDC! 💰\n(Note: This only works if you are the Owner/Deployer)");
         } catch (e) {
             console.error(e);
             alert("Failed to mint. See console.");
