@@ -19,7 +19,6 @@ export default function FaucetButton() {
         if (!address) return;
         setIsLoading(true);
         try {
-            alert(`DEBUG: Using USDC Contract: ${USDC_ADDRESS}`);
             const tx = await writeContractAsync({
                 address: USDC_ADDRESS as `0x${string}`,
                 abi: MINT_ABI,
