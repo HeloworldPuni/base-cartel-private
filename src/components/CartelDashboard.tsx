@@ -34,18 +34,26 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
 
     // --- ON-CHAIN READS ---
+    const [pendingWithdrawal, setPendingWithdrawal] = useState<number>(0);
+
     const { data: contractData, refetch } = useReadContracts({
         contracts: [
             {
                 address: SHARES_ADDRESS,
                 abi: CartelSharesABI,
                 functionName: 'balanceOf',
-                args: address ? [address, 1n] : undefined // Token ID 1
+                args: address ? [address, 1n] : undefined
             },
             {
                 address: POT_ADDRESS,
                 abi: CartelPotABI,
                 functionName: 'getBalance',
+            },
+            {
+                address: POT_ADDRESS,
+                abi: CartelPotABI,
+                functionName: 'pendingWithdrawals',
+                args: address ? [address] : undefined
             }
         ],
         query: {
@@ -54,86 +62,21 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         }
     });
 
-    // Parse Data (Safe Fallbacks)
-    const shares = contractData?.[0]?.result
-        ? Number(contractData[0].result)
-        : 0;
+    // Parse Data
+    const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
+    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 18)) : 0;
+    const rawPending = contractData?.[2]?.result ? Number(formatUnits(contractData[2].result as bigint, 18)) : 0;
 
-    const potBalance = contractData?.[1]?.result
-        ? Number(formatUnits(contractData[1].result as bigint, 18))
-        : 0;
+    useEffect(() => {
+        if (rawPending !== undefined) setPendingWithdrawal(rawPending);
+    }, [rawPending]);
 
-    // Total Shares now fetched from API (off-chain aggregation)
-    const [totalShares, setTotalShares] = useState<number>(1);
-
-    // Calculate Claimable: (User Shares / Total Shares) * Pot Balance
+    // Calculate Claimable (Est)
     const claimable = totalShares > 0 ? (shares / totalShares) * potBalance : 0;
+    // Total Available to User = Estimated New Rewards + Already Pending
+    const totalUserValue = claimable + rawPending;
 
-    // DEBUG: Trace where the number comes from
-    useEffect(() => {
-        if (contractData) {
-            console.log("--- CARTEL DASHBOARD DEBUG ---");
-            console.log("Shares (Index 0):", shares);
-            console.log("Pot Balance (Index 1):", potBalance);
-            console.log("Total Shares (API):", totalShares);
-            console.log("Calculated Claimable:", claimable);
-            console.log("Raw Contract Data:", contractData);
-            console.log("------------------------------");
-        }
-    }, [contractData, shares, potBalance, totalShares, claimable]);
-
-    // --- OFF-CHAIN READS ---
-    const [userRank, setUserRank] = useState<number>(0);
-
-    // --- OFF-CHAIN READS ---
-    useEffect(() => {
-        // 1. Fetch Revenue & Total Shares
-        fetch('/api/cartel/revenue/summary')
-            .then(res => res.json())
-            .then(data => {
-                if (data.revenue24h) setRevenue24h(data.revenue24h);
-                if (data.totalShares) setTotalShares(data.totalShares);
-            })
-            .catch(err => console.error("Failed to fetch revenue", err));
-
-
-        // 2. Fetch User Summary (Rank)
-        if (address) {
-            fetch(`/api/cartel/me/summary?address=${address}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.rank) setUserRank(data.rank);
-                })
-                .catch(err => console.error("Failed to fetch rank", err));
-        }
-    }, [address]);
-
-    const handleRaidClick = () => {
-        setIsRaidModalOpen(true);
-    };
-
-    const handleModalClose = () => {
-        setIsRaidModalOpen(false);
-        // Optimistic/Lazy refetch on close to see updated stats
-        refetch();
-    };
-
-    const [showCopied, setShowCopied] = useState(false);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const handleCopyAddress = () => {
-        if (address) {
-            navigator.clipboard.writeText(address);
-            setShowCopied(true);
-            setTimeout(() => setShowCopied(false), 2000);
-        }
-    };
-
-    // --- CLAIM LOGIC ---
+    // --- CLAIM LOGIC (V3 SMART CLAIM) ---
     const { writeContractAsync } = useWriteContract();
     const [isClaiming, setIsClaiming] = useState(false);
 
@@ -141,19 +84,29 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         if (!address) return;
         setIsClaiming(true);
         try {
-            const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
-            if (!CORE_ADDRESS) throw new Error("Missing Core Address");
-
-            await writeContractAsync({
-                address: CORE_ADDRESS,
-                abi: CartelCoreABI,
-                functionName: 'claimProfit',
-            });
-            toast.success("Rewards claimed successfully!");
-            refetch(); // Update UI
+            // STEP 1: If money is already in Pot (Pending), Withdraw it.
+            if (rawPending > 0.0001) {
+                await writeContractAsync({
+                    address: POT_ADDRESS,
+                    abi: CartelPotABI,
+                    functionName: 'claimPayout',
+                });
+                toast.success("Withdrawn to Wallet!");
+            }
+            // STEP 2: If no pending but has shares, try to Claim Profit (Move to Pending)
+            else {
+                const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+                await writeContractAsync({
+                    address: CORE_ADDRESS,
+                    abi: CartelCoreABI,
+                    functionName: 'claimProfit',
+                });
+                toast.success("Rewards Moved to Withdrawal Queue. Click again to Withdraw!");
+            }
+            refetch();
         } catch (error) {
             console.error("Claim failed", error);
-            toast.error("Failed to claim rewards");
+            toast.error("Transaction failed");
         } finally {
             setIsClaiming(false);
         }
@@ -266,17 +219,17 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 <TrendingUp className="text-[#00FF88]" size={32} />
                             </div>
                             <div className="text-5xl font-bold mb-2 text-[#00FF88]">
-                                ${claimable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                ${totalUserValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                             <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
-                                Claimable
+                                {pendingWithdrawal > 0 ? "Ready to Withdraw" : "Claimable"}
                             </div>
                             <button
                                 onClick={handleClaim}
-                                disabled={isClaiming || claimable <= 0}
-                                className={`w-full md:w-auto px-8 py-3 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-xl font-semibold transition-all duration-300 text-white ${isClaiming || claimable <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-[#0066FF]/50 hover:scale-105'}`}
+                                disabled={isClaiming || totalUserValue <= 0}
+                                className={`w-full md:w-auto px-8 py-3 bg-gradient-to-r ${pendingWithdrawal > 0 ? 'from-green-500 to-emerald-600' : 'from-[#0066FF] to-[#00D4FF]'} rounded-xl font-semibold transition-all duration-300 text-white ${isClaiming || totalUserValue <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:scale-105'}`}
                             >
-                                {isClaiming ? "Claiming..." : "Claim Dividends"}
+                                {isClaiming ? "Processing..." : (pendingWithdrawal > 0.0001 ? "Withdraw USDC" : "Claim Dividends")}
                             </button>
                         </div>
                     </div>
