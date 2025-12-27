@@ -11,7 +11,7 @@ import MostWantedList from "./MostWantedList";
 import ActivityFeed from "./ActivityFeed";
 
 // Wagmi & Data
-import { useReadContracts, useWriteContract } from 'wagmi';
+import { useReadContracts, useWriteContract, usePublicClient } from 'wagmi';
 import { formatUnits } from 'viem';
 import { toast } from 'sonner';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
@@ -98,32 +98,40 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- CLAIM LOGIC (V3 SMART CLAIM) ---
     const { writeContractAsync } = useWriteContract();
+    const publicClient = usePublicClient();
     const [isClaiming, setIsClaiming] = useState(false);
 
     const handleClaim = async () => {
         if (!address) return;
         setIsClaiming(true);
         try {
+            let hash;
             // STEP 1: If money is already in Pot (Pending), Withdraw it.
             if (rawPending > 0.0001) {
-                await writeContractAsync({
+                hash = await writeContractAsync({
                     address: POT_ADDRESS,
                     abi: CartelPotABI,
                     functionName: 'claimPayout',
                 });
-                toast.success("Withdrawn to Wallet!");
+                toast.success("Transaction Sent... Waiting for Confirmation");
             }
             // STEP 2: If no pending but has shares, try to Claim Profit (Move to Pending)
             else {
                 const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
-                await writeContractAsync({
+                hash = await writeContractAsync({
                     address: CORE_ADDRESS,
                     abi: CartelCoreABI,
                     functionName: 'claimProfit',
                 });
-                toast.success("Rewards Moved to Withdrawal Queue. Click again to Withdraw!");
+                toast.success("Claiming... Waiting for Confirmation");
             }
-            refetch();
+
+            if (hash && publicClient) {
+                await publicClient.waitForTransactionReceipt({ hash });
+                toast.success("Confirmed! Updating UI...");
+                await refetch();
+            }
+
         } catch (error) {
             console.error("Claim failed", error);
             toast.error("Transaction failed");
