@@ -289,7 +289,10 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 }
             });
 
-            if (!res.ok) throw new Error("API Limit or Payment Invalid");
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `API Error: ${res.status}`);
+            }
             const result = await res.json();
 
             setSuggestion(result);
