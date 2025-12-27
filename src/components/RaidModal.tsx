@@ -260,8 +260,10 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
                 if (requestId > 0n) {
                     console.log("Waiting for block confirmation...");
-                    // Wait 4 seconds to ensure we are clearly in the next block
-                    await new Promise(r => setTimeout(r, 4000));
+                    // Wait 6 seconds to ensure we are clearly in the next block
+                    await new Promise(r => setTimeout(r, 6000));
+
+                    let revealHash: `0x${string}` | undefined;
 
                     console.log("Attempting Auto-Reveal via Relayer...");
                     try {
@@ -278,6 +280,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
                         if (data.success) {
                             console.log("Auto-Reveal Success:", data.tx);
+                            revealHash = data.tx as `0x${string}`;
                             // Set outcome roughly (Contract events would be source of truth, but UI can optimistically wait/refresh)
                             // Ideally, we poll for the event result or rely on the user refreshing, 
                             // but for now, let's assume if it didn't revert, it processed. 
@@ -305,40 +308,49 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                             args: [requestId, secret, salt]
                         });
 
-                        const revealHash = await sendTransactionAsync({
-                            to: CORE_ADDRESS,
-                            data: appendBuilderSuffix(revealData),
-                        });
+                        try {
+                            revealHash = await sendTransactionAsync({
+                                to: CORE_ADDRESS,
+                                data: appendBuilderSuffix(revealData),
+                            });
+                        } catch (manualErr) {
+                            console.error("Manual reveal cancelled", manualErr);
+                            setIsProcessing(false);
+                            return;
+                        }
                     }
                     console.log("Reveal Tx:", revealHash);
 
-                    // Wait for Result
-                    const finalReceipt = await publicClient.waitForTransactionReceipt({ hash: revealHash });
+                    if (revealHash) {
 
-                    // Decode Final Result
-                    let actualStolen = 0;
-                    let actualPenalty = 0;
-                    let success = false;
+                        // Wait for Result
+                        const finalReceipt = await publicClient.waitForTransactionReceipt({ hash: revealHash });
 
-                    for (const log of finalReceipt.logs) {
-                        try {
-                            const decoded = decodeEventLog({
-                                abi: CartelCoreABI,
-                                data: log.data,
-                                topics: log.topics
-                            });
-                            if (decoded.eventName === 'RaidResult') {
-                                success = decoded.args.success as boolean;
-                                actualStolen = Number(decoded.args.stolenShares || 0n);
-                                if (decoded.args.penalty) actualPenalty = Number(decoded.args.penalty);
-                            }
-                        } catch (e) { }
+                        // Decode Final Result
+                        let actualStolen = 0;
+                        let actualPenalty = 0;
+                        let success = false;
+
+                        for (const log of finalReceipt.logs) {
+                            try {
+                                const decoded = decodeEventLog({
+                                    abi: CartelCoreABI,
+                                    data: log.data,
+                                    topics: log.topics
+                                });
+                                if (decoded.eventName === 'RaidResult') {
+                                    success = decoded.args.success as boolean;
+                                    actualStolen = Number(decoded.args.stolenShares || 0n);
+                                    if (decoded.args.penalty) actualPenalty = Number(decoded.args.penalty);
+                                }
+                            } catch (e) { }
+                        }
+
+                        setStolenAmount(actualStolen);
+                        setSelfPenalty(actualPenalty);
+                        setResult(success ? 'success' : 'fail');
+                        setStep('result');
                     }
-
-                    setStolenAmount(actualStolen);
-                    setSelfPenalty(actualPenalty);
-                    setResult(success ? 'success' : 'fail');
-                    setStep('result');
                 } else {
                     throw new Error("Failed to find Request ID in logs.");
                 }
