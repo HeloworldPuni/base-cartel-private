@@ -43,6 +43,7 @@ export async function getMostWanted(limit: number = 10, windowHours: number = 24
 
     for (const ev of events) {
         if (!ev.attacker || !ev.target) continue;
+        if (ev.attacker === 'Unknown' || ev.target === 'Unknown') continue;
 
         // Attacker stats
         if (!stats[ev.attacker]) stats[ev.attacker] = initStats();
