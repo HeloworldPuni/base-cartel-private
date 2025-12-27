@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
         // Fetch potential targets (exclude self)
         const candidates = await prisma.user.findMany({
             where: {
-                walletAddress: { not: { equals: address, mode: 'insensitive' } },
+                walletAddress: { not: address },
                 shares: { gt: 0 } // Must have loot
             },
             select: {
