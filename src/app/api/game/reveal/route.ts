@@ -1,9 +1,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createWalletClient, http, publicActions } from 'viem';
+import { createWalletClient, http, publicActions, decodeEventLog } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { baseSepolia } from 'viem/chains';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
+import prisma from '@/lib/prisma';
+// import { generateNewsFromEvents } from '@/lib/news-service'; // Optional: If we want instant AI news
 
 // CONFIG
 const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
@@ -31,9 +33,6 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Relayer] Revealing Raid #${requestId}...`);
 
-        // Wait for block confirmation handled by frontend, but we can do a quick check? 
-        // No, contract handles logic. We just send.
-
         const hash = await client.writeContract({
             address: CORE_ADDRESS,
             abi: CartelCoreABI,
@@ -43,21 +42,51 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Relayer] Tx Sent: ${hash}`);
 
-        // Wait for confirmation to reply?
-        // Yes, good for UX
+        // Wait for confirmation
         const receipt = await client.waitForTransactionReceipt({ hash });
 
         if (receipt.status === 'success') {
-            // Parse Logs to find RaidResult
-            let won = false;
-            let stolen = '0';
+            // --- PARSE LOGS & SAVE TO DB ---
+            try {
+                // Find "RaidResult" event
+                for (const log of receipt.logs) {
+                    try {
+                        const decoded = decodeEventLog({
+                            abi: CartelCoreABI,
+                            data: log.data,
+                            topics: log.topics
+                        }) as any;
 
-            // Minimal parser for RaidResult(uint256,address,bool,uint256)
-            // Topic0 for RaidResult ... we can just trust the boolean for now if we don't have full ABI parsing handy without 'viem' helpers inside route easily.
-            // Actually, we can just return success and let UI refetch. 
-            // Better: Return the boolean 'success' arg from the event.
+                        if (decoded.eventName === 'RaidResult') {
+                            const { raider, success, stealed } = decoded.args;
 
-            // For MVP, just return success. Front-end will refresh.
+                            // Determine if High Stakes (Need to check previous request or infer?)
+                            // For MVP, assume RAID unless told otherwise. Or fetch Request log.
+                            // Better: Just assume RAID.
+
+                            await prisma.cartelEvent.create({
+                                data: {
+                                    txHash: hash,
+                                    blockNumber: Number(receipt.blockNumber),
+                                    timestamp: new Date(),
+                                    type: 'RAID', // Default to RAID. Can enhance later.
+                                    attacker: raider,
+                                    target: 'Unknown', // Reveal event doesn't emit Target. We'd need to query Contract.raids(requestId).
+                                    stolenShares: Number(stealed), // "stealed" in ABI event
+                                    payout: 0
+                                }
+                            });
+                            console.log(`[Relayer] Event Saved: ${raider} won ${stealed}`);
+                        }
+                    } catch (err) {
+                        // Not the event we are looking for
+                    }
+                }
+            } catch (dbError) {
+                console.error("[Relayer] Failed to save DB event:", dbError);
+                // Don't fail the request, just log
+            }
+
             return NextResponse.json({ success: true, tx: hash });
         } else {
             return NextResponse.json({ error: "Transaction reverted", tx: hash }, { status: 500 });
@@ -65,7 +94,6 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error("[Relayer Error]", error);
-        // Handle "Too soon" or other contract errors
         return NextResponse.json({ error: error.message || "Relayer failed" }, { status: 500 });
     }
 }
