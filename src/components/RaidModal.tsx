@@ -196,33 +196,51 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 }
             }
 
-            // 2. Execute Raid (V2 COMMIT-REVEAL FLOW)
+            // 2. Execute Raid (V3 COMMIT-REVEAL FLOW)
+            const crypto = window.crypto;
+            const getRandomBytes32 = () => {
+                const array = new Uint8Array(32);
+                crypto.getRandomValues(array);
+                return `0x${Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('')}` as `0x${string}`;
+            };
+
+            const secret = getRandomBytes32();
+            const salt = getRandomBytes32();
+
+            // Hash locally: keccak256(abi.encode(secret, salt))
+            const { keccak256, encodeAbiParameters, parseAbiParameters, encodeFunctionData, decodeEventLog } = await import('viem');
+            const { appendBuilderSuffix } = await import('@/lib/builder-code');
+
+            const secretHash = keccak256(encodeAbiParameters(
+                parseAbiParameters('bytes32 secret, bytes32 salt'),
+                [secret, salt]
+            ));
+
+            console.log("Generated Secret:", secret);
+            console.log("Generated Salt:", salt);
+            console.log("Secret Hash:", secretHash);
+
             // Step A: Initiate (Commit)
             const initFuncName = raidType === 'normal' ? 'initiateRaid' : 'initiateHighStakesRaid';
-            console.log(`Executing ${initFuncName} on ${finalTarget}...`);
-
-            const { encodeFunctionData, decodeEventLog } = await import('viem');
-            const { appendBuilderSuffix } = await import('@/lib/builder-code');
+            console.log(`Executing ${initFuncName} on ${finalTarget} with hash ${secretHash}...`);
 
             const initData = encodeFunctionData({
                 abi: CartelCoreABI,
                 functionName: initFuncName,
-                args: [finalTarget]
+                args: [finalTarget, secretHash]
             });
 
-            const initHash = await sendTransactionAsync({
+            const initHashTx = await sendTransactionAsync({
                 to: CORE_ADDRESS,
                 data: appendBuilderSuffix(initData),
             });
-            console.log("Initiate Tx:", initHash);
+            console.log("Initiate Tx:", initHashTx);
             setStep('raiding'); // UI shows "Raiding..."
 
             // [CLIENT-SIDE KEEPER LOGIC]
-            // We must wait for the Initiate Tx to confirm, extract the Request ID, then Reveal.
-
             if (publicClient) {
                 console.log("Waiting for Initiate confirmation...");
-                const receipt = await publicClient.waitForTransactionReceipt({ hash: initHash });
+                const receipt = await publicClient.waitForTransactionReceipt({ hash: initHashTx });
 
                 // Find Request ID from 'RaidRequests' event
                 let requestId = 0n;
@@ -241,16 +259,15 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 }
 
                 if (requestId > 0n) {
-                    console.log("Waiting 1 block for entropy...");
-                    // We need to wait for the NEXT block.
-                    // Simple hack: Wait 3 seconds (Base block time is 2s)
-                    await new Promise(r => setTimeout(r, 3000));
+                    console.log("Waiting for block confirmation...");
+                    // Wait 4 seconds to ensure we are clearly in the next block
+                    await new Promise(r => setTimeout(r, 4000));
 
                     console.log("Revealing Raid...");
                     const revealData = encodeFunctionData({
                         abi: CartelCoreABI,
                         functionName: 'revealRaid',
-                        args: [requestId]
+                        args: [requestId, secret, salt]
                     });
 
                     const revealHash = await sendTransactionAsync({
