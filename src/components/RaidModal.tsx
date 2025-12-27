@@ -168,13 +168,6 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
 
             // 1. Check & Approve if needed
-            alert(`DEBUG CHECK:
-            User: ${address}
-            USDC Contract: ${USDC_ADDRESS}
-            Allowance: ${allowance}
-            Required: ${currentFee}
-            Using Pot: ${CARTEL_POT_ADDRESS}`);
-
             if (allowance !== undefined && (allowance as bigint) < currentFee) {
                 console.log("Allowance too low. Requesting approval...");
 
