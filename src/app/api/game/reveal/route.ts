@@ -7,7 +7,7 @@ import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 // CONFIG
 const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
-const PRIVATE_KEY = process.env.PAYMENT_ADDRESS as `0x${string}`; // Admin/Relayer Key
+const PRIVATE_KEY = (process.env.PAYMENT_ADDRESS || process.env.DEPLOYER_PRIVATE_KEY) as `0x${string}`; // Admin/Relayer Key
 
 export async function POST(req: NextRequest) {
     try {
