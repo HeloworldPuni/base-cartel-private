@@ -9,10 +9,10 @@ export const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS a
 export const CARTEL_POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as string;
 export const CARTEL_SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as string;
 
-// Fee constants (in USDC, 6 decimals)
+// Fee constants (in USDC, 18 decimals for V3 MockUSDC)
 export const JOIN_FEE = BigInt(0); // FREE for Phase 1 (invite-only)
-export const RAID_FEE = BigInt(5000);  // 0.005 USDC
-export const HIGH_STAKES_RAID_FEE = BigInt(15000); // 0.015 USDC
+export const RAID_FEE = BigInt("5000000000000000");  // 0.005 USDC (18 decimals)
+export const HIGH_STAKES_RAID_FEE = BigInt("15000000000000000"); // 0.015 USDC (18 decimals)
 
 // Paymaster config
 export const PAYMASTER_AND_DATA = {
@@ -20,9 +20,9 @@ export const PAYMASTER_AND_DATA = {
 };
 
 export function formatUSDC(amount: bigint): string {
-    return (Number(amount) / 1e6).toFixed(3);
+    return (Number(amount) / 1e18).toFixed(3);
 }
 
 export function parseUSDC(amount: string): bigint {
-    return BigInt(Math.floor(parseFloat(amount) * 1e6));
+    return BigInt(Math.floor(parseFloat(amount) * 1e18));
 }
