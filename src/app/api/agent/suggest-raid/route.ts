@@ -39,48 +39,88 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    // 3. Get Real Target
-    // Strategy: Get a random target that isn't me
-    let targetAddress = await getRandomTarget(address);
+    // 3. SMART HEURISTIC AI IMPLEMENTATION 🧠
 
-    // Fallback if DB empty or only self
-    if (!targetAddress) {
-        // Mock fallback only if absolutely no users in DB (rare in dev)
-        targetAddress = "0x8342A48694A74044116F330db5050a267b28dD85";
-    }
-
-    // 4. Calculate Risk/Gain based on Real User Data
-    const targetUser = await prisma.user.findUnique({
-        where: { walletAddress: targetAddress },
-        select: { shares: true, farcasterId: true }
+    // Fetch potential targets (exclude self)
+    const candidates = await prisma.user.findMany({
+        where: {
+            walletAddress: { not: { equals: address, mode: 'insensitive' } },
+            shares: { gt: 0 } // Must have loot
+        },
+        select: {
+            walletAddress: true,
+            farcasterId: true,
+            shares: true,
+            lastSeenAt: true,
+            createdAt: true
+        },
+        orderBy: { shares: 'desc' },
+        take: 50 // Analyze top 50 richest
     });
 
-    const targetShares = targetUser?.shares || 0;
-    const targetHandle = targetUser?.farcasterId ? `@${targetUser.farcasterId}` : `${targetAddress.slice(0, 6)}...`;
-
-    // Simple heuristic: More shares = Higher Gain but Higher Risk (assumed defense)
-    let estimatedGain = Math.floor(targetShares * 0.05); // 5% steal estimate
-    if (estimatedGain < 10) estimatedGain = 10; // Min gain
-
-    let risk = "low";
-    let reason = "Safe target with decent yield.";
-
-    if (targetShares > 10000) {
-        risk = "high";
-        reason = "High value target. Likely defended.";
-    } else if (targetShares > 1000) {
-        risk = "medium";
-        reason = "Standard target. Moderate gains.";
+    if (candidates.length === 0) {
+        // Fallback for empty DB
+        return NextResponse.json({
+            attacker: address,
+            targetHandle: "The Void",
+            targetAddress: "0x0000000000000000000000000000000000000000",
+            estimatedGainShares: 0,
+            riskLevel: "none",
+            reason: "No wealthy targets found in the database."
+        });
     }
 
-    const result = {
-        attacker: address,
-        targetHandle: targetHandle,
-        targetAddress: targetAddress,
-        estimatedGainShares: estimatedGain,
-        riskLevel: risk,
-        reason: reason,
-    };
+    // Scoring Algorithm
+    // Target Score = (Shares * 0.4) + (DaysInactive * 100)
+    let bestCandidate = candidates[0];
+    let bestScore = -1;
+    let bestReason = "";
+    let bestRisk = "low";
 
-    return NextResponse.json(result);
+    const now = Date.now();
+
+    for (const cand of candidates) {
+        let score = cand.shares * 0.4;
+        let risk = "medium";
+        let reasonParts = [];
+
+        // 1. Inactivity Bonus (Sleeping Whales are vulnerable)
+        const lastSeen = cand.lastSeenAt ? new Date(cand.lastSeenAt).getTime() : new Date(cand.createdAt).getTime();
+        const daysInactive = (now - lastSeen) / (1000 * 60 * 60 * 24);
+
+        if (daysInactive > 7) {
+            score += 500; // HUGE Bonus for inactivity
+            risk = "low";
+            reasonParts.push("Target is asleep");
+        } else if (daysInactive < 1) {
+            score -= 200; // Penalty for active users (they might raid back)
+            risk = "high";
+            reasonParts.push("Target is active");
+        }
+
+        // 2. Wealth Factor
+        if (cand.shares > 1000) {
+            reasonParts.push("High Loot");
+        }
+
+        // Select Best
+        if (score > bestScore) {
+            bestScore = score;
+            bestCandidate = cand;
+            bestRisk = risk;
+            bestReason = reasonParts.join(" + ") || "Opportunistic";
+        }
+    }
+
+    const estimatedGain = Math.floor(bestCandidate.shares * 0.05); // 5% estimate
+
+    return NextResponse.json({
+        attacker: address,
+        targetHandle: bestCandidate.farcasterId ? `@${bestCandidate.farcasterId}` : `${bestCandidate.walletAddress.slice(0, 6)}...`,
+        targetAddress: bestCandidate.walletAddress,
+        estimatedGainShares: estimatedGain,
+        riskLevel: bestRisk,
+        reason: bestReason,
+        debugScore: Math.floor(bestScore)
+    });
 }

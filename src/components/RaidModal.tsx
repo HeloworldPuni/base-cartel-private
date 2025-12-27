@@ -196,147 +196,103 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 }
             }
 
-            // 2. Execute Raid
-            const functionName = raidType === 'normal' ? 'raid' : 'highStakesRaid';
-            console.log(`Executing ${functionName} on ${finalTarget}...`);
+            // 2. Execute Raid (V2 COMMIT-REVEAL FLOW)
+            // Step A: Initiate (Commit)
+            const initFuncName = raidType === 'normal' ? 'initiateRaid' : 'initiateHighStakesRaid';
+            console.log(`Executing ${initFuncName} on ${finalTarget}...`);
 
-            // SIMULATE FIRST to catch reverts (e.g. invalid target) gracefully
-            if (publicClient && address) {
-                try {
-                    await publicClient.simulateContract({
-                        address: CORE_ADDRESS,
-                        abi: CartelCoreABI,
-                        functionName: functionName,
-                        args: [finalTarget],
-                        account: address
-                    });
-                } catch (simError: any) {
-                    console.error("Simulation Reverted:", simError);
-                    let msg = "Raid Validation Failed: ";
-                    // Simple heuristic for common errors
-                    if (simError.message?.includes("transfer amount exceeds balance")) msg += "Insufficient USDC balance.";
-                    else if (simError.message?.includes("allowance")) msg += "Approval failed.";
-                    else msg += "Target is likely invalid or not a registered player.";
-
-                    // Show error in UI instead of crashing
-                    alert(msg);
-                    setIsProcessing(false);
-                    return; // ABORT TRANSACTION
-                }
-            }
-
-            // [BUILDER CODE INTEGRATION]
-            // We use standard sendTransaction to manually append the capability suffix (Legacy method)
-            const { encodeFunctionData } = await import('viem');
+            const { encodeFunctionData, decodeEventLog } = await import('viem');
             const { appendBuilderSuffix } = await import('@/lib/builder-code');
 
-            const data = encodeFunctionData({
+            const initData = encodeFunctionData({
                 abi: CartelCoreABI,
-                functionName: functionName,
+                functionName: initFuncName,
                 args: [finalTarget]
             });
 
-            const dataWithSuffix = appendBuilderSuffix(data);
-
-            const hash = await sendTransactionAsync({
+            const initHash = await sendTransactionAsync({
                 to: CORE_ADDRESS,
-                data: dataWithSuffix,
+                data: appendBuilderSuffix(initData),
             });
+            console.log("Initiate Tx:", initHash);
+            setStep('raiding'); // UI shows "Raiding..."
 
-            setStep('raiding');
-            console.log("Raid Tx:", hash);
-
-            // [NEW] Revenue System V1: Record explicitly
-            // Fire-and-forget (do not block UI)
-            const feeInUSDC = Number(formatUSDC(currentFee));
-
-            // 1. Record Revenue (For Global Charts)
-            fetch('/api/cartel/revenue/record', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    txHash: hash,
-                    amount: feeInUSDC,
-                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES',
-                    actor: address
-                })
-            }).catch(err => console.error("Revenue Record Failed:", err));
-
-            // 2. [FIX] Record Heat Event (For Most Wanted)
-            fetch('/api/cartel/events/record', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    txHash: hash,
-                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES_RAID',
-                    attacker: address,
-                    target: finalTarget, // Ensure this is the resolved address
-                    payout: 0, // Will be updated by indexer later, but event existence counts for Heat
-                    stolenShares: 0 // Placeholder
-                })
-            }).catch(err => console.error("Heat Event Record Failed:", err));
-
-            // [PERFORMANCE FIX]
-            // Don't wait for the slow indexer. Wait for the chain directly.
-            // As soon as the block is mined, the raid is real.
-            console.log("Waiting for chain confirmation...");
+            // [CLIENT-SIDE KEEPER LOGIC]
+            // We must wait for the Initiate Tx to confirm, extract the Request ID, then Reveal.
 
             if (publicClient) {
-                const receipt = await publicClient.waitForTransactionReceipt({
-                    hash: hash,
-                    confirmations: 1
-                });
+                console.log("Waiting for Initiate confirmation...");
+                const receipt = await publicClient.waitForTransactionReceipt({ hash: initHash });
 
-                if (receipt.status === 'success') {
-                    console.log("Raid confirmed on-chain!");
+                // Find Request ID from 'RaidRequests' event
+                let requestId = 0n;
+                for (const log of receipt.logs) {
+                    try {
+                        const decoded = decodeEventLog({
+                            abi: CartelCoreABI,
+                            data: log.data,
+                            topics: log.topics
+                        });
+                        if (decoded.eventName === 'RaidRequests') {
+                            requestId = decoded.args.requestId as bigint;
+                            console.log("Raid Request ID:", requestId);
+                        }
+                    } catch (e) { }
+                }
 
-                    // [FIX] Decode Logs to get actual values
-                    const { decodeEventLog } = await import('viem');
+                if (requestId > 0n) {
+                    console.log("Waiting 1 block for entropy...");
+                    // We need to wait for the NEXT block.
+                    // Simple hack: Wait 3 seconds (Base block time is 2s)
+                    await new Promise(r => setTimeout(r, 3000));
+
+                    console.log("Revealing Raid...");
+                    const revealData = encodeFunctionData({
+                        abi: CartelCoreABI,
+                        functionName: 'revealRaid',
+                        args: [requestId]
+                    });
+
+                    const revealHash = await sendTransactionAsync({
+                        to: CORE_ADDRESS,
+                        data: appendBuilderSuffix(revealData),
+                    });
+                    console.log("Reveal Tx:", revealHash);
+
+                    // Wait for Result
+                    const finalReceipt = await publicClient.waitForTransactionReceipt({ hash: revealHash });
+
+                    // Decode Final Result
                     let actualStolen = 0;
                     let actualPenalty = 0;
+                    let success = false;
 
-                    for (const log of receipt.logs) {
+                    for (const log of finalReceipt.logs) {
                         try {
                             const decoded = decodeEventLog({
                                 abi: CartelCoreABI,
                                 data: log.data,
                                 topics: log.topics
                             });
-
-                            if (decoded.eventName === 'Raid') {
-                                // args: [raider, target, amountStolen, success, fee]
-                                // NOTE: Parameter name is 'amountStolen' in Raid event, NOT 'stolenShares'
-                                const val = decoded.args.amountStolen || decoded.args.stolenShares || 0n;
-                                actualStolen = Number(val);
-                            } else if (decoded.eventName === 'HighStakesRaid') {
-                                // args: [attacker, target, stolenShares, selfPenalty, fee]
-                                // NOTE: Parameter name is 'stolenShares' in HighStakesRaid event
-                                const val = decoded.args.stolenShares || 0n;
-                                actualStolen = Number(val);
-                                actualPenalty = Number(decoded.args.selfPenalty || 0n);
+                            if (decoded.eventName === 'RaidResult') {
+                                success = decoded.args.success as boolean;
+                                actualStolen = Number(decoded.args.stolenShares || 0n);
+                                if (decoded.args.penalty) actualPenalty = Number(decoded.args.penalty);
                             }
-                        } catch (e) {
-                            // Ignore logs from other contracts (USDC, etc)
-                        }
+                        } catch (e) { }
                     }
 
                     setStolenAmount(actualStolen);
                     setSelfPenalty(actualPenalty);
-                    setResult('success');
+                    setResult(success ? 'success' : 'fail');
                     setStep('result');
-                    setIsProcessing(false);
                 } else {
-                    throw new Error("Transaction reverted on chain.");
+                    throw new Error("Failed to find Request ID in logs.");
                 }
             } else {
-                // Fallback if no public client (rare)
-                console.warn("No public client, waiting artificial delay.");
-                await new Promise(r => setTimeout(r, 4000));
-                setResult('success');
-                setStep('result');
-                setIsProcessing(false);
+                throw new Error("Public Client missing.");
             }
-
+            setIsProcessing(false);
         } catch (e) {
             console.error("Raid Failed:", e);
             // Handle specific errors
