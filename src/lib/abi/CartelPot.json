@@ -45,18 +45,31 @@
                 "type": "uint256"
             }
         ],
-        "name": "Withdrawal",
+        "name": "WithdrawalQueued",
         "type": "event"
     },
     {
+        "anonymous": false,
         "inputs": [
             {
+                "indexed": true,
                 "internalType": "address",
-                "name": "_core",
+                "name": "user",
                 "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
             }
         ],
-        "name": "setCore",
+        "name": "PayoutClaimed",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "claimPayout",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -80,24 +93,6 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "withdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "getBalance",
         "outputs": [
@@ -111,29 +106,53 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "usdc",
-        "outputs": [
-            {
-                "internalType": "contract IERC20",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "core",
-        "outputs": [
+        "inputs": [
             {
                 "internalType": "address",
                 "name": "",
                 "type": "address"
             }
         ],
+        "name": "pendingWithdrawals",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "queueWithdrawal",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_core",
+                "type": "address"
+            }
+        ],
+        "name": "setCore",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     }
 ]
