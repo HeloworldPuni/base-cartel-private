@@ -175,7 +175,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                     address: USDC_ADDRESS as `0x${string}`,
                     abi: ERC20ABI,
                     functionName: 'approve',
-                    args: [CARTEL_POT_ADDRESS as `0x${string}`, BigInt("1000000000000")] // 1M USDC
+                    args: [CARTEL_POT_ADDRESS as `0x${string}`, BigInt("1000000000000000000000000")] // 1M USDC (18 decimals)
                 });
                 console.log("Approve Tx sent:", approveHash);
 
