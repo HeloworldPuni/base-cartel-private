@@ -36,36 +36,46 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- ON-CHAIN READS ---
     const [pendingWithdrawal, setPendingWithdrawal] = useState<number>(0);
 
-    const { data: contractData, refetch } = useReadContracts({
+    // --- DEBUG: ENV & DATA ---
+    useEffect(() => {
+        console.log("[Dashboard] Mounting...");
+        console.log("[Dashboard] POT:", POT_ADDRESS);
+        console.log("[Dashboard] SHARES:", SHARES_ADDRESS);
+        console.log("[Dashboard] Address:", address);
+    }, [address, POT_ADDRESS, SHARES_ADDRESS]);
+
+    const { data: contractData, error: readError, refetch } = useReadContracts({
         contracts: [
-            {
-                address: SHARES_ADDRESS,
-                abi: CartelSharesABI,
-                functionName: 'balanceOf',
-                args: address ? [address, 1n] : undefined
-            },
-            {
-                address: POT_ADDRESS,
-                abi: CartelPotABI,
-                functionName: 'getBalance',
-            },
-            {
-                address: POT_ADDRESS,
-                abi: CartelPotABI,
-                functionName: 'pendingWithdrawals',
-                args: address ? [address] : undefined
-            }
+            { address: SHARES_ADDRESS, abi: CartelSharesABI, functionName: 'balanceOf', args: address ? [address, 1n] : undefined },
+            { address: POT_ADDRESS, abi: CartelPotABI, functionName: 'getBalance' },
+            { address: POT_ADDRESS, abi: CartelPotABI, functionName: 'pendingWithdrawals', args: address ? [address] : undefined }
         ],
         query: {
-            enabled: !!address,
+            enabled: !!address && !!POT_ADDRESS && !!SHARES_ADDRESS,
             staleTime: 5000
         }
     });
 
+    useEffect(() => {
+        if (readError) console.error("[Dashboard] Read Error:", readError);
+        if (contractData) console.log("[Dashboard] Raw Data:", contractData);
+    }, [contractData, readError]);
+
+    // Helper for Safe Parsing
+    const safeFormat = (val: any) => {
+        if (!val || !val.result) return 0;
+        try {
+            return Number(formatUnits(val.result as bigint, 18));
+        } catch (e) {
+            console.error("[Dashboard] Format Error:", e, val);
+            return 0;
+        }
+    };
+
     // Parse Data
     const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
-    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 18)) : 0;
-    const rawPending = contractData?.[2]?.result ? Number(formatUnits(contractData[2].result as bigint, 18)) : 0;
+    const potBalance = safeFormat(contractData?.[1]);
+    const rawPending = safeFormat(contractData?.[2]);
 
     useEffect(() => {
         if (rawPending !== undefined) setPendingWithdrawal(rawPending);
