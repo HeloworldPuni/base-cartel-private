@@ -48,7 +48,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         contracts: [
             { address: SHARES_ADDRESS, abi: CartelSharesABI, functionName: 'balanceOf', args: address ? [address, 1n] : undefined },
             { address: POT_ADDRESS, abi: CartelPotABI, functionName: 'getBalance' },
-            { address: POT_ADDRESS, abi: CartelPotABI, functionName: 'pendingWithdrawals', args: address ? [address] : undefined }
+            { address: POT_ADDRESS, abi: CartelPotABI, functionName: 'pendingWithdrawals', args: address ? [address] : undefined },
+            {
+                address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+                abi: CartelCoreABI,
+                functionName: 'getClaimable',
+                args: address ? [address] : undefined
+            }
         ],
         query: {
             enabled: !!address && !!POT_ADDRESS && !!SHARES_ADDRESS,
@@ -76,6 +82,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
     const potBalance = safeFormat(contractData?.[1]);
     const rawPending = safeFormat(contractData?.[2]);
+    const trueClaimable = safeFormat(contractData?.[3]);
 
     // RESTORED STATE
     const [totalShares, setTotalShares] = useState<number>(1);
@@ -84,9 +91,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         if (rawPending !== undefined) setPendingWithdrawal(rawPending);
     }, [rawPending]);
 
-    // Calculate Claimable (Est)
-    const claimable = totalShares > 0 ? (shares / totalShares) * potBalance : 0;
-    // Total Available to User = Estimated New Rewards + Already Pending
+    // Calculate Claimable (TRUE ON-CHAIN)
+    const claimable = trueClaimable; // Use Contract Truth
+    // Total Available to User = New Rewards (Core) + Already Pending (Pot)
     const totalUserValue = claimable + rawPending;
 
     // --- CLAIM LOGIC (V3 SMART CLAIM) ---
