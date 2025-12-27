@@ -2,7 +2,7 @@
 
 // USDC contract address on Base Mainnet
 // USDC contract address on Localhost
-export const USDC_ADDRESS = (process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS || process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'); // Prefer Mock, then Env, then Mainnet
+export const USDC_ADDRESS = (process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS || process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x9561130B92A9862657DBa1BF75bb155a04C6b73c'); // Prefer Mock, then Env, then Mainnet
 
 // Contract addresses
 export const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as string;
