@@ -274,7 +274,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 requestId: requestId.toString(),
                                 secret,
                                 salt,
-                                target: manualTarget // Propagate Target for Live Feed
+                                target: finalTarget // Use resolved address in Live Feed
                             })
                         });
                         const data = await res.json();
