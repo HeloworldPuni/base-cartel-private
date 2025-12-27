@@ -39,7 +39,7 @@ export async function enforcePayment(req: NextRequest, config: PaymentConfig) {
 
         // 3. Construct PaymentRequirements
         const chainId = config.network === "base-sepolia" ? 84532 : 8453; // Map string to ID
-        const tokenAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // USDC on Base Sepolia (example)
+        const tokenAddress = process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS || "0x9561130B92A9862657DBa1BF75bb155a04C6b73c";
 
         // Parse price (remove $)
         const priceAmount = route.price.replace("$", "");
@@ -50,7 +50,7 @@ export async function enforcePayment(req: NextRequest, config: PaymentConfig) {
                 type: "exact",
                 chainId,
                 tokenAddress,
-                amount: BigInt(parseFloat(priceAmount) * 1e6).toString(), // Serialize BigInt to string for JSON safety
+                amount: BigInt(Math.floor(parseFloat(priceAmount) * 1e18)).toString(), // 18 decimals
             },
             description: route.description
         };
