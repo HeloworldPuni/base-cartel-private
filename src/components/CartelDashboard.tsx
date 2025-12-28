@@ -217,7 +217,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 alt="Logo"
                                 width={48}
                                 height={48}
-                                className="w-full h-full hue-rotate-180 object-contain drop-shadow-[0_0_10px_rgba(74,135,255,0.5)]"
+                                className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(74,135,255,0.5)]"
                             />
                         </div>
                         <div>
