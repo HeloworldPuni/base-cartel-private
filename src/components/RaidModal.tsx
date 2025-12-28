@@ -9,6 +9,7 @@ import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC, CARTEL_POT_ADDRESS, USDC_AD
 import { useAccount, useWriteContract, useReadContract, usePublicClient, useSendTransaction } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import ERC20ABI from "@/lib/abi/ERC20.json";
+import { formatEther } from 'viem';
 
 interface RaidModalProps {
     isOpen: boolean;
@@ -282,19 +283,26 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                         if (data.success) {
                             console.log("Auto-Reveal Success:", data.tx);
                             revealHash = data.tx as `0x${string}`;
-                            // Set outcome roughly (Contract events would be source of truth, but UI can optimistically wait/refresh)
-                            // Ideally, we poll for the event result or rely on the user refreshing, 
-                            // but for now, let's assume if it didn't revert, it processed. 
-                            // (To be precise: we'd read the logs from data.tx receipt if passed back, but simpler to just show 'Done')
-                            setStep('result');
-                            setResult('success'); // Tentative: Check logs actually? 
-                            // For V1 of Auto-Reveal, just showing "Raid Complete" message is OK.
-                            // But to know Win/Loss, we strictly need the Event Logs.
-                            // Ideally the API should return the 'success' bool from the logs.
 
-                            // Checking strictly: The API returns {success:true} if tx succeeded. 
-                            // We don't know if Stolen > 0 without parsing logs.
-                            // Let's default to triggering a "Check Result" or just generic "Raid Completed".
+                            // [FIX] Use outcome from API
+                            if (data.outcome) {
+                                // outcome: { success: boolean, stealed: string (wei) }
+                                const success = data.outcome.success;
+                                const stealedWei = BigInt(data.outcome.stealed);
+                                const formattedStealed = parseFloat(formatEther(stealedWei));
+
+                                // Clean up decimals (e.g. 10.000 -> 10, 10.543 -> 10.54)
+                                const displayAmount = Number(formattedStealed.toFixed(2));
+
+                                setResult(success ? 'success' : 'fail');
+                                setStolenAmount(displayAmount);
+                            } else {
+                                // Fallback (shouldn't happen with updated API)
+                                setResult('success');
+                                setStolenAmount(0);
+                            }
+
+                            setStep('result');
                         } else {
                             throw new Error(data.error);
                         }

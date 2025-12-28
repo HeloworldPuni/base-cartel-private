@@ -87,7 +87,22 @@ export async function POST(req: NextRequest) {
                 // Don't fail the request, just log
             }
 
-            return NextResponse.json({ success: true, tx: hash });
+            // [FIX] Return outcome so UI can show result
+            // We need to parse logs again if we didn't save to DB, or just use variables from loop
+            // Since we parsed inside loop, let's extract it clean or re-parse.
+            // Simpler: Just re-loop or hoist variable.
+            let outcome = { success: false, stealed: '0' };
+            try {
+                for (const log of receipt.logs) {
+                    const decoded = decodeEventLog({ abi: CartelCoreABI, data: log.data, topics: log.topics }) as any;
+                    if (decoded.eventName === 'RaidResult') {
+                        outcome = { success: decoded.args.success, stealed: decoded.args.stealed.toString() };
+                        break;
+                    }
+                }
+            } catch (e) { }
+
+            return NextResponse.json({ success: true, tx: hash, outcome });
         } else {
             return NextResponse.json({ error: "Transaction reverted", tx: hash }, { status: 500 });
         }
