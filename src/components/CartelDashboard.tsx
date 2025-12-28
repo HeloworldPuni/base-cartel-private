@@ -213,7 +213,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     <div className="flex items-center space-x-3">
                         <div className="relative w-12 h-12">
                             <Image
-                                src="https://raw.createusercontent.com/e124f442-2805-4811-86dd-03e89202dfc9/"
+                                src="/logo.png"
                                 alt="Logo"
                                 width={48}
                                 height={48}
