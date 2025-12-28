@@ -123,7 +123,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                         <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                         <div
-                            className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-5 blur-3xl animate-float"
+                            className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#0000FE] rounded-full opacity-5 blur-3xl animate-float"
                         ></div>
                         <div
                             className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-5 blur-3xl animate-float-reverse"

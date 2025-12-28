@@ -197,7 +197,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 opacity-10 mafia-pattern"></div>
                 <div
-                    className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0066FF] rounded-full opacity-10 blur-3xl animate-float"
+                    className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#0000FE] rounded-full opacity-10 blur-3xl animate-float"
                 ></div>
                 <div
                     className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00D4FF] rounded-full opacity-10 blur-3xl animate-float-reverse"
@@ -217,11 +217,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 alt="Logo"
                                 width={48}
                                 height={48}
-                                className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(74,135,255,0.5)]"
+                                className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,0,254,0.5)]"
                             />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#0066FF] via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_auto]">
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#0000FE] via-[#00D4FF] to-[#0000FE] bg-clip-text text-transparent animate-gradient-x bg-[length:200%_auto]">
                                 BASE CARTEL
                             </h1>
                             <p className="text-xs text-gray-500 tracking-widest uppercase">
@@ -232,15 +232,15 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     {address && (
                         <button
                             onClick={handleCopyAddress}
-                            className="relative px-4 py-2 bg-[#0F172A]/50 backdrop-blur-xl border border-[#1E293B] rounded-lg hover:border-[#0066FF] transition-all duration-300 flex items-center space-x-2 group"
+                            className="relative px-4 py-2 bg-[#0F172A]/50 backdrop-blur-xl border border-[#1E293B] rounded-lg hover:border-[#0000FE] transition-all duration-300 flex items-center space-x-2 group"
                         >
                             <span className="text-sm font-mono text-zinc-400">{address.slice(0, 6)}...{address.slice(-4)}</span>
                             <Copy
                                 size={14}
-                                className="group-hover:text-[#0066FF] transition-colors"
+                                className="group-hover:text-[#0000FE] transition-colors"
                             />
                             {showCopied && (
-                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#0066FF] px-3 py-1 rounded-lg text-xs whitespace-nowrap animate-slide-down">
+                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#0000FE] px-3 py-1 rounded-lg text-xs whitespace-nowrap animate-slide-down">
                                     Copied!
                                 </span>
                             )}

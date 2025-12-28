@@ -35,7 +35,7 @@ export default function MostWantedList() {
     if (agents.length === 0) return null;
 
     return (
-        <div className="relative bg-gradient-to-br from-[#FF0066]/10 via-[#0F172A] to-[#0066FF]/10 backdrop-blur-xl border border-[#FF0066]/30 rounded-2xl p-6 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[#FF0066]/10 via-[#0F172A] to-[#0000FE]/10 backdrop-blur-xl border border-[#FF0066]/30 rounded-2xl p-6 overflow-hidden">
             {/* Decorative Elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF0066] opacity-5 rounded-full blur-2xl"></div>
 
@@ -59,7 +59,7 @@ export default function MostWantedList() {
                             key={agent.address}
                             onClick={() => handleRowClick(agent.address)}
                             className={`group flex items-center justify-between p-3 rounded-xl transition-all duration-300 cursor-pointer ${isSelf
-                                ? "bg-gradient-to-r from-[#0066FF]/20 to-[#00D4FF]/10 border border-[#0066FF]/50"
+                                ? "bg-gradient-to-r from-[#0000FE]/20 to-[#00D4FF]/10 border border-[#0000FE]/50"
                                 : "bg-[#0F172A]/50 border border-[#1E293B] hover:border-[#FF0066]/50"
                                 }`}
                         >
@@ -82,7 +82,7 @@ export default function MostWantedList() {
                                             {agent.handle ? `@${agent.handle}` : `${agent.address.slice(0, 6)}...`}
                                         </span>
                                         {isSelf && (
-                                            <span className="text-xs px-2 py-0.5 bg-[#0066FF] text-white rounded-full">
+                                            <span className="text-xs px-2 py-0.5 bg-[#0000FE] text-white rounded-full">
                                                 YOU
                                             </span>
                                         )}

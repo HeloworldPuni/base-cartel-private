@@ -13,7 +13,7 @@
   --popover: #161A23;
   --popover-foreground: #E5E7EB;
 
-  --primary: #3B82F6;
+  --primary: #0000FE;
   /* Neon Electric Blue */
   --primary-foreground: #ffffff;
 
@@ -33,7 +33,7 @@
 
   --border: #262A33;
   --input: #161A23;
-  --ring: #3B82F6;
+  --ring: #0000FE;
 
   --radius: 1rem;
   /* rounded-2xl */
