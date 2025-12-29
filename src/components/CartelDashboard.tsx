@@ -7,6 +7,7 @@ import Image from "next/image";
 // Components
 import RaidModal from "@/components/RaidModal";
 import BetrayModal from "@/components/BetrayModal";
+import Link from "next/link";
 import MostWantedList from "./MostWantedList";
 import ActivityFeed from "./ActivityFeed";
 
@@ -142,6 +143,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- OFF-CHAIN READS ---
     const [userRank, setUserRank] = useState<number>(0);
+    const [userWinRate, setUserWinRate] = useState<number>(0);
 
     // --- OFF-CHAIN READS ---
     useEffect(() => {
@@ -161,6 +163,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 .then(res => res.json())
                 .then(data => {
                     if (data.rank) setUserRank(data.rank);
+                    if (data.winRate !== undefined) setUserWinRate(data.winRate);
                 })
                 .catch(err => console.error("Failed to fetch rank", err));
         }
@@ -423,7 +426,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         </div>
                     </div>
 
-                    {/* Stats Summary - Static for now based on design */}
+                    {/* Performance / Win Rate Widget (Dynamic) */}
                     <div className="relative bg-gradient-to-br from-[#0066FF]/20 via-[#00D4FF]/10 to-[#0066FF]/20 backdrop-blur-xl border border-[#0066FF]/40 rounded-2xl p-6 overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[#0066FF] opacity-10 rounded-full blur-2xl"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#00D4FF] opacity-10 rounded-full blur-2xl"></div>
@@ -439,13 +442,13 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                         Win Rate
                                     </span>
                                     <span className="text-sm font-bold text-[#00FF88]">
-                                        73%
+                                        {userWinRate}%
                                     </span>
                                 </div>
                                 <div className="h-2 bg-[#1E293B] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full shadow-lg shadow-[#00FF88]/50 animate-expand-width"
-                                        style={{ width: "73%" }}
+                                        className="h-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full shadow-lg shadow-[#00FF88]/50 transition-all duration-1000 ease-out"
+                                        style={{ width: `${userWinRate}%` }}
                                     ></div>
                                 </div>
                             </div>
@@ -517,6 +520,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #0066FF; }
             `}</style>
-        </div>
+        </div >
     );
 }

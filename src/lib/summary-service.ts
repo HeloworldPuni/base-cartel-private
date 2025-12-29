@@ -105,6 +105,29 @@ export async function getLoginSummary(address: string): Promise<LoginSummary> {
     // 5. Get Rank
     const rank = await getUserRank(address) || 0;
 
+    // 6. Calculate Win Rate
+    let winRate = 0;
+    const totalRaidsAmt = raidsByYou + highStakesByYou;
+
+    // We need to re-iterate or count explicitly for wins
+    let wins = 0;
+    for (const ev of events) {
+        if ((ev.type === 'RAID' || ev.type === 'HIGH_STAKES_RAID') && ev.attacker === address) {
+            // Logic: If stolenShares > 0, it was a success.
+            // Note: DB treats 0 as success=false usually.
+            if ((ev.stolenShares || 0) > 0) {
+                wins++;
+            }
+        }
+    }
+
+    if (totalRaidsAmt > 0) {
+        winRate = Math.round((wins / totalRaidsAmt) * 100);
+    }
+
+    // Fallback: If no raids, maybe 100% or 0%? 
+    // Let's settle on 0% for new users to encourage action.
+
     return {
         address,
         lastSeenAt: lastSeen ? lastSeen.toISOString() : null,
@@ -116,6 +139,7 @@ export async function getLoginSummary(address: string): Promise<LoginSummary> {
         retired,
         currentShares: user.shares || 0,
         rank,
-        notableEvents: notableEvents.slice(0, 3) // Top 3
+        winRate, // New Field
+        notableEvents: notableEvents.slice(0, 3)
     };
 }
