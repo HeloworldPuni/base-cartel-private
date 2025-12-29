@@ -65,9 +65,7 @@ export default function LeaderboardPage() {
 
     useEffect(() => {
         if (potError) console.error("Error fetching pot balance:", potError);
-        console.log("Pot Address:", POT_ADDRESS);
-        console.log("Pot Balance Data:", potBalance);
-    }, [potBalance, potError, POT_ADDRESS]);
+    }, [potBalance, potError]);
 
     const parsedPot = potBalance ? Number(formatUnits(potBalance as bigint, 18)) : 0;
 
@@ -75,6 +73,10 @@ export default function LeaderboardPage() {
     const getPotDisplay = () => {
         if (isPotLoading && !potBalance) return "...";
         if (potError) return "Err";
+
+        if (parsedPot < 1000) {
+            return `$${parsedPot.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`;
+        }
         return `$${(parsedPot / 1000).toFixed(1)}K`;
     }
 
