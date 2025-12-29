@@ -35,6 +35,10 @@ interface PlayerDisplay {
     glow: string;
 }
 
+import { useReadContract } from 'wagmi';
+import { formatUnits } from 'viem';
+import CartelPotABI from '@/lib/abi/CartelPot.json';
+
 export default function LeaderboardPage() {
     const [hoveredRank, setHoveredRank] = useState<number | null>(null);
     const [mounted, setMounted] = useState(false);
@@ -45,6 +49,21 @@ export default function LeaderboardPage() {
     const [players, setPlayers] = useState<PlayerDisplay[]>([]);
     const [totalPlayers, setTotalPlayers] = useState(0);
     const [loading, setLoading] = useState(true);
+
+    // --- CONTRACT READ ---
+    const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
+
+    const { data: potBalance } = useReadContract({
+        address: POT_ADDRESS,
+        abi: CartelPotABI,
+        functionName: 'getBalance',
+        query: {
+            enabled: !!POT_ADDRESS,
+            pollingInterval: 5000 // Live updates
+        }
+    });
+
+    const parsedPot = potBalance ? Number(formatUnits(potBalance as bigint, 18)) : 0;
 
     const fetchLeaderboard = async (pageNum: number) => {
         setLoading(true);
@@ -129,7 +148,7 @@ export default function LeaderboardPage() {
 
     const stats = {
         totalPlayers: totalPlayers,
-        totalPot: 0, // Placeholder until contract read
+        totalPot: parsedPot, // Real Data from Contract
         activeSeason: 1,
         endsIn: "14d 6h 23m",
     };

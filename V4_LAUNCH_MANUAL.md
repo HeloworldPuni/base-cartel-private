@@ -20,7 +20,7 @@ We replace the static `balanceOf` model with a dynamic **Effective Share** model
 
 Your "Slice of the Pot" is no longer just your shares. It is:
 
-**EffectiveShares = RawShares × (1 + WeightMultiplier)**
+#### EffectiveShares = RawShares × (1 + WeightMultiplier)
 
 Where **WeightMultiplier** comes from your Recent "Heat":
 
@@ -92,7 +92,8 @@ When starting a Raid, show the Economic benefit, not just the stolen shares.
 
 ### Phase 1: Contract (Solidity)
 
-- [x] Create `CartelCoreV4.sol` / Update `CartelCore` logic in `RemixOneClick.sol`.
+* [x] Create `CartelCoreV4.sol` / Update `CartelCore` logic in `RemixOneClick.sol`.
+
 * [x] Add struct `User { uint128 score; uint64 lastUpdate; ... }`.
 * [x] Implement `applyDecay()` using fixed-point math loops (max 30 days).
 * [x] Implement `_updateUser()` central hub using Babylonian sqrt.
@@ -100,12 +101,14 @@ When starting a Raid, show the Economic benefit, not just the stolen shares.
 
 ### Phase 2: React Hook (Frontend Math)
 
-- [ ] Create `useHeatCalculator.ts` to replicate contract math on client.
+* [ ] Create `useHeatCalculator.ts` to replicate contract math on client.
+
 * [ ] Show real-time "Decay" prediction (frontend simulation).
 
 ### Phase 3: UI Reskin
 
-- [ ] **Dashboard**: Add "Heat Bar" widget.
+* [ ] **Dashboard**: Add "Heat Bar" widget.
+
 * [ ] **Profile**: Show "Effective Share Count" vs "Real Share Count".
 * [ ] **Modals**: Add "Multiplier Boost" preview to Raid/Betray screens.
 
