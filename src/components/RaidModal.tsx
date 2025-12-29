@@ -280,33 +280,12 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                         });
                         const data = await res.json();
 
-                        if (data.success) {
-                            console.log("Auto-Reveal Success:", data.tx);
+                        if (data.success && data.tx) {
+                            console.log("Auto-Reveal Tx Sent:", data.tx);
+                            // [FAST REVEAL] API return tx immediately, we handle waiting below
                             revealHash = data.tx as `0x${string}`;
-
-                            // [FIX] Use outcome from API
-                            if (data.outcome) {
-                                console.log("[RaidModal] Reveal Outcome:", data.outcome);
-                                const success = data.outcome.success;
-                                const stealedWei = BigInt(data.outcome.stealed);
-
-                                // SHARES ARE INTEGERS (0 decimals), NOT WEI (18 decimals)
-                                // Only clean formatting if checking for non-zero logic
-                                const displayAmount = Number(stealedWei);
-
-                                console.log("[RaidModal] Display Amount:", displayAmount);
-
-                                setResult(success ? 'success' : 'fail');
-                                setStolenAmount(displayAmount);
-                            } else {
-                                // Fallback (shouldn't happen with updated API)
-                                setResult('success');
-                                setStolenAmount(0);
-                            }
-
-                            setStep('result');
                         } else {
-                            throw new Error(data.error);
+                            throw new Error(data.error || "Reveal request failed");
                         }
                     } catch (err) {
                         console.error("Auto-Reveal failed, falling back to manual:", err);
@@ -334,7 +313,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
                     if (revealHash) {
 
-                        // Wait for Result
+                        // Wait for Result (Fast Reveal Client Logic)
+                        console.log("Waiting for Reveal confirmation...");
                         const finalReceipt = await publicClient.waitForTransactionReceipt({ hash: revealHash });
 
                         // Decode Final Result
@@ -351,12 +331,24 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 });
                                 if (decoded.eventName === 'RaidResult') {
                                     success = decoded.args.success as boolean;
-                                    // [FIX] Property name is 'stealed' in ABI, not 'stolenShares'
+                                    // [ROBUST FIX] Check various property names (stealed in Contract, stolenShares in DB/API types)
                                     actualStolen = Number(decoded.args.stealed || decoded.args.stolenShares || 0n);
                                     if (decoded.args.penalty) actualPenalty = Number(decoded.args.penalty);
                                 }
                             } catch (e) { }
                         }
+
+                        // [SYNC] Force Server to Index This Event (since API didn't wait)
+                        try {
+                            fetch('/api/cartel/events/record', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    txHash: revealHash,
+                                    target: finalTarget
+                                })
+                            }).then(() => console.log("Event Index Triggered")).catch(e => console.error("Index Sync Failed", e));
+                        } catch (e) { console.error("Sync trigger error", e); }
 
                         setStolenAmount(actualStolen);
                         setSelfPenalty(actualPenalty);

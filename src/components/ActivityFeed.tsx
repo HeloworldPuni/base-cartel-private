@@ -62,7 +62,7 @@ export default function ActivityFeed() {
         <div className="bg-[#0F172A]/40 backdrop-blur-xl border border-[#1E293B] rounded-2xl p-6 h-full">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                    <Activity className="text-[#0000FE]" size={24} />
+                    <Activity className="text-[#0066FF]" size={24} />
                     <h2 className="text-xl font-bold text-white">Live Activity</h2>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -88,7 +88,7 @@ export default function ActivityFeed() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                                className="group relative bg-gradient-to-r from-[#0F172A]/80 to-transparent border-l-2 border-[#0000FE]/50 pl-4 pr-4 py-3 hover:border-[#0000FE] transition-all duration-300 rounded-r-lg"
+                                className="group relative bg-gradient-to-r from-[#0F172A]/80 to-transparent border-l-2 border-[#0066FF]/50 pl-4 pr-4 py-3 hover:border-[#0066FF] transition-all duration-300 rounded-r-lg"
                             >
                                 <div className="flex items-start space-x-3">
                                     <div className="text-xl flex-shrink-0 mt-1">
