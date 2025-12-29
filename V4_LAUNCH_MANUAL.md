@@ -79,8 +79,10 @@ When you are ready to launch "Season 2" (Final Testnet):
 
 1. **Deploy Contract**:
     * Open `RemixOneClick.sol` in Remix.
+    * **CRITICAL**: Ensure you are using the latest version (with EIP-712 `_verifySignature` fix).
     * Deploy `CartelDeployer`.
     * Call `deployV2()`.
+    * **Note**: This fixes the `invalid s` signature error for Auto-Agents/Signatures.
 2. **Update Frontend**:
     * Copy the new `CartelCore` address.
     * Update `.env.local`: `NEXT_PUBLIC_CARTEL_CORE_ADDRESS=...`
