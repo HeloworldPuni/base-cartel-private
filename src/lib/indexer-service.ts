@@ -74,6 +74,7 @@ export async function indexEvents() {
     // Chunked fetching to avoid RPC limits
     const CHUNK_SIZE = 20000;
     const missedClaims: any[] = [];
+    const backfillErrors: string[] = [];
 
     for (let start = backfillStart; start < currentBlock; start += CHUNK_SIZE) {
         const end = Math.min(start + CHUNK_SIZE - 1, currentBlock);
@@ -82,7 +83,9 @@ export async function indexEvents() {
             const chunkLogs = await contract.queryFilter(contract.filters.Claim(), start, end);
             missedClaims.push(...chunkLogs);
         } catch (err) {
-            console.error(`[Indexer] Failed to fetch chunk ${start}-${end}:`, err);
+            const msg = `[Indexer] Failed to fetch chunk ${start}-${end}: ${err}`;
+            console.error(msg);
+            backfillErrors.push(msg);
         }
     }
 
@@ -185,6 +188,18 @@ export async function indexEvents() {
     await processEventBatch(eventsToProcess);
 
     console.log(`[Indexer] Processed ${eventsToProcess.length} events.`);
+
+    return {
+        processed: eventsToProcess.length,
+        backfillFound: missedClaims.length,
+        backfillErrors: backfillErrors.length > 0 ? backfillErrors : null,
+        recentEvents: {
+            raid: raidLogs.length,
+            highStakes: highStakesLogs.length,
+            join: joinLogs.length,
+            claim: claimLogs.length
+        }
+    };
 }
 
 async function processEventBatch(events: any[]) {

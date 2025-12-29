@@ -11,8 +11,8 @@ export async function GET(request: Request) {
         // if (auth !== `Bearer ${process.env.CRON_SECRET}`) ...
 
         console.log("[Cron] Triggering Indexer...");
-        await indexEvents();
-        return NextResponse.json({ success: true, message: "Indexing complete" });
+        const stats = await indexEvents();
+        return NextResponse.json({ success: true, message: "Indexing complete", stats });
     } catch (error) {
         console.error("[Cron] Indexing failed:", error);
         return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
