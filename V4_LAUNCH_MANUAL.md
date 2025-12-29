@@ -2,7 +2,7 @@
 
 > **Status**: Ready for Final Testnet Deployment
 > **Authors**: User & Antigravity
-> **Date**: Dec 2025
+> **Date**: Jan 2026
 
 ## Core Philosophy
 
@@ -18,9 +18,9 @@ We replace the static `balanceOf` model with a dynamic **Effective Share** model
 
 ### 1.1 The Formula
 
-Your "Slice of the Pot" is longer just your shares. It is:
+Your "Slice of the Pot" is no longer just your shares. It is:
 
-`EffectiveShares = RawShares × (1 + WeightMultiplier)`
+**EffectiveShares = RawShares × (1 + WeightMultiplier)**
 
 Where **WeightMultiplier** comes from your Recent "Heat":
 
@@ -28,7 +28,7 @@ Where **WeightMultiplier** comes from your Recent "Heat":
 Multiplier = sqrt(ContributionScore / K)
 ```
 
-### 1.2 "Heat" Mechanics
+### 1.2 "Heat" Mechanics (Contribution Score)
 
 * **Gaining Heat**: Every time you pay a fee (Raid/Betray), your `ContributionScore` increases by the $ amount paid.
 * **Losing Heat**: Every day (or action), your `ContributionScore` decays by **15% per day** (`0.85x`).
@@ -42,7 +42,7 @@ Multiplier = sqrt(ContributionScore / K)
 
 ### 1.4 "Anti-Leech" Security
 
-* **Unified Pot**: `distribute()` splits rewards to `totalEffectiveShares`. If you have 0 Heat (1.0x), you earn significantly less than active players (up to 20.0x less).
+* **Unified Pot**: `distribute()` now splits rewards to `totalEffectiveShares`. If you have 0 Heat (1.0x), you earn significantly less than active players (up to 20.0x less).
 * **Betrayal Security**: Fixed a "Double-Dip" exploit. Players cannot claim pending rewards and then Rage Quit against the full pot.
 
 ---
@@ -53,9 +53,9 @@ A complex math system usually scares users. We must hide the math behind intuiti
 
 ### 2.1 The "Heat" Metaphor (Dashboard)
 
-Instead of showing "Contribution Score", we show **"Heat Level"** or **"Criminal Rating"**.
+Instead of showing "Contribution Score", show **"Heat Level"** or **"Criminal Rating"**.
 
-**Visual**: A burning bar or circular gauge next to Profile.
+**Visual**: A burning bar or circular gauge next to their Profile.
 **Levels**:
 
 * 🔥 **Level 1 (Thug)**: Multiplier 1.0x - 1.5x
@@ -70,15 +70,16 @@ Instead of showing "Contribution Score", we show **"Heat Level"** or **"Criminal
 Don't just show "APY". Show "Your Power".
 
 * *Display*: "You own 100 Shares. With your 🔥 **3.5x Multiplier**, you earn like you own **350 Shares**!"
+* *Why*: This makes the user feel smart and powerful. "I hacked the system to get free shares."
 
 ### 2.3 The Decay Timer
 
-Gamify retention.
+Gamify the retention.
 
 * *Widget*: "Heat Decay in: 14h 30m".
 * *Notification*: "You are about to drop from Capo to Soldier. Raid now to stay on top."
 
-### 2.4 "Estimated Juice" (Action Modals)
+### 2.4 "Estimated Juice" (Raid Modal)
 
 When starting a Raid, show the Economic benefit, not just the stolen shares.
 
@@ -87,22 +88,22 @@ When starting a Raid, show the Economic benefit, not just the stolen shares.
 
 ---
 
-## 3. Technical Implementation & Checklist 🛠️
+## 3. Implementation Checklist 🛠️
 
-### Phase 1: Contract (Solidity) [COMPLETE]
+### Phase 1: Contract (Solidity)
 
-- [x] Create `CartelCoreV4.sol` / Update `CartelCore` in `RemixOneClick.sol`.
+- [x] Create `CartelCoreV4.sol` / Update `CartelCore` logic in `RemixOneClick.sol`.
 * [x] Add struct `User { uint128 score; uint64 lastUpdate; ... }`.
-* [x] Implement `applyDecay()` with fixed-point math loops.
-* [x] Implement `_updateUser()` central hub.
-* [x] **Verification Fix**: EIP-712 Signature support in `AgentVault`.
+* [x] Implement `applyDecay()` using fixed-point math loops (max 30 days).
+* [x] Implement `_updateUser()` central hub using Babylonian sqrt.
+* [x] Update `distribute()` to use `totalEffectiveShares` denominator.
 
-### Phase 2: React Hook (Frontend Math) [TODO]
+### Phase 2: React Hook (Frontend Math)
 
 - [ ] Create `useHeatCalculator.ts` to replicate contract math on client.
 * [ ] Show real-time "Decay" prediction (frontend simulation).
 
-### Phase 3: UI Reskin [TODO]
+### Phase 3: UI Reskin
 
 - [ ] **Dashboard**: Add "Heat Bar" widget.
 * [ ] **Profile**: Show "Effective Share Count" vs "Real Share Count".
@@ -110,20 +111,29 @@ When starting a Raid, show the Economic benefit, not just the stolen shares.
 
 ---
 
-## 4. Future Roadmap: The "Cartel Token" 🪙
+## 4. Why This Wins
+
+It converts "paying gas/fees" from a Cost into an **Investment**. Players will effectively pay you (the protocol) to keep their multiplier high. It is the ultimate sticky gamification loop.
+
+---
+
+## 5. Future Roadmap: The "Cartel Token" 🪙
 
 **Idea**: Launch a governance/utility token tied to liquidity.
 **Distribution**: Retroactive Airdrop.
 
-### 4.1 Reputation (XP) Strategy
+### 5.1 Reputation (XP) Strategy
 
-* **Heat** = Maximizes USDC Yield (Now).
-* **Reputation** = Maximizes Token Airdrop (Future).
-* **Formula**: `Airdrop = (Shares) × (Activity) × (Reputation Tier)`
+* **Current State**: Reputation (Quests) currently does **NOT** give in-game buffs.
+* **Purpose**: Reputation is an **Airdrop Multiplier**.
+* **Formula**: `Airdrop Allocation = (Shares Held) × (Activity Count) × (Reputation Tier)`
+* **Why**: Separation of concerns.
+  * **Heat** = Maximizes USDC Yield (Now).
+  * **Reputation** = Maximizes Token Airdrop (Future).
 
 ---
 
-## 5. Deployment Checklist 🚀
+## 6. Deployment Checklist 🚀
 
 When you are ready to launch "Season 2" (Final Testnet):
 
