@@ -47,20 +47,20 @@ export default {
         },
         border: 'var(--border)',
         input: 'var(--input)',
-        ring: '#0000FE',
-        // Override default blue to 0000FE (Power Blue)
+        ring: '#0066FF',
+        // Override default blue to 0066FF
         blue: {
           50: '#eff6ff',
           100: '#dbeafe',
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#0000FE', // Replaced
-          600: '#0000FE', // Replaced
-          700: '#0000FE', // Replaced
-          800: '#0000FE', // Replaced
-          900: '#0000FE', // Replaced
-          950: '#0000FE', // Replaced
+          500: '#0066FF',
+          600: '#0066FF',
+          700: '#0066FF',
+          800: '#0066FF',
+          900: '#0066FF',
+          950: '#0066FF',
         },
         // Base-inspired color palette
         'base-blue': {
@@ -69,12 +69,12 @@ export default {
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#0000FE', // Replaced
-          600: '#0000FE', // Replaced
-          700: '#0000FE', // Replaced
-          800: '#0000FE', // Replaced
-          900: '#0000FE', // Replaced
-          950: '#0000FE', // Replaced
+          500: '#0066FF',
+          600: '#0066FF',
+          700: '#0066FF',
+          800: '#0066FF',
+          900: '#0066FF',
+          950: '#0066FF',
         }
       },
       borderRadius: {
