@@ -825,6 +825,10 @@ contract AgentVault is Ownable, ReentrancyGuard {
         }
     }
 
+    // EIP-712 Constants
+    bytes32 private constant DOMAIN_TYPE_HASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 private constant EXECUTE_TYPE_HASH = keccak256("ExecuteAction(address user,string action,bytes data,uint256 nonce,uint256 deadline)");
+
     function _verifySignature(
         address user,
         string calldata action,
@@ -833,18 +837,32 @@ contract AgentVault is Ownable, ReentrancyGuard {
         uint256 nonce,
         uint8 v, bytes32 r, bytes32 s
     ) internal view {
-        // Normalize s value to prevent malleability
-        bytes32 s_norm = s;
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            s_norm = bytes32(uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141) - uint256(s));
-        }
+        // 1. Domain Separator
+        bytes32 domainSeparator = keccak256(abi.encode(
+            DOMAIN_TYPE_HASH,
+            keccak256(bytes("FarcasterCartelAgent")),
+            keccak256(bytes("1")),
+            block.chainid,
+            address(this)
+        ));
 
-        // Include address(this) in the message to prevent replay across contracts
-        bytes32 message = keccak256(abi.encode(user, action, data, deadline, nonce, address(this)));
-        bytes32 ethSignedMessageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
+        // 2. Struct Hash
+        // Note: For bytes/strings, we must keccak256 them in the struct hash
+        bytes32 structHash = keccak256(abi.encode(
+            EXECUTE_TYPE_HASH,
+            user,
+            keccak256(bytes(action)),
+            keccak256(data),
+            nonce,
+            deadline
+        ));
 
-        address signer = ecrecover(ethSignedMessageHash, v, r, s_norm);
-        require(signer == user, "Invalid Signature");
+        // 3. Digest
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
+
+        // 4. Recover
+        address signer = ecrecover(digest, v, r, s);
+        require(signer != address(0) && signer == user, "Invalid Signature (EIP-712)");
     }
 }
 
