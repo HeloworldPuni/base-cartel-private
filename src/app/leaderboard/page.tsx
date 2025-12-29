@@ -12,6 +12,7 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import MyClanModal from "@/components/MyClanModal";
 import AuthenticatedRoute from '@/components/AuthenticatedRoute'; // Integrating Auth Wrapper
 import BottomNav from '@/components/BottomNav';
 
@@ -43,12 +44,18 @@ export default function LeaderboardPage() {
     const [hoveredRank, setHoveredRank] = useState<number | null>(null);
     const [mounted, setMounted] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+
     const playersPerPage = 8;
     // const totalPlayers = 100; // Will be dynamic
 
     const [players, setPlayers] = useState<PlayerDisplay[]>([]);
     const [totalPlayers, setTotalPlayers] = useState(0);
     const [loading, setLoading] = useState(true);
+
+    const handleViewProfile = (address: string) => {
+        setSelectedAddress(address);
+    };
 
     // --- CONTRACT READ ---
     const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
@@ -427,6 +434,7 @@ export default function LeaderboardPage() {
 
                                         {/* View Button */}
                                         <button
+                                            onClick={() => handleViewProfile(player.address)}
                                             className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${hoveredRank === player.rank ? "bg-white text-black scale-110" : "bg-white/10 text-white"}`}
                                         >
                                             <Eye className="w-4 h-4" />
@@ -435,7 +443,10 @@ export default function LeaderboardPage() {
                                     </div>
 
                                     {/* Mobile View Button */}
-                                    <button className="md:hidden w-full mt-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={() => handleViewProfile(player.address)}
+                                        className="md:hidden w-full mt-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2"
+                                    >
                                         <Eye className="w-4 h-4" />
                                         View Profile
                                     </button>
@@ -443,6 +454,15 @@ export default function LeaderboardPage() {
                             </div>
                         ))}
                     </div>
+
+                    {/* Profile Modal */}
+                    {selectedAddress && (
+                        <MyClanModal
+                            isOpen={!!selectedAddress}
+                            onClose={() => setSelectedAddress(null)}
+                            address={selectedAddress}
+                        />
+                    )}
 
                     {/* Pagination Controls */}
                     <div className="mt-8 flex items-center justify-center gap-4">

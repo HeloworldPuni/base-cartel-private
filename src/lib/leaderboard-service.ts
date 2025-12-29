@@ -26,25 +26,42 @@ export async function getLeaderboard(limit: number = 20, page: number = 1): Prom
         prisma.user.count()
     ]);
 
-    // Let's get raid counts for these top users
+    // Let's get raid counts and claim totals for these top users
     const addresses = users.map(u => u.walletAddress);
 
-    let raidCounts: Record<string, number> = {};
+    const raidCounts: Record<string, number> = {};
+    const dividendsClaimed: Record<string, number> = {};
 
     if (addresses.length > 0) {
-        const events = await prisma.cartelEvent.groupBy({
-            by: ['attacker'],
-            where: {
-                attacker: { in: addresses },
-                type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
-            },
-            _count: {
-                id: true
-            }
+        const [raidEvents, claimEvents] = await Promise.all([
+            prisma.cartelEvent.groupBy({
+                by: ['attacker'],
+                where: {
+                    attacker: { in: addresses },
+                    type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
+                },
+                _count: {
+                    id: true
+                }
+            }),
+            prisma.cartelEvent.groupBy({
+                by: ['attacker'],
+                where: {
+                    attacker: { in: addresses },
+                    type: 'CLAIM'
+                },
+                _sum: {
+                    feePaid: true // In CLAIM events, feePaid stores the amount
+                }
+            })
+        ]);
+
+        raidEvents.forEach(ev => {
+            if (ev.attacker) raidCounts[ev.attacker] = ev._count.id;
         });
 
-        events.forEach(ev => {
-            if (ev.attacker) raidCounts[ev.attacker] = ev._count.id;
+        claimEvents.forEach(ev => {
+            if (ev.attacker) dividendsClaimed[ev.attacker] = ev._sum.feePaid || 0;
         });
     }
 
@@ -53,7 +70,8 @@ export async function getLeaderboard(limit: number = 20, page: number = 1): Prom
         address: u.walletAddress,
         name: u.walletAddress,
         shares: u.shares || 0,
-        totalClaimed: u.referralRewardsClaimed || 0,
+        // Sum of Referral Rewards (from DB) + Dividend Claims (from Events)
+        totalClaimed: (u.referralRewardsClaimed || 0) + (dividendsClaimed[u.walletAddress] || 0),
         raidCount: raidCounts[u.walletAddress] || 0,
         fid: u.farcasterId ? parseInt(u.farcasterId) : undefined,
         lastActive: u.lastSeenAt?.toISOString() || u.createdAt.toISOString(),
