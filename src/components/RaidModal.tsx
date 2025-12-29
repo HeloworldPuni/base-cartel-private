@@ -286,18 +286,15 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
                             // [FIX] Use outcome from API
                             if (data.outcome) {
-                                // outcome: { success: boolean, stealed: string (wei) }
+                                console.log("[RaidModal] Reveal Outcome:", data.outcome);
                                 const success = data.outcome.success;
                                 const stealedWei = BigInt(data.outcome.stealed);
-                                const formattedStealed = parseFloat(formatEther(stealedWei));
 
-                                // [FIX] Dynamic Precision for Micro-Shares
-                                let displayAmount = 0;
-                                if (formattedStealed > 0 && formattedStealed < 0.01) {
-                                    displayAmount = Number(formattedStealed.toFixed(4));
-                                } else {
-                                    displayAmount = Number(formattedStealed.toFixed(2));
-                                }
+                                // SHARES ARE INTEGERS (0 decimals), NOT WEI (18 decimals)
+                                // Only clean formatting if checking for non-zero logic
+                                const displayAmount = Number(stealedWei);
+
+                                console.log("[RaidModal] Display Amount:", displayAmount);
 
                                 setResult(success ? 'success' : 'fail');
                                 setStolenAmount(displayAmount);
