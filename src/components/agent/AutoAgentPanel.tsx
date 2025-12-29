@@ -369,8 +369,21 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                                 try {
                                     const res = await fetch(`/api/cron/agent?user=${address}`);
                                     const data = await res.json();
+
                                     if (data.success) {
-                                        setStatusMsg("Strategy Executed! Check Activity.");
+                                        // Check the specific result for this user
+                                        const result = data.results && data.results[0];
+                                        if (result) {
+                                            if (String(result.result).startsWith("Skipped")) {
+                                                setStatusMsg(`Failed: ${result.result}`);
+                                            } else if (String(result.result).startsWith("0x")) {
+                                                setStatusMsg(`Strategy Executed! TX: ${String(result.result).slice(0, 10)}...`);
+                                            } else {
+                                                setStatusMsg(`Execution finished: ${result.result}`);
+                                            }
+                                        } else {
+                                            setStatusMsg("Strategy Executed! (No action taken)");
+                                        }
                                     } else {
                                         setStatusMsg("Failed: " + data.error);
                                     }
