@@ -8,6 +8,9 @@ export async function runAgentScheduler(targetUser?: string) {
     // If targeting a specific user, filter for them
     if (targetUser) {
         activeAgents = activeAgents.filter(a => a.userAddress.toLowerCase() === targetUser.toLowerCase());
+        if (activeAgents.length === 0) {
+            return [{ user: targetUser, success: false, result: "Skipped (Agent not configured or disabled)" }];
+        }
     }
 
     console.log(`[AgentScheduler] Found ${activeAgents.length} active agents${targetUser ? ` (Targeting ${targetUser})` : ''}`);
