@@ -38,7 +38,7 @@ export default function FullLandingPage() {
             icon: Swords,
             title: "Raid Rivals",
             description: "Steal shares and burn enemies in PVP attacks.",
-            gradient: "from-blue-500 to-cyan-500",
+            gradient: "from-[#0066FF] to-cyan-500",
         },
         {
             icon: Users,
@@ -50,13 +50,13 @@ export default function FullLandingPage() {
             icon: Bot,
             title: "Automate",
             description: "Deploy Autonomous Agents (x402) to work 24/7.",
-            gradient: "from-blue-500 to-cyan-500",
+            gradient: "from-[#0066FF] to-cyan-500",
         },
         {
             icon: Crown,
             title: "Rank Up",
             description: "Climb the leaderboard and control the daily pot.",
-            gradient: "from-sky-500 to-blue-600",
+            gradient: "from-sky-500 to-[#0066FF]",
         },
     ];
 
@@ -106,7 +106,7 @@ export default function FullLandingPage() {
                             alt="Base Cartel Logo"
                             className="w-10 h-10 hue-rotate-180"
                         />
-                        <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold bg-gradient-to-r from-[#0066FF] to-cyan-500 bg-clip-text text-transparent">
                             BASE CARTEL
                         </span>
                     </div>
@@ -132,7 +132,7 @@ export default function FullLandingPage() {
                         </a>
                         <a
                             href="/dashboard"
-                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all"
+                            className="px-6 py-2.5 bg-gradient-to-r from-[#0066FF] to-cyan-600 rounded-lg font-semibold hover:shadow-lg hover:shadow-[#0066FF]/50 transition-all"
                             aria-label="Open App Dashboard"
                         >
                             Open App
@@ -175,7 +175,7 @@ export default function FullLandingPage() {
                             </a>
                             <a
                                 href="/dashboard"
-                                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold text-center"
+                                className="px-6 py-2.5 bg-gradient-to-r from-[#0066FF] to-cyan-600 rounded-lg font-semibold text-center"
                             >
                                 Open App
                             </a>
@@ -192,7 +192,7 @@ export default function FullLandingPage() {
                     style={{ transform: `translateY(${parallaxY}px)` }}
                 >
                     <div
-                        className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
+                        className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0066FF]/20 rounded-full blur-3xl animate-pulse"
                         style={{ animationDuration: "4s" }}
                     ></div>
                     <div
@@ -217,7 +217,7 @@ export default function FullLandingPage() {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
-                        <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-[#0066FF] via-cyan-500 to-sky-500 bg-clip-text text-transparent">
                             RULE THE CHAIN
                         </span>
                     </h1>
@@ -229,7 +229,7 @@ export default function FullLandingPage() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <a
                             href="/dashboard"
-                            className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all flex items-center gap-2"
+                            className="group px-8 py-4 bg-gradient-to-r from-[#0066FF] to-cyan-600 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-[#0066FF]/50 transition-all flex items-center gap-2"
                         >
                             OPEN APP
                             <ArrowRight
@@ -316,7 +316,7 @@ export default function FullLandingPage() {
                             : "opacity-0 translate-y-10"
                             }`}
                     >
-                        <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-[#0066FF] to-cyan-500 bg-clip-text text-transparent">
                             HOW IT WORKS
                         </span>
                     </h2>
@@ -338,7 +338,7 @@ export default function FullLandingPage() {
                                         {typeof step.icon === "string" ? (
                                             step.icon
                                         ) : (
-                                            <step.icon size={48} className="text-blue-500" />
+                                            <step.icon size={48} className="text-[#0066FF]" />
                                         )}
                                     </div>
                                     <div className="text-5xl font-bold text-white/20 mb-4">
@@ -350,7 +350,7 @@ export default function FullLandingPage() {
                                 {index < steps.length - 1 && (
                                     <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                                         <ArrowRight
-                                            className="text-blue-500 animate-pulse"
+                                            className="text-[#0066FF] animate-pulse"
                                             size={32}
                                         />
                                     </div>
@@ -364,7 +364,7 @@ export default function FullLandingPage() {
             {/* Interface Section */}
             <section
                 id="interface"
-                className="py-24 px-6 bg-gradient-to-b from-black to-blue-950/10"
+                className="py-24 px-6 bg-gradient-to-b from-black to-[#0066FF]/10"
                 data-scroll-section
             >
                 <div className="max-w-7xl mx-auto">
@@ -375,7 +375,7 @@ export default function FullLandingPage() {
                             }`}
                     >
                         <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                            <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-[#0066FF] to-cyan-500 bg-clip-text text-transparent">
                                 Interface
                             </span>
                         </h2>
@@ -401,7 +401,7 @@ export default function FullLandingPage() {
                                 }}
                                 onClick={() => setSelectedImage(preview.image)}
                             >
-                                <div className="aspect-video w-full bg-gradient-to-br from-blue-950/20 to-cyan-950/20 flex items-center justify-center overflow-hidden relative">
+                                <div className="aspect-video w-full bg-gradient-to-br from-[#0066FF]/20 to-cyan-950/20 flex items-center justify-center overflow-hidden relative">
                                     <img
                                         src={preview.image}
                                         alt={preview.title}
@@ -468,7 +468,7 @@ export default function FullLandingPage() {
                     </p>
                     <a
                         href="/dashboard"
-                        className="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl font-bold text-xl hover:shadow-2xl hover:shadow-blue-500/50 transition-all group hover:scale-105"
+                        className="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-[#0066FF] to-cyan-600 rounded-xl font-bold text-xl hover:shadow-2xl hover:shadow-[#0066FF]/50 transition-all group hover:scale-105"
                     >
                         JOIN THE CARTEL
                         <ArrowRight

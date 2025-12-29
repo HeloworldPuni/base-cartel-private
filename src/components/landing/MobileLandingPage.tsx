@@ -23,7 +23,7 @@ export default function MobileLandingPage() {
             icon: Swords,
             title: "Raid Rivals",
             description: "Steal shares and burn enemies in PVP attacks.",
-            colors: "from-blue-500 to-cyan-500",
+            colors: "from-[#0066FF] to-cyan-500",
         },
         {
             icon: Users,
@@ -35,13 +35,13 @@ export default function MobileLandingPage() {
             icon: Bot,
             title: "Automate",
             description: "Deploy Autonomous Agents (x402) to work 24/7.",
-            colors: "from-blue-600 to-sky-500",
+            colors: "from-[#0066FF] to-sky-500",
         },
         {
             icon: Crown,
             title: "Rank Up",
             description: "Climb the leaderboard and control the daily pot.",
-            colors: "from-sky-500 to-blue-400",
+            colors: "from-sky-500 to-[#0066FF]",
         },
     ];
 
@@ -81,7 +81,7 @@ export default function MobileLandingPage() {
 
                 {/* Title */}
                 <h1 className="text-5xl font-bold text-center mb-4 leading-tight">
-                    <span className="text-blue-500">RULE </span>
+                    <span className="text-[#0066FF]">RULE </span>
                     <span className="text-cyan-500">THE </span>
                     <span className="text-sky-500">CHAIN</span>
                 </h1>
@@ -93,7 +93,7 @@ export default function MobileLandingPage() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col gap-3">
                     <Link href="/login" className="w-full">
-                        <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 py-4 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+                        <div className="w-full bg-gradient-to-r from-[#0066FF] to-cyan-600 py-4 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#0066FF]/20 active:scale-95 transition-transform">
                             <span className="text-white text-lg font-bold">OPEN APP</span>
                             <ArrowRight className="text-white" size={20} />
                         </div>
@@ -151,7 +151,7 @@ export default function MobileLandingPage() {
             {/* How It Works Section */}
             <div id="how-it-works" className="px-6 pb-16">
                 <h2 className="text-4xl font-bold text-center mb-10">
-                    <span className="text-blue-500">HOW IT </span>
+                    <span className="text-[#0066FF]">HOW IT </span>
                     <span className="text-cyan-500">WORKS</span>
                 </h2>
 
@@ -167,7 +167,7 @@ export default function MobileLandingPage() {
                                 ) : (
                                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                     // @ts-ignore
-                                    <step.icon className="text-blue-500" size={48} />
+                                    <step.icon className="text-[#0066FF]" size={48} />
                                 )}
                             </div>
                             <div className="text-5xl font-bold text-white/20 mb-3">
@@ -187,7 +187,7 @@ export default function MobileLandingPage() {
             {/* Interface Section */}
             <div className="px-6 pb-16">
                 <h2 className="text-4xl font-bold text-center mb-2">
-                    <span className="text-blue-500">INTER</span>
+                    <span className="text-[#0066FF]">INTER</span>
                     <span className="text-cyan-500">FACE</span>
                 </h2>
                 <p className="text-lg text-gray-400 text-center mb-8">
@@ -205,7 +205,7 @@ export default function MobileLandingPage() {
                         className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg active:scale-95 transition-transform"
                         onClick={() => setSelectedImage(preview.image)}
                     >
-                        <div className="w-full aspect-video bg-blue-900/20 relative">
+                        <div className="w-full aspect-video bg-[#0066FF]/20 relative">
                             <img
                                 src={preview.image}
                                 alt={`${preview.title} Preview`}
@@ -258,7 +258,7 @@ export default function MobileLandingPage() {
                 </p>
 
                 <Link href="/login" className="w-full">
-                    <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 py-5 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+                    <div className="w-full bg-gradient-to-r from-[#0066FF] to-cyan-600 py-5 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#0066FF]/20 active:scale-95 transition-transform">
                         <span className="text-white text-xl font-bold">JOIN THE CARTEL</span>
                         <ArrowRight className="text-white" size={24} />
                     </div>
