@@ -19,11 +19,12 @@ export async function getLeaderboard(limit: number = 20, page: number = 1): Prom
 
     const [users, total] = await Promise.all([
         prisma.user.findMany({
+            where: { shares: { gt: 0 } },
             orderBy: { shares: 'desc' },
             take: limit,
             skip: skip,
         }),
-        prisma.user.count()
+        prisma.user.count({ where: { shares: { gt: 0 } } })
     ]);
 
     // Let's get raid counts and claim totals for these top users
