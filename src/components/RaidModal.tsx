@@ -351,7 +351,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 });
                                 if (decoded.eventName === 'RaidResult') {
                                     success = decoded.args.success as boolean;
-                                    actualStolen = Number(decoded.args.stolenShares || 0n);
+                                    // [FIX] Property name is 'stealed' in ABI, not 'stolenShares'
+                                    actualStolen = Number(decoded.args.stealed || decoded.args.stolenShares || 0n);
                                     if (decoded.args.penalty) actualPenalty = Number(decoded.args.penalty);
                                 }
                             } catch (e) { }
