@@ -201,7 +201,11 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 }
             });
 
-            setStatusMsg("Saving settings...");
+            console.log("Generated Signature:", signature);
+            setStatusMsg(`Signed! Sig: ${signature.slice(0, 10)}... Saving...`);
+
+            // Allow UI to update
+            await new Promise(r => setTimeout(r, 500));
 
             // 2. Save to Backend
             const res = await fetch('/api/agent/settings', {
