@@ -313,3 +313,17 @@ model Season {
   active    Boolean
 }
 
+model AgentSettings {
+  id           String   @id @default(uuid())
+  userAddress  String   @unique
+  enabled      Boolean  @default(false)
+  strategy     String   @default("conservative")
+  budget       Float    @default(0)
+  maxShareRisk Float    @default(5)
+  delegation   Json?
+  lastRun      DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+

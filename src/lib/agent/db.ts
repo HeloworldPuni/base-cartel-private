@@ -1,7 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-
-const DB_PATH = path.join(process.cwd(), 'agent-db.json');
+import prisma from '../prisma';
 
 export interface AgentSettings {
     userAddress: string;
@@ -18,36 +15,59 @@ export interface AgentSettings {
 }
 
 export const AgentDB = {
-    getAll: (): AgentSettings[] => {
+    getAll: async (): Promise<AgentSettings[]> => {
         try {
-            if (!fs.existsSync(DB_PATH)) return [];
-            const data = fs.readFileSync(DB_PATH, 'utf-8');
-            return JSON.parse(data);
+            const result = await prisma.agentSettings.findMany();
+            return result.map(toAppModel);
         } catch (e) {
             console.error("Error reading DB:", e);
             return [];
         }
     },
 
-    get: (userAddress: string): AgentSettings | null => {
-        const all = AgentDB.getAll();
-        return all.find(s => s.userAddress.toLowerCase() === userAddress.toLowerCase()) || null;
+    get: async (userAddress: string): Promise<AgentSettings | null> => {
+        try {
+            const result = await prisma.agentSettings.findUnique({
+                where: { userAddress }
+            });
+            return result ? toAppModel(result) : null;
+        } catch (e) {
+            console.error("Error reading DB for user:", e);
+            return null;
+        }
     },
 
-    save: (settings: AgentSettings) => {
+    save: async (settings: AgentSettings) => {
         try {
-            const all = AgentDB.getAll();
-            const index = all.findIndex(s => s.userAddress.toLowerCase() === settings.userAddress.toLowerCase());
+            const data = {
+                userAddress: settings.userAddress,
+                enabled: settings.enabled,
+                strategy: settings.strategy,
+                budget: settings.budget,
+                maxShareRisk: settings.maxShareRisk,
+                delegation: settings.delegation as any, // Prisma Json type
+                lastRun: settings.lastRun ? new Date(settings.lastRun) : null
+            };
 
-            if (index >= 0) {
-                all[index] = settings;
-            } else {
-                all.push(settings);
-            }
-
-            fs.writeFileSync(DB_PATH, JSON.stringify(all, null, 2));
+            await prisma.agentSettings.upsert({
+                where: { userAddress: settings.userAddress },
+                update: data,
+                create: data
+            });
         } catch (e) {
             console.error("Error saving DB:", e);
         }
     }
 };
+
+function toAppModel(dbModel: any): AgentSettings {
+    return {
+        userAddress: dbModel.userAddress,
+        enabled: dbModel.enabled,
+        strategy: dbModel.strategy as any,
+        budget: dbModel.budget,
+        maxShareRisk: dbModel.maxShareRisk,
+        delegation: dbModel.delegation,
+        lastRun: dbModel.lastRun ? new Date(dbModel.lastRun).getTime() : 0
+    };
+}

@@ -2,7 +2,7 @@ import { AgentDB } from './db';
 import { executeAgentAction } from './executor';
 
 export async function runAgentScheduler(targetUser?: string) {
-    const agents = AgentDB.getAll();
+    const agents = await AgentDB.getAll();
     let activeAgents = agents.filter(a => a.enabled && a.delegation);
 
     // If targeting a specific user, filter for them
@@ -31,7 +31,7 @@ export async function runAgentScheduler(targetUser?: string) {
 
                 // Update last run
                 agent.lastRun = now;
-                AgentDB.save(agent);
+                await AgentDB.save(agent);
             } catch (error) {
                 console.error(`[AgentScheduler] Failed for ${agent.userAddress}:`, error);
                 results.push({ user: agent.userAddress, success: false, error: String(error) });

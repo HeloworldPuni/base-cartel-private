@@ -24,12 +24,12 @@ export async function POST(request: Request) {
         };
 
         // Preserve lastRun if exists
-        const existing = AgentDB.get(userAddress);
+        const existing = await AgentDB.get(userAddress);
         if (existing) {
             settings.lastRun = existing.lastRun;
         }
 
-        AgentDB.save(settings);
+        await AgentDB.save(settings);
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -46,6 +46,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: "Missing userAddress" }, { status: 400 });
     }
 
-    const settings = AgentDB.get(userAddress);
+    const settings = await AgentDB.get(userAddress);
     return NextResponse.json({ success: true, settings });
 }
