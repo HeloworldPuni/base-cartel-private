@@ -10,6 +10,7 @@ import BetrayModal from "@/components/BetrayModal";
 import Link from "next/link";
 import MostWantedList from "./MostWantedList";
 import ActivityFeed from "./ActivityFeed";
+import MyClanModal from "./MyClanModal";
 
 // Wagmi & Data
 import { useReadContracts, useWriteContract, usePublicClient } from 'wagmi';
@@ -29,6 +30,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const [revenue24h, setRevenue24h] = useState<number>(0);
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
     const [isBetrayModalOpen, setIsBetrayModalOpen] = useState(false);
+    const [isClanModalOpen, setIsClanModalOpen] = useState(false);
 
     // --- CONTRACT ADDRESSES ---
     const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
@@ -351,7 +353,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </button>
 
                 <button
-                    onClick={() => window.location.href = '/clans'}
+                    onClick={() => setIsClanModalOpen(true)}
                     className={`group relative bg-gradient-to-br from-[#00D4FF] via-[#0099CC] to-[#00D4FF] backdrop-blur-xl border border-[#00D4FF] rounded-2xl p-6 hover:shadow-xl hover:shadow-[#00D4FF]/50 transition-all duration-300 hover:scale-105 ${mounted ? 'animate-slide-up-delay-3' : ''}`}
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/20 to-transparent rounded-2xl"></div>
@@ -460,6 +462,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             {/* MODALS */}
             <RaidModal isOpen={isRaidModalOpen} onClose={handleModalClose} />
             <BetrayModal isOpen={isBetrayModalOpen} onClose={() => setIsBetrayModalOpen(false)} />
+            <MyClanModal isOpen={isClanModalOpen} onClose={() => setIsClanModalOpen(false)} address={address || ''} />
 
             {/* Animations */}
             <style jsx global>{`
