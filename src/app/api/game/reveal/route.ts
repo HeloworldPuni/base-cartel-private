@@ -94,10 +94,26 @@ export async function POST(req: NextRequest) {
             let outcome = { success: false, stealed: '0' };
             try {
                 for (const log of receipt.logs) {
-                    const decoded = decodeEventLog({ abi: CartelCoreABI, data: log.data, topics: log.topics }) as any;
-                    if (decoded.eventName === 'RaidResult') {
-                        outcome = { success: decoded.args.success, stealed: decoded.args.stealed.toString() };
-                        break;
+                    try {
+                        const decoded = decodeEventLog({ abi: CartelCoreABI, data: log.data, topics: log.topics }) as any;
+                        // console.log("Decoded Event:", decoded.eventName, decoded.args);
+                        if (decoded.eventName === 'RaidResult' || decoded.eventName === 'HighStakesResult') {
+                            // Support V3 and V4 Event Names if they differ, or just RaidResult
+                            // console.log("Found Result Event:", decoded.args);
+
+                            // Check for both 'stealed' and 'profit' or other names?
+                            // Based on ABI it is 'stealed'.
+
+                            const stealedVal = decoded.args.stealed || decoded.args.amount || 0n;
+
+                            outcome = {
+                                success: decoded.args.success,
+                                stealed: stealedVal.toString()
+                            };
+                            break;
+                        }
+                    } catch (e) {
+                        // ignore non-decodable events
                     }
                 }
             } catch (e) { }
