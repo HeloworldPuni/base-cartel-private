@@ -105,28 +105,26 @@ export async function getLoginSummary(address: string): Promise<LoginSummary> {
     // 5. Get Rank
     const rank = await getUserRank(address) || 0;
 
-    // 6. Calculate Win Rate
-    let winRate = 0;
-    const totalRaidsAmt = raidsByYou + highStakesByYou;
-
-    // We need to re-iterate or count explicitly for wins
-    let wins = 0;
-    for (const ev of events) {
-        if ((ev.type === 'RAID' || ev.type === 'HIGH_STAKES_RAID') && ev.attacker === address) {
-            // Logic: If stolenShares > 0, it was a success.
-            // Note: DB treats 0 as success=false usually.
-            if ((ev.stolenShares || 0) > 0) {
-                wins++;
-            }
+    // 6. Calculate Win Rate (LIFETIME FIX)
+    const totalRaidsLifetime = await prisma.cartelEvent.count({
+        where: {
+            attacker: address,
+            type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
         }
-    }
+    });
 
-    if (totalRaidsAmt > 0) {
-        winRate = Math.round((wins / totalRaidsAmt) * 100);
-    }
+    const totalWinsLifetime = await prisma.cartelEvent.count({
+        where: {
+            attacker: address,
+            type: { in: ['RAID', 'HIGH_STAKES_RAID'] },
+            stolenShares: { gt: 0 }
+        }
+    });
 
-    // Fallback: If no raids, maybe 100% or 0%? 
-    // Let's settle on 0% for new users to encourage action.
+    let winRate = 0;
+    if (totalRaidsLifetime > 0) {
+        winRate = Math.round((totalWinsLifetime / totalRaidsLifetime) * 100);
+    }
 
     return {
         address,
