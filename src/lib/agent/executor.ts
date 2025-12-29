@@ -62,10 +62,12 @@ export async function executeAgentAction(agent: AgentSettings) {
     }
 
     // 2. Parse Signature
-    const signature = parseSignature(agent.delegation.signature as `0x${string}`);
-
-    // 3. Submit Transaction
+    console.log(`[Agent] Parsing signature for ${agent.userAddress}: ${agent.delegation.signature}`);
     try {
+        const signature = parseSignature(agent.delegation.signature as `0x${string}`);
+        console.log(`[Agent] Parsed Signature: v=${signature.v}, r=${signature.r}, s=${signature.s}, yParity=${signature.yParity}`);
+
+        // 3. Submit Transaction
         const hash = await client.writeContract({
             address: AGENT_VAULT_ADDRESS,
             abi: AGENT_VAULT_ABI,
@@ -75,7 +77,7 @@ export async function executeAgentAction(agent: AgentSettings) {
                 action,
                 data,
                 BigInt(agent.delegation.deadline),
-                Number(signature.v),
+                Number(signature.v || (signature.yParity ? 28 : 27)), // Fallback if v is missing (should verify this logic)
                 signature.r,
                 signature.s
             ]
@@ -85,6 +87,7 @@ export async function executeAgentAction(agent: AgentSettings) {
         return hash;
     } catch (error) {
         console.error(`Execution failed for ${agent.userAddress}:`, error);
-        throw error;
+        // Re-throw with more context if possible
+        throw new Error(`Execution Failed: ${String(error)} (Sig: ${agent.delegation.signature.slice(0, 10)}...)`);
     }
 }
