@@ -61,11 +61,14 @@ export async function indexEvents() {
         contract.queryFilter(contract.filters.Claim(), startBlock, endBlock)
     ]);
 
+    // Initialize processing queue
+    const eventsToProcess: any[] = [];
+
     // --- RECOVERY BACKFILL FOR CLAIMS ---
     // Because we missed Claims due to wrong event name, we force a deep scan for Claims
-    // only, over the last 20,000 blocks (~2 days), regardless of where the indexer is.
+    // only, over the last 500,000 blocks (~12 days), regardless of where the indexer is.
     // This ensures we catch up missing claims even if we have recent Raids.
-    const backfillStart = Math.max(0, currentBlock - 20000);
+    const backfillStart = Math.max(0, currentBlock - 500000);
     console.log(`[Indexer] Backfilling Claims from ${backfillStart} to ${currentBlock}...`);
 
     // We fetch independently to avoid messing up the main loop logic
@@ -90,7 +93,7 @@ export async function indexEvents() {
     }
     // --- END BACKFILL ---
 
-    const eventsToProcess = [];
+
 
     // TRANSFORM LOGS
     const safeNumber = (n: any) => {
