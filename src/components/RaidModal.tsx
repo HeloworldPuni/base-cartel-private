@@ -291,8 +291,13 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 const stealedWei = BigInt(data.outcome.stealed);
                                 const formattedStealed = parseFloat(formatEther(stealedWei));
 
-                                // Clean up decimals (e.g. 10.000 -> 10, 10.543 -> 10.54)
-                                const displayAmount = Number(formattedStealed.toFixed(2));
+                                // [FIX] Dynamic Precision for Micro-Shares
+                                let displayAmount = 0;
+                                if (formattedStealed > 0 && formattedStealed < 0.01) {
+                                    displayAmount = Number(formattedStealed.toFixed(4));
+                                } else {
+                                    displayAmount = Number(formattedStealed.toFixed(2));
+                                }
 
                                 setResult(success ? 'success' : 'fail');
                                 setStolenAmount(displayAmount);
