@@ -61,6 +61,35 @@ export async function indexEvents() {
         contract.queryFilter(contract.filters.Claim(), startBlock, endBlock)
     ]);
 
+    // --- RECOVERY BACKFILL FOR CLAIMS ---
+    // Because we missed Claims due to wrong event name, we force a deep scan for Claims
+    // only, over the last 20,000 blocks (~2 days), regardless of where the indexer is.
+    // This ensures we catch up missing claims even if we have recent Raids.
+    const backfillStart = Math.max(0, currentBlock - 20000);
+    console.log(`[Indexer] Backfilling Claims from ${backfillStart} to ${currentBlock}...`);
+
+    // We fetch independently to avoid messing up the main loop logic
+    const missedClaims = await contract.queryFilter(contract.filters.Claim(), backfillStart, currentBlock);
+
+    // Merge into processing list (Duplicates are handled by DB unique constraints/upsert)
+    // We just push them to eventsToProcess.
+    for (const log of missedClaims) {
+        // Same parsing logic as main loop
+        if ('args' in log) {
+            const block = await log.getBlock();
+            eventsToProcess.push({
+                type: 'CLAIM',
+                txHash: log.transactionHash,
+                blockNumber: log.blockNumber,
+                timestamp: new Date(block.timestamp * 1000),
+                attacker: log.args[0], // User
+                fee: Number(log.args[1]), // Amount (safeNumber logic inline)
+                isBackfill: true
+            });
+        }
+    }
+    // --- END BACKFILL ---
+
     const eventsToProcess = [];
 
     // TRANSFORM LOGS
