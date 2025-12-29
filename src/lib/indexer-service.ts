@@ -71,8 +71,20 @@ export async function indexEvents() {
     const backfillStart = Math.max(0, currentBlock - 500000);
     console.log(`[Indexer] Backfilling Claims from ${backfillStart} to ${currentBlock}...`);
 
-    // We fetch independently to avoid messing up the main loop logic
-    const missedClaims = await contract.queryFilter(contract.filters.Claim(), backfillStart, currentBlock);
+    // Chunked fetching to avoid RPC limits
+    const CHUNK_SIZE = 20000;
+    const missedClaims: any[] = [];
+
+    for (let start = backfillStart; start < currentBlock; start += CHUNK_SIZE) {
+        const end = Math.min(start + CHUNK_SIZE - 1, currentBlock);
+        console.log(`[Indexer] Backfill Chunk: ${start} -> ${end}`);
+        try {
+            const chunkLogs = await contract.queryFilter(contract.filters.Claim(), start, end);
+            missedClaims.push(...chunkLogs);
+        } catch (err) {
+            console.error(`[Indexer] Failed to fetch chunk ${start}-${end}:`, err);
+        }
+    }
 
     // Merge into processing list (Duplicates are handled by DB unique constraints/upsert)
     // We just push them to eventsToProcess.
