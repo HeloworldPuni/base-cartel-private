@@ -268,7 +268,7 @@ export default function MobileLandingPage() {
             {/* Footer */}
             <div className="border-t border-white/10 py-8 px-6">
                 <p className="text-gray-500 text-center">
-                    Base Cartel - Rule The Chain
+                    Base Cartel - Rule The Chain (v2.0)
                 </p>
             </div>
         </div >
