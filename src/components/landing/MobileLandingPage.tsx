@@ -81,9 +81,9 @@ export default function MobileLandingPage() {
 
                 {/* Title */}
                 <h1 className="text-5xl font-bold text-center mb-4 leading-tight">
-                    <span className="text-[#0066FF]">RULE </span>
-                    <span className="text-cyan-500">THE </span>
-                    <span className="text-sky-500">CHAIN</span>
+                    <span className="bg-gradient-to-r from-[#0066FF] via-cyan-500 to-sky-500 bg-clip-text text-transparent">
+                        RULE THE CHAIN
+                    </span>
                 </h1>
 
                 <p className="text-lg text-gray-300 text-center mb-10 leading-relaxed">
@@ -151,8 +151,9 @@ export default function MobileLandingPage() {
             {/* How It Works Section */}
             <div id="how-it-works" className="px-6 pb-16">
                 <h2 className="text-4xl font-bold text-center mb-10">
-                    <span className="text-[#0066FF]">HOW IT </span>
-                    <span className="text-cyan-500">WORKS</span>
+                    <span className="bg-gradient-to-r from-[#0066FF] to-cyan-500 bg-clip-text text-transparent">
+                        HOW IT WORKS
+                    </span>
                 </h2>
 
                 <div className="flex flex-col gap-4">
@@ -187,8 +188,9 @@ export default function MobileLandingPage() {
             {/* Interface Section */}
             <div className="px-6 pb-16">
                 <h2 className="text-4xl font-bold text-center mb-2">
-                    <span className="text-[#0066FF]">INTER</span>
-                    <span className="text-cyan-500">FACE</span>
+                    <span className="bg-gradient-to-r from-[#0066FF] to-cyan-500 bg-clip-text text-transparent">
+                        INTERFACE
+                    </span>
                 </h2>
                 <p className="text-lg text-gray-400 text-center mb-8">
                     PROVEN GAME LOOP
@@ -268,7 +270,7 @@ export default function MobileLandingPage() {
             {/* Footer */}
             <div className="border-t border-white/10 py-8 px-6">
                 <p className="text-gray-500 text-center">
-                    Base Cartel - Rule The Chain (v2.0)
+                    Base Cartel - Rule The Chain (v2.1)
                 </p>
             </div>
         </div >
