@@ -374,7 +374,9 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                                         // Check the specific result for this user
                                         const result = data.results && data.results[0];
                                         if (result) {
-                                            if (String(result.result).startsWith("Skipped")) {
+                                            if (result.error) {
+                                                setStatusMsg(`Failed: ${result.error}`);
+                                            } else if (String(result.result).startsWith("Skipped")) {
                                                 setStatusMsg(`Failed: ${result.result}`);
                                             } else if (String(result.result).startsWith("0x")) {
                                                 setStatusMsg(`Strategy Executed! TX: ${String(result.result).slice(0, 10)}...`);
