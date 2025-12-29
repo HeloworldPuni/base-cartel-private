@@ -64,6 +64,9 @@ export async function POST(req: NextRequest) {
                             // For MVP, assume RAID unless told otherwise. Or fetch Request log.
                             // Better: Just assume RAID.
 
+                            // [FIX] Robust property check (match response logic)
+                            const stealedVal = decoded.args.stealed || decoded.args.amount || decoded.args.stolenShares || 0n;
+
                             await prisma.cartelEvent.create({
                                 data: {
                                     txHash: hash,
@@ -72,11 +75,11 @@ export async function POST(req: NextRequest) {
                                     type: 'RAID', // Default to RAID. Can enhance later.
                                     attacker: raider,
                                     target: target || 'Unknown', // Use Propagated Target
-                                    stolenShares: Number(stealed), // "stealed" in ABI event
+                                    stolenShares: Number(stealedVal),
                                     payout: 0
                                 }
                             });
-                            console.log(`[Relayer] Event Saved: ${raider} won ${stealed}`);
+                            console.log(`[Relayer] Event Saved: ${raider} won ${stealedVal}`);
                         }
                     } catch (err) {
                         // Not the event we are looking for
