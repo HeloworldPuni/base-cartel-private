@@ -326,7 +326,7 @@ export default function LeaderboardPage() {
                                                 <div className="text-right">
                                                     <div className="text-gray-400 text-xs">Claimed</div>
                                                     <div className="font-bold text-lg text-green-400">
-                                                        ${player.claimed.toFixed(2)}
+                                                        ${(player.claimed / 1e18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                                                     </div>
                                                 </div>
                                             </div>
@@ -426,7 +426,7 @@ export default function LeaderboardPage() {
                                                     <DollarSign className="w-4 h-4 text-green-400" />
                                                     <span className="text-gray-400">Claimed:</span>
                                                     <span className="font-bold text-green-400">
-                                                        ${player.claimed.toFixed(2)}
+                                                        ${(player.claimed / 1e18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                                                     </span>
                                                 </div>
                                             </div>
