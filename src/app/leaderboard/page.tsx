@@ -53,7 +53,7 @@ export default function LeaderboardPage() {
     // --- CONTRACT READ ---
     const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
 
-    const { data: potBalance } = useReadContract({
+    const { data: potBalance, isLoading: isPotLoading, error: potError } = useReadContract({
         address: POT_ADDRESS,
         abi: CartelPotABI,
         functionName: 'getBalance',
@@ -63,7 +63,20 @@ export default function LeaderboardPage() {
         }
     });
 
+    useEffect(() => {
+        if (potError) console.error("Error fetching pot balance:", potError);
+        console.log("Pot Address:", POT_ADDRESS);
+        console.log("Pot Balance Data:", potBalance);
+    }, [potBalance, potError, POT_ADDRESS]);
+
     const parsedPot = potBalance ? Number(formatUnits(potBalance as bigint, 18)) : 0;
+
+    // Helper to format pot display
+    const getPotDisplay = () => {
+        if (isPotLoading && !potBalance) return "...";
+        if (potError) return "Err";
+        return `$${(parsedPot / 1000).toFixed(1)}K`;
+    }
 
     const fetchLeaderboard = async (pageNum: number) => {
         setLoading(true);
@@ -77,9 +90,9 @@ export default function LeaderboardPage() {
             const mappedPlayers = entries.map((entry: LeaderboardEntry) => {
                 let color = "#64748b";
                 let glow = "#64748b";
-                let avatar = entry.rank <= 3 ? (entry.rank === 1 ? "👑" : entry.rank === 2 ? "🥈" : "🥉") : `${entry.rank}`;
+                const avatar = entry.rank <= 3 ? (entry.rank === 1 ? "👑" : entry.rank === 2 ? "🥈" : "🥉") : `${entry.rank}`;
 
-                let title = entry.rank === 1 ? "👑 Boss of Bosses" :
+                const title = entry.rank === 1 ? "👑 Boss of Bosses" :
                     entry.rank <= 3 ? "🩸 Caporegime" :
                         entry.rank <= 10 ? "📜 Consigliere" :
                             entry.rank <= 25 ? "⚔️ Soldier" : "👤 Associate";
@@ -214,7 +227,7 @@ export default function LeaderboardPage() {
                             {
                                 icon: DollarSign,
                                 label: "Total Pot",
-                                value: `$${(stats.totalPot / 1000).toFixed(1)}K`,
+                                value: getPotDisplay(),
                                 color: "text-green-400",
                                 bg: "from-green-500/20",
                             },
