@@ -1,79 +1,129 @@
-# 🏴‍☠️ Cartel V4: The Heat Economy & Future Roadmap
+# 🏴‍☠️ Base Cartel V4: "The Living Economy" 🧬
 
 > **Status**: Ready for Final Testnet Deployment
 > **Authors**: User & Antigravity
-> **Date**: 2024
+> **Date**: Dec 2025
+
+## Core Philosophy
+
+**Rewards flow to those who contribute value *now*, not those who contributed *yesterday*. Activity beats dormant capital.**
+
+It converts "paying gas/fees" from a Cost into an **Investment**. Players will effectively pay the protocol to keep their multiplier high. It is the ultimate sticky gamification loop.
 
 ---
 
-## 1. The V4 "Heat" Economy 🩸
+## 1. The Economic Engine (Contract Layer) 🩸
 
-The core meta of Cartel V4 shifts from **Static Capital** to **Dynamic Activity**.
+We replace the static `balanceOf` model with a dynamic **Effective Share** model.
 
-* **Old Way (V3)**: Buy Shares -> Earn Forever. (Encourages laziness).
-* **New Way (V4)**: Buy Shares + **Stay Active** -> Earn Multipliers. (Encourages retention).
+### 1.1 The Formula
 
-### 1.1 The Math
+Your "Slice of the Pot" is longer just your shares. It is:
 
-* **Effective Shares** (Your Slice) = `Raw Shares` × `Heat Multiplier`.
-* **Heat Score** (`contributionScore`): Increases by `Fees Paid`.
-* **Decay**: Score decays by **15% per day** (`0.85x`) every time you interact.
-* **Multiplier Formula**:
+`EffectiveShares = RawShares × (1 + WeightMultiplier)`
 
-    ```solidity
-    Weight = 1.0 + sqrt(Score / 0.01 USDC)
-    Max Weight = 20x
-    ```
+Where **WeightMultiplier** comes from your Recent "Heat":
 
-### 1.2 "Anti-Leech" Mechanics
+```math
+Multiplier = sqrt(ContributionScore / K)
+```
 
-* **Unified Pot**: `distribute()` now splits rewards to `totalEffectiveShares`. If you have 0 Heat (1.0x), you earn significantly less than active players (up to 20.0x).
+### 1.2 "Heat" Mechanics
+
+* **Gaining Heat**: Every time you pay a fee (Raid/Betray), your `ContributionScore` increases by the $ amount paid.
+* **Losing Heat**: Every day (or action), your `ContributionScore` decays by **15% per day** (`0.85x`).
+* **The Grind**: If you stop playing, your multiplier slowly bleeds back to 1.0x. To maintain a high multiplier (e.g. 3x), you must keep burning fees.
+
+### 1.3 Constants (Tuned for Base)
+
+* **Decay**: `0.85` per day (Half-life ~4 days).
+* **K Factor**: `0.01 USDC` (Adjusts difficulty of gaining levels).
+* **Max Weight**: `20x` (Prevents total monopoly).
+
+### 1.4 "Anti-Leech" Security
+
+* **Unified Pot**: `distribute()` splits rewards to `totalEffectiveShares`. If you have 0 Heat (1.0x), you earn significantly less than active players (up to 20.0x less).
 * **Betrayal Security**: Fixed a "Double-Dip" exploit. Players cannot claim pending rewards and then Rage Quit against the full pot.
 
 ---
 
-## 2. Technical Implementation 🛠️
+## 2. UX/UI Overhaul: "Visualizing Power" 👁️
 
-### 2.1 Smart Contract (`RemixOneClick.sol`)
+A complex math system usually scares users. We must hide the math behind intuitive metaphors.
 
-* **Files**: `CartelCore` overwritten with V4 Logic.
-* **Key Functions**:
-  * `_updateUser(user, fee)`: Central hub for decay & rewards.
-  * `getHeatStatus(user)`: New view function for UI.
-  * `betray()`: Hardened.
+### 2.1 The "Heat" Metaphor (Dashboard)
 
-### 2.2 Frontend Stack (`d:/demos/src`)
+Instead of showing "Contribution Score", we show **"Heat Level"** or **"Criminal Rating"**.
 
-* **Data Pipe**: Updated `CartelCore.json` ABI to read `contributionScore` and `lastContributionUpdate`.
-* **Simulation**: `src/hooks/useHeat.ts` replicates Solidity decay math in the browser for real-time UI updates.
-* **UI Components**:
-  * **New**: `HeatWidget.tsx` (Visualizes Rank/Decay).
-  * **Deleted**: Fake "Win Rate" meter in `CartelDashboard.tsx`.
+**Visual**: A burning bar or circular gauge next to Profile.
+**Levels**:
+
+* 🔥 **Level 1 (Thug)**: Multiplier 1.0x - 1.5x
+* 🔥🔥 **Level 2 (Soldier)**: Multiplier 1.5x - 3.0x
+* 🔥🔥🔥 **Level 3 (Capo)**: Multiplier 3.0x - 5.0x
+* ☠️ **Level 4 (Boss)**: Multiplier 5.0x+
+
+**Action**: "Your Heat is cooling down! Raid now to maintain Boss Status."
+
+### 2.2 "Effective Earnings" (Yield Display)
+
+Don't just show "APY". Show "Your Power".
+
+* *Display*: "You own 100 Shares. With your 🔥 **3.5x Multiplier**, you earn like you own **350 Shares**!"
+
+### 2.3 The Decay Timer
+
+Gamify retention.
+
+* *Widget*: "Heat Decay in: 14h 30m".
+* *Notification*: "You are about to drop from Capo to Soldier. Raid now to stay on top."
+
+### 2.4 "Estimated Juice" (Action Modals)
+
+When starting a Raid, show the Economic benefit, not just the stolen shares.
+
+* *Before Raid*: "Current Multiplier: 2.1x"
+* *Prediction*: "After this Raid: 2.4x (+15% more daily rewards!)"
 
 ---
 
-## 3. Future Roadmap: The "Cartel Token" 🪙
+## 3. Technical Implementation & Checklist 🛠️
+
+### Phase 1: Contract (Solidity) [COMPLETE]
+
+- [x] Create `CartelCoreV4.sol` / Update `CartelCore` in `RemixOneClick.sol`.
+* [x] Add struct `User { uint128 score; uint64 lastUpdate; ... }`.
+* [x] Implement `applyDecay()` with fixed-point math loops.
+* [x] Implement `_updateUser()` central hub.
+* [x] **Verification Fix**: EIP-712 Signature support in `AgentVault`.
+
+### Phase 2: React Hook (Frontend Math) [TODO]
+
+- [ ] Create `useHeatCalculator.ts` to replicate contract math on client.
+* [ ] Show real-time "Decay" prediction (frontend simulation).
+
+### Phase 3: UI Reskin [TODO]
+
+- [ ] **Dashboard**: Add "Heat Bar" widget.
+* [ ] **Profile**: Show "Effective Share Count" vs "Real Share Count".
+* [ ] **Modals**: Add "Multiplier Boost" preview to Raid/Betray screens.
+
+---
+
+## 4. Future Roadmap: The "Cartel Token" 🪙
 
 **Idea**: Launch a governance/utility token tied to liquidity.
 **Distribution**: Retroactive Airdrop.
 
-### 3.1 Reputation (XP) Strategy
+### 4.1 Reputation (XP) Strategy
 
-* **Current State**: Reputation (Quests) currently does **NOT** give in-game buffs (No fee discounts, no raid buffs).
-* **Purpose**: Reputation is an **Airdrop Multiplier**.
-* **Formula (Concept)**:
-
-    ```
-    Airdrop Allocation = (Shares Held) × (Activity Count) × (Reputation Tier)
-    ```
-
-* **Why**: separation of concerns.
-  * **Heat** = Maximizes USDC Yield (Now).
-  * **Reputation** = Maximizes Token Airdrop (Future).
+* **Heat** = Maximizes USDC Yield (Now).
+* **Reputation** = Maximizes Token Airdrop (Future).
+* **Formula**: `Airdrop = (Shares) × (Activity) × (Reputation Tier)`
 
 ---
 
-## 4. Deployment Checklist 🚀
+## 5. Deployment Checklist 🚀
 
 When you are ready to launch "Season 2" (Final Testnet):
 
@@ -82,16 +132,14 @@ When you are ready to launch "Season 2" (Final Testnet):
     * **CRITICAL**: Ensure you are using the latest version (with EIP-712 `_verifySignature` fix).
     * Deploy `CartelDeployer`.
     * Call `deployV2()`.
-    * **Note**: This fixes the `invalid s` signature error for Auto-Agents/Signatures.
+    * **Note**: This fixes the `invalid s` signature error for Auto-Agents.
+
 2. **Update Frontend**:
     * Copy the new `CartelCore` address.
     * Update `.env.local`: `NEXT_PUBLIC_CARTEL_CORE_ADDRESS=...`
     * Start App: `npm run dev`.
+
 3. **Verify**:
     * Check Dashboard: Heat Widget should say "Level: Thug (1.0x)".
     * Perform Action: Raid someone.
     * Check update: Widget should jump to "Soldier" or "Capo" instantly.
-
----
-
-**End of Report.** 🏁
