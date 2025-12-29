@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ClanSummary } from '@/lib/clan-service';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,6 +18,9 @@ interface MyClanModalProps {
 export default function MyClanModal({ isOpen, onClose, address }: MyClanModalProps) {
     const [summary, setSummary] = useState<ClanSummary | null>(null);
     const [loading, setLoading] = useState(false);
+    const { address: currentAddress } = useAccount();
+
+    const isOwner = currentAddress && address && currentAddress.toLowerCase() === address.toLowerCase();
 
     useEffect(() => {
         if (isOpen && address) {
@@ -88,34 +91,38 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
 
                         {/* Direct Invitees List */}
                         <div>
-                            <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Your Referral Link</h3>
-                            {summary.inviteCode ? (
-                                <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 mb-6 flex items-center justify-between gap-2">
-                                    <code className="text-[#4A87FF] text-sm break-all font-mono">
-                                        {`https://basecartel.in?ref=${summary.inviteCode}`}
-                                    </code>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-[#4A87FF] text-[#4A87FF] hover:bg-[#4A87FF]/10 shrink-0"
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(`https://basecartel.in?ref=${summary.inviteCode}`);
-                                            alert("Link copied!");
-                                        }}
-                                    >
-                                        Copy
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mb-6 text-center text-red-400 text-sm">
-                                    ⚠️ No invite codes available. (Are you joined?)
-                                </div>
+                            {isOwner && (
+                                <>
+                                    <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Your Referral Link</h3>
+                                    {summary.inviteCode ? (
+                                        <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 mb-6 flex items-center justify-between gap-2">
+                                            <code className="text-[#4A87FF] text-sm break-all font-mono">
+                                                {`https://basecartel.in?ref=${summary.inviteCode}`}
+                                            </code>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="border-[#4A87FF] text-[#4A87FF] hover:bg-[#4A87FF]/10 shrink-0"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(`https://basecartel.in?ref=${summary.inviteCode}`);
+                                                    alert("Link copied!");
+                                                }}
+                                            >
+                                                Copy
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mb-6 text-center text-red-400 text-sm">
+                                            ⚠️ No invite codes available. (Are you joined?)
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Direct Recruits</h3>
                             {summary.directInvitees.length === 0 ? (
                                 <div className="text-center py-8 bg-zinc-900/30 rounded-lg border border-zinc-800 border-dashed">
-                                    <p className="text-zinc-500 mb-2">You haven't recruited anyone yet.</p>
+                                    <p className="text-zinc-500 mb-2">You haven&apos;t recruited anyone yet.</p>
                                     <p className="text-xs text-zinc-600">Share your link to earn bonus shares.</p>
                                 </div>
                             ) : (

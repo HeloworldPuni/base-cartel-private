@@ -9,7 +9,7 @@ const CORE_ABI = [
     "event HighStakesRaid(address indexed attacker, address indexed target, uint256 stolenShares, uint256 selfPenaltyShares, uint256 feePaid)",
     "event RetiredFromCartel(address indexed user, uint256 indexed season, uint256 burnedShares, uint256 payout)",
     "event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee)",
-    "event ProfitClaimed(address indexed user, uint256 amount)"
+    "event Claim(address indexed user, uint256 amount)"
 ];
 
 export async function indexEvents() {
@@ -58,7 +58,7 @@ export async function indexEvents() {
         contract.queryFilter(contract.filters.HighStakesRaid(), startBlock, endBlock),
         // contract.queryFilter(contract.filters.RetiredFromCartel(), startBlock, endBlock), // TODO: Implement Retire logic
         contract.queryFilter(contract.filters.Join(), startBlock, endBlock),
-        contract.queryFilter(contract.filters.ProfitClaimed(), startBlock, endBlock)
+        contract.queryFilter(contract.filters.Claim(), startBlock, endBlock)
     ]);
 
     const eventsToProcess = [];
