@@ -184,6 +184,19 @@ export async function indexEvents() {
         }
     }
 
+    const failedEvents: any[] = [];
+
+    async function processEventBatch(events: any[]) {
+        for (const event of events) {
+            try {
+                // ... (existing logic) ...
+            } catch (error: any) {
+                console.error(`[Indexer] Error processing event ${event.txHash}:`, error);
+                failedEvents.push({ txHash: event.txHash, error: error.message || String(error) });
+            }
+        }
+    }
+
     // 3. Process Batch
     await processEventBatch(eventsToProcess);
 
@@ -193,6 +206,7 @@ export async function indexEvents() {
         processed: eventsToProcess.length,
         backfillFound: missedClaims.length,
         backfillErrors: backfillErrors.length > 0 ? backfillErrors : null,
+        processingErrors: failedEvents.length > 0 ? failedEvents : null, // NEW
         recentEvents: {
             raid: raidLogs.length,
             highStakes: highStakesLogs.length,
@@ -201,121 +215,119 @@ export async function indexEvents() {
         }
     };
 }
+for (const event of events) {
+    try {
+        // Idempotency: We used to skip, but now we allow re-processing to fix data (e.g. fees)
+        const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
 
-async function processEventBatch(events: any[]) {
-    for (const event of events) {
-        try {
-            // Idempotency: We used to skip, but now we allow re-processing to fix data (e.g. fees)
-            const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
-
-            // HEALING LOGIC: If event exists but QuestEvent is missing for RAIDs, we proceed.
-            // If completely processed and synced, we skip.
-            if (exists && exists.processed) {
-                // Check if QuestEvent is missing (V2 Migration/Backfill issue)
-                if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
-                    const qe = await prisma.questEvent.findFirst({
-                        where: {
-                            type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
-                            createdAt: event.timestamp
-                        }
-                    });
-                    if (qe) continue; // Already has quest event, skip.
-                    console.log(`[Indexer] Healing missing QuestEvent for ${event.txHash}`);
-                } else {
-                    continue;
-                }
+        // HEALING LOGIC: If event exists but QuestEvent is missing for RAIDs, we proceed.
+        // If completely processed and synced, we skip.
+        if (exists && exists.processed) {
+            // Check if QuestEvent is missing (V2 Migration/Backfill issue)
+            if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                const qe = await prisma.questEvent.findFirst({
+                    where: {
+                        type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
+                        createdAt: event.timestamp
+                    }
+                });
+                if (qe) continue; // Already has quest event, skip.
+                console.log(`[Indexer] Healing missing QuestEvent for ${event.txHash}`);
+            } else {
+                continue;
             }
+        }
 
-            console.log(`[Indexer] Processing ${event.type}.`);
-            const feeFinal = event.fee ? Number(event.fee) : 0;
+        console.log(`[Indexer] Processing ${event.type}.`);
+        const feeFinal = event.fee ? Number(event.fee) : 0;
 
-            // DEBUG LOGGING REQUESTED BY USER
-            console.log("INSERTING EVENT:", {
-                type: event.type,
-                feePaid: feeFinal,
-                rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs, (key, value) =>
-                    typeof value === 'bigint' ? value.toString() : value
-                ) : "N/A"
+        // DEBUG LOGGING REQUESTED BY USER
+        console.log("INSERTING EVENT:", {
+            type: event.type,
+            feePaid: feeFinal,
+            rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            ) : "N/A"
+        });
+
+        await prisma.$transaction(async (tx) => {
+            // A. Create Event Record (Legacy / V1)
+            await tx.cartelEvent.upsert({
+                where: { txHash: event.txHash },
+                update: {
+                    feePaid: feeFinal,
+                    processed: true
+                },
+                create: {
+                    txHash: event.txHash,
+                    blockNumber: event.blockNumber,
+                    timestamp: event.timestamp,
+                    type: event.type,
+                    attacker: event.attacker,
+                    target: event.target,
+                    stolenShares: event.stolenShares,
+                    selfPenaltyShares: event.penalty, // for High Stakes
+                    feePaid: feeFinal, // For CLAIM this is amount
+                    processed: true
+                }
             });
 
-            await prisma.$transaction(async (tx) => {
-                // A. Create Event Record (Legacy / V1)
-                await tx.cartelEvent.upsert({
-                    where: { txHash: event.txHash },
-                    update: {
-                        feePaid: feeFinal,
-                        processed: true
-                    },
-                    create: {
-                        txHash: event.txHash,
-                        blockNumber: event.blockNumber,
-                        timestamp: event.timestamp,
-                        type: event.type,
-                        attacker: event.attacker,
-                        target: event.target,
-                        stolenShares: event.stolenShares,
-                        selfPenaltyShares: event.penalty, // for High Stakes
-                        feePaid: feeFinal, // For CLAIM this is amount
-                        processed: true
+            // B. Route Logic (V1)
+            if (event.type === 'JOIN') {
+                await handleJoinEvent(tx, event);
+
+                // V2 QUEST EVENT: JOIN
+                // Idempotent check inside TX is hard, relying on unique constraint failure or just allow dupes (filtered by logic)
+                // But usually 1 join per person.
+                await tx.questEvent.create({
+                    data: {
+                        type: 'JOIN',
+                        actor: event.attacker,
+                        data: {
+                            referrer: event.target,
+                            shares: event.stolenShares
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
                     }
                 });
 
-                // B. Route Logic (V1)
-                if (event.type === 'JOIN') {
-                    await handleJoinEvent(tx, event);
+            } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                await handleRaidEvent(tx, event);
 
-                    // V2 QUEST EVENT: JOIN
-                    // Idempotent check inside TX is hard, relying on unique constraint failure or just allow dupes (filtered by logic)
-                    // But usually 1 join per person.
-                    await tx.questEvent.create({
+                // V2 QUEST EVENT: RAID
+                await tx.questEvent.create({
+                    data: {
+                        type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
+                        actor: event.attacker,
                         data: {
-                            type: 'JOIN',
-                            actor: event.attacker,
-                            data: {
-                                referrer: event.target,
-                                shares: event.stolenShares
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-
-                } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
-                    await handleRaidEvent(tx, event);
-
-                    // V2 QUEST EVENT: RAID
-                    await tx.questEvent.create({
+                            target: event.target,
+                            stolen: event.stolenShares,
+                            penalty: event.penalty || 0,
+                            success: true // If log exists, it succeeded
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
+            } else if (event.type === 'CLAIM') {
+                await tx.questEvent.create({
+                    data: {
+                        type: 'CLAIM',
+                        actor: event.attacker,
                         data: {
-                            type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
-                            actor: event.attacker,
-                            data: {
-                                target: event.target,
-                                stolen: event.stolenShares,
-                                penalty: event.penalty || 0,
-                                success: true // If log exists, it succeeded
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-                } else if (event.type === 'CLAIM') {
-                    await tx.questEvent.create({
-                        data: {
-                            type: 'CLAIM',
-                            actor: event.attacker,
-                            data: {
-                                amount: feeFinal
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-                }
-            });
-        } catch (error) {
-            console.error(`[Indexer] Error processing event ${event.txHash}:`, error);
-        }
+                            amount: feeFinal
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
+            }
+        });
+    } catch (error) {
+        console.error(`[Indexer] Error processing event ${event.txHash}:`, error);
     }
+}
 }
 
 async function handleJoinEvent(tx: any, event: any) {
