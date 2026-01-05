@@ -59,19 +59,31 @@ export async function GET(request: Request) {
         stats.pendingEvents = pending;
         stats.recentHistory = history;
 
+        // 2c. Cartel Events (Raw Blockchain Index)
+        const cartelEvents = await prisma.cartelEvent.findMany({
+            where: {
+                // attacker: { contains: address.substring(2, 6), mode: 'insensitive' },
+                // Let's rely on loose match or strict if possible, but for debugging loose is safer
+                attacker: { contains: address.substring(2, 6), mode: 'insensitive' },
+                type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
+            },
+            take: 5,
+            orderBy: { timestamp: 'desc' }
+        });
+
+        stats.rawCartelEvents = cartelEvents;
+
         // 3. Progress
         if (resolvedId) {
+            // Correct table: QuestProgressV2
             // @ts-ignore
-            const progress = await prisma.userQuestProgress.findMany({
-                where: { userId: resolvedId },
-                include: { quest: true }
+            const progress = await prisma.questProgressV2.findMany({
+                where: { userId: resolvedId }
             });
-            stats.questProgress = progress.map((p: any) => ({
-                slug: p.quest.slug,
-                completed: p.completed,
-                current: p.currentCount,
-                target: p.quest.maxCompletions
-            }));
+            // V2 doesn't have relation to Quest in schema? It might not.
+            // schema.prisma line 297 doesn't show relation.
+            // So we just dump raw progress.
+            stats.questProgress = progress;
         }
 
         return NextResponse.json(stats);
