@@ -1,6 +1,6 @@
 
 import prisma from './prisma';
-import { QuestEvent, QuestProgressV2 } from '@prisma/client';
+import { QuestEvent, UserQuestProgress } from '@prisma/client';
 
 export class QuestEngine {
 
@@ -99,7 +99,19 @@ export class QuestEngine {
 
         // 0. Resolve User (Wallet -> ID)
         // We need the User's UUID to link to QuestProgress
-        const user = await prisma.user.findUnique({ where: { walletAddress: actorAddress } });
+        // 0. Resolve User (Wallet -> ID)
+        // We need the User's UUID to link to QuestProgress
+        let user = await prisma.user.findUnique({ where: { walletAddress: actorAddress } });
+
+        if (!user) {
+            // Try case-insensitive lookup to be robust against checksum diffs
+            user = await prisma.user.findFirst({
+                where: {
+                    walletAddress: { equals: actorAddress, mode: 'insensitive' }
+                }
+            });
+        }
+
         if (!user) {
             console.warn(`[QuestEngine] User not found for address ${actorAddress}. Skipping quest ${questSlug}.`);
             return;
