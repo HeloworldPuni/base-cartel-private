@@ -34,25 +34,44 @@ export async function GET(request: Request) {
 
         const resolvedId = exactUser?.id || insensitiveUser?.id;
 
-        // 2. Pending Events (using strict filter first, then try to scan recent)
+        // 2. Pending Events
         const pending = await prisma.questEvent.findMany({
             where: {
                 processed: false,
-                // We can't easily filter purely by address if casing is mismatch, 
-                // but let's try to find any that 'look like' the address
-                actor: { contains: address.substring(2, 8), mode: 'insensitive' }
+                // Simple textual check in JSON or actor field
+                // Note: actor is a string.
+                actor: { contains: address.substring(2, 6), mode: 'insensitive' }
+            },
+            take: 5,
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // 2b. Recent History (Processed)
+        const history = await prisma.questEvent.findMany({
+            where: {
+                // actor: { equals: address, mode: 'insensitive' } // Ideally strict
+                actor: { contains: address.substring(2, 6), mode: 'insensitive' }
             },
             take: 10,
             orderBy: { createdAt: 'desc' }
         });
+
         stats.pendingEvents = pending;
+        stats.recentHistory = history;
 
         // 3. Progress
         if (resolvedId) {
-            const progress = await prisma.questProgressV2.findMany({
-                where: { userId: resolvedId }
+            // @ts-ignore
+            const progress = await prisma.userQuestProgress.findMany({
+                where: { userId: resolvedId },
+                include: { quest: true }
             });
-            stats.questProgress = progress;
+            stats.questProgress = progress.map((p: any) => ({
+                slug: p.quest.slug,
+                completed: p.completed,
+                current: p.currentCount,
+                target: p.quest.maxCompletions
+            }));
         }
 
         return NextResponse.json(stats);
