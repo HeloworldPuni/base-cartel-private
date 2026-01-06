@@ -48,6 +48,10 @@ export async function GET(request: Request) {
             const r = raid as any;
             const fee = r.fee || r.feePaid || 0;
 
+            if (fixedCount < 5) {
+                log(`Raid ${raid.txHash.substring(0, 10)}... Fee: ${fee}`);
+            }
+
             if (fee > HIGH_FEE_THRESHOLD) {
                 log(`Found potential High Stakes Raid: ${raid.txHash} Fee: ${fee}`);
                 // Treat as High Stakes Candidate
