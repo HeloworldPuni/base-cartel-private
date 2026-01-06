@@ -21,17 +21,59 @@ export async function GET(request: Request) {
             take: 50
         });
 
-        // 2. Deep Repair for High Stakes (Check verified processed ones too)
-        // because they might have been marked processed but skipped Quest creation
-        const highStakes = await prisma.cartelEvent.findMany({
+        // 2. Deep Repair for High Stakes
+        // Hypothesis: Contract emits 'Raid' for both, but High Stakes has higher fee.
+        // RAID_FEE = 0.005 USDC (5e15), HIGH_STAKES = 0.015 USDC (1.5e16)
+        // Check recent (processed) RAIDs for high fee.
+        const recentRaids = await prisma.cartelEvent.findMany({
             where: {
-                type: 'HIGH_STAKES_RAID'
+                type: 'RAID',
+                processed: true // Processed by Indexer already
             },
-            take: 20,
+            take: 100,
             orderBy: { timestamp: 'desc' }
         });
 
-        const allEvents = [...stuckRaids, ...highStakes];
+        const HIGH_FEE_THRESHOLD = 10000000000000000; // 0.01 USDC (1e16)
+
+        const allEvents = [...stuckRaids];
+
+        for (const raid of recentRaids) {
+            // Check if fee indicates High Stakes
+            // fee is Float in DB probably? handle potential number
+            if (raid.fee && raid.fee > HIGH_FEE_THRESHOLD) {
+                log(`Found potential High Stakes Raid: ${raid.txHash} Fee: ${raid.fee}`);
+                // Treat as High Stakes Candidate
+
+                // Check if we already have the High Stakes Quest Event
+                const hsEvent = await prisma.questEvent.findFirst({
+                    where: {
+                        type: 'HIGH_STAKES', // QuestEvent type
+                        createdAt: raid.timestamp // Correlate by time
+                    }
+                });
+
+                if (!hsEvent) {
+                    log(`Creating missing HIGH_STAKES QuestEvent for ${raid.txHash}`);
+                    await prisma.questEvent.create({
+                        data: {
+                            type: 'HIGH_STAKES',
+                            actor: raid.attacker!,
+                            data: {
+                                target: raid.target,
+                                stolen: Number(raid.stolenShares), // Re-use stolen
+                                penalty: 0, // Unknown if not in log, assume 0
+                                success: true
+                            },
+                            processed: false,
+                            createdAt: raid.timestamp
+                        }
+                    });
+                    fixedCount++;
+                }
+            }
+        }
+
         log(`Found ${stuckRaids.length} stuck raids and ${highStakes.length} recent high stakes.`);
 
         let fixedCount = 0;
