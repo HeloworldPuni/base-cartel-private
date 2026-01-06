@@ -40,20 +40,20 @@ export class QuestEngine {
         }
     }
 
-    private static async routeEvent(event: QuestEvent) {
+    private static async routeEvent(event: QuestEvent, log: (m: string) => void) {
         switch (event.type) {
             case 'RAID':
             case 'HIGH_STAKES':
-                await this.handleRaid(event);
+                await this.handleRaid(event, log);
                 break;
             case 'JOIN':
-                await this.handleJoin(event);
+                await this.handleJoin(event, log);
                 break;
             case 'REFER':
-                await this.handleReferral(event);
+                await this.handleReferral(event, log);
                 break;
             case 'CLAIM':
-                await this.handleClaim(event);
+                await this.handleClaim(event, log);
                 break;
             default:
                 console.warn(`[QuestEngine] Unknown event type: ${event.type}`);
@@ -62,39 +62,39 @@ export class QuestEngine {
 
     // --- HANDLERS ---
 
-    private static async handleRaid(event: QuestEvent) {
+    private static async handleRaid(event: QuestEvent, log: (m: string) => void) {
         const actor = event.actor;
-        console.log(`[QuestEngine] Handling Raid for ${actor}`);
-        await this.incrementProgress(actor, 'daily-raid-once', 1, 'DAILY');
+        log(`[QuestEngine] Handling Raid for ${actor}`);
+        await this.incrementProgress(actor, 'daily-raid-once', 1, 'DAILY', log);
 
         if (event.type === 'HIGH_STAKES') {
-            await this.incrementProgress(actor, 'weekly-high-stakes', 1, 'WEEKLY');
+            await this.incrementProgress(actor, 'weekly-high-stakes', 1, 'WEEKLY', log);
         }
 
-        await this.incrementProgress(actor, 'weekly-five-raids', 1, 'WEEKLY');
+        await this.incrementProgress(actor, 'weekly-five-raids', 1, 'WEEKLY', log);
     }
 
-    private static async handleJoin(event: QuestEvent) {
+    private static async handleJoin(event: QuestEvent, log: (m: string) => void) {
         // No quest for joining yet
     }
 
-    private static async handleReferral(event: QuestEvent) {
+    private static async handleReferral(event: QuestEvent, log: (m: string) => void) {
         const actor = event.actor;
-        console.log(`[QuestEngine] Handling Referral for ${actor}`);
-        await this.incrementProgress(actor, 'refer-1', 1, 'SEASONAL');
-        await this.incrementProgress(actor, 'refer-3', 1, 'SEASONAL');
-        await this.incrementProgress(actor, 'refer-10', 1, 'SEASONAL');
+        log(`[QuestEngine] Handling Referral for ${actor}`);
+        await this.incrementProgress(actor, 'refer-1', 1, 'SEASONAL', log);
+        await this.incrementProgress(actor, 'refer-3', 1, 'SEASONAL', log);
+        await this.incrementProgress(actor, 'refer-10', 1, 'SEASONAL', log);
     }
 
-    private static async handleClaim(event: QuestEvent) {
+    private static async handleClaim(event: QuestEvent, log: (m: string) => void) {
         const actor = event.actor;
-        console.log(`[QuestEngine] Handling Claim for ${actor}`);
-        await this.incrementProgress(actor, 'daily-claim-once', 1, 'DAILY');
+        log(`[QuestEngine] Handling Claim for ${actor}`);
+        await this.incrementProgress(actor, 'daily-claim-once', 1, 'DAILY', log);
     }
 
     // --- CORE LOGIC ---
 
-    private static async incrementProgress(actorAddress: string, questSlug: string, amount: number, frequency: 'DAILY' | 'WEEKLY' | 'SEASONAL' | 'ONE_TIME') {
+    private static async incrementProgress(actorAddress: string, questSlug: string, amount: number, frequency: 'DAILY' | 'WEEKLY' | 'SEASONAL' | 'ONE_TIME', log: (m: string) => void) {
         const CURRENT_SEASON = 1;
 
         // 0. Resolve User (Wallet -> ID)
