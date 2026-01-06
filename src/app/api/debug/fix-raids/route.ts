@@ -220,12 +220,24 @@ export async function GET(request: Request) {
         for (const req of reqLogs) {
             try {
                 const requestId = req.topics[1];
-                const raider = ethers.getAddress(ethers.dataSlice(req.topics[2], 12)); // Decode address from topic
+                let raider: string;
+                let isHighStakes: boolean;
 
-                // Check isHighStakes (Data)
-                // bool isHighStakes is likely the first 32 bytes of data (or only data)
-                // ethers.AbiCoder.defaultAbiCoder().decode(["bool"], req.data)
-                const [isHighStakes] = ethers.AbiCoder.defaultAbiCoder().decode(["bool"], req.data);
+                const reqData = req.data && req.data !== '0x' ? req.data : null;
+                if (!reqData) {
+                    log(`Skipping Req ${requestId} - No data`);
+                    continue;
+                }
+
+                if (req.topics.length >= 3) {
+                    raider = ethers.getAddress(ethers.dataSlice(req.topics[2], 12));
+                    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bool"], reqData);
+                    isHighStakes = decoded[0];
+                } else {
+                    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["address", "bool"], reqData);
+                    raider = decoded[0];
+                    isHighStakes = decoded[1];
+                }
 
                 if (isHighStakes) {
                     // Find Result
