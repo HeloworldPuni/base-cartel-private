@@ -19,14 +19,14 @@ export async function GET(request: Request) {
         if (forceType) log(`Forcing Type: ${forceType}`);
 
         // DB stats
-        const allEvents = await prisma.questEvent.findMany({
+        const dbEvents = await prisma.questEvent.findMany({
             where: {
                 type: { in: ['RAID', 'HIGH_STAKES_RAID', 'HIGH_STAKES'] },
                 createdAt: { gte: new Date(Date.now() - 3600000 * 24 * 7) }
             },
             select: { id: true, type: true, data: true, processed: true }
         });
-        log(`DB has ${allEvents.length} Recent Raid Events.`);
+        log(`DB has ${dbEvents.length} Recent Raid Events.`);
 
         // 1. Find Stuck Raids (Standard Logic)
         const stuckRaids = await prisma.cartelEvent.findMany({
