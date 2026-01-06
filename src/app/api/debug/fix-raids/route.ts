@@ -311,29 +311,29 @@ export async function GET(request: Request) {
                         v2FixedCount++;
                     }
                 }
+
+            } catch (err: any) {
+                log(`Error processing req ${req.transactionHash}: ${err.message}`);
             }
-        } catch (err: any) {
-            log(`Error processing req ${req.transactionHash}: ${err.message}`);
         }
-    }
 
         log(`V2 Fix complete. Created ${v2FixedCount} High Stakes events.`);
-    fixedCount += v2FixedCount;
+        fixedCount += v2FixedCount;
 
-    log(`Triggering QuestEngine...`);
+        log(`Triggering QuestEngine...`);
 
-    // 2. Run Engine
-    const questStats = await QuestEngine.processPendingEvents();
+        // 2. Run Engine
+        const questStats = await QuestEngine.processPendingEvents();
 
-    return NextResponse.json({
-        success: true,
-        fixedCount,
-        logs,
-        questLogs: questStats.logs
-    });
+        return NextResponse.json({
+            success: true,
+            fixedCount,
+            logs,
+            questLogs: questStats.logs
+        });
 
-} catch (error: any) {
-    log(`Error: ${error.message}`);
-    return NextResponse.json({ success: false, logs }, { status: 500 });
-}
+    } catch (error: any) {
+        log(`Error: ${error.message}`);
+        return NextResponse.json({ success: false, logs }, { status: 500 });
+    }
 }
