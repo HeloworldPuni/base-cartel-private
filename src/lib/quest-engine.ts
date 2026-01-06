@@ -6,7 +6,10 @@ export class QuestEngine {
 
     // Core Processor
     static async processPendingEvents() {
-        console.log("[QuestEngine] Checking for pending events...");
+        const logs: string[] = [];
+        const log = (msg: string) => { console.log(msg); logs.push(msg); };
+
+        log("[QuestEngine] Checking for pending events...");
 
         // 1. Fetch Unprocessed Events
         const events = await prisma.questEvent.findMany({
@@ -16,28 +19,31 @@ export class QuestEngine {
         });
 
         if (events.length === 0) {
-            console.log("[QuestEngine] No pending events found.");
-            return;
+            log("[QuestEngine] No pending events found.");
+            return { processed: 0, logs };
         }
 
-        console.log(`[QuestEngine] Found ${events.length} pending events. Processing...`);
+        log(`[QuestEngine] Found ${events.length} pending events. Processing...`);
 
         // 2. Process Each
         for (const event of events) {
-            console.log(`[QuestEngine] Processing Event ${event.id} type=${event.type} actor=${event.actor}`);
+            log(`[QuestEngine] Processing Event ${event.id} type=${event.type} actor=${event.actor}`);
             try {
-                await this.routeEvent(event);
+                await this.routeEvent(event, log);
 
                 // Mark Processed
                 await prisma.questEvent.update({
                     where: { id: event.id },
                     data: { processed: true }
                 });
-                console.log(`[QuestEngine] Event ${event.id} processed successfully.`);
-            } catch (error) {
+                log(`[QuestEngine] Event ${event.id} processed successfully.`);
+            } catch (error: any) {
                 console.error(`[QuestEngine] Error processing event ${event.id}:`, error);
+                log(`[QuestEngine] Error processing event ${event.id}: ${error.message || String(error)}`);
             }
         }
+
+        return { processed: events.length, logs };
     }
 
     private static async routeEvent(event: QuestEvent, log: (m: string) => void) {
