@@ -185,11 +185,11 @@ export async function GET(request: Request) {
         const { ethers } = require('ethers');
         const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
         const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const coreAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8E9b929b1a8c43075CDD7580a4a717C0D5530E208"; // Use consistent addr
+        const coreAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0x40fdD70ae4559dd9E4a31AD08673dBBA91DCB7a8"; // Updated from Logs
 
         // A. Fetch recent logs for RaidRequests
         const currentBlock = await provider.getBlockNumber();
-        const startBlock = currentBlock - 2000; // Look back 2000 blocks
+        const startBlock = currentBlock - 20000; // Increased to 20k blocks (~12h)
 
         const reqLogs = await provider.getLogs({
             address: coreAddress,
