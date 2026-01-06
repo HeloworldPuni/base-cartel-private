@@ -172,7 +172,153 @@ export async function GET(request: Request) {
             });
         }
 
-        log(`Fixed ${fixedCount} events. Triggering QuestEngine...`);
+        // 2. V2 Event Recovery (The Real Fix)
+        // Signatures (Derived from Logs):
+        // RaidRequests: 0x76421cb080d40e8a03ba462b500012451ba59bdebc46694dc458807c1d754b62
+        // RaidResult:   0x546aca7b2683440b8f02fa95faeb8efc79dd0f16af3d815a002742ea6f76116c
+
+        const RAID_REQ_SIG = "0x76421cb080d40e8a03ba462b500012451ba59bdebc46694dc458807c1d754b62";
+        const RAID_RES_SIG = "0x546aca7b2683440b8f02fa95faeb8efc79dd0f16af3d815a002742ea6f76116c";
+
+        log("Starting V2 Event Scan...");
+
+        const { ethers } = require('ethers');
+        const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const coreAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8E9b929b1a8c43075CDD7580a4a717C0D5530E208"; // Use consistent addr
+
+        // A. Fetch recent logs for RaidRequests
+        const currentBlock = await provider.getBlockNumber();
+        const startBlock = currentBlock - 2000; // Look back 2000 blocks
+
+        const reqLogs = await provider.getLogs({
+            address: coreAddress,
+            topics: [RAID_REQ_SIG],
+            fromBlock: startBlock,
+            toBlock: 'latest'
+        });
+
+        // B. Fetch recent logs for RaidResult
+        const resLogs = await provider.getLogs({
+            address: coreAddress,
+            topics: [RAID_RES_SIG],
+            fromBlock: startBlock,
+            toBlock: 'latest'
+        });
+
+        log(`Found ${reqLogs.length} Requests and ${resLogs.length} Results in last ${currentBlock - startBlock} blocks.`);
+
+        // Map Results by RequestId (Topic 1)
+        const resultMap = new Map<string, any>();
+        resLogs.forEach((l: any) => {
+            // Topic 0: Sig, Topic 1: RequestId, Topic 2: Raider
+            if (l.topics[1]) resultMap.set(l.topics[1], l);
+        });
+
+        let v2FixedCount = 0;
+
+        for (const req of reqLogs) {
+            const requestId = req.topics[1];
+            const raider = ethers.getAddress(ethers.dataSlice(req.topics[2], 12)); // Decode address from topic
+
+            // Check isHighStakes (Data)
+            // bool isHighStakes is likely the first 32 bytes of data (or only data)
+            // ethers.AbiCoder.defaultAbiCoder().decode(["bool"], req.data)
+            const [isHighStakes] = ethers.AbiCoder.defaultAbiCoder().decode(["bool"], req.data);
+
+            if (isHighStakes) {
+                // Find Result
+                const res = resultMap.get(requestId);
+                let success = false;
+                let stolen = 0;
+
+                if (res) {
+                    // Decode Result Data: bool success, uint256 stealed
+                    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bool", "uint256"], res.data);
+                    success = decoded[0];
+                    stolen = Number(decoded[1]); // Unsafe cast?
+                }
+
+                // Create Expectation: Unique ID based on RequestId
+                // We don't have requestId in DB??
+                // We'll use txHash + logIndex as unique constraint check
+                const uniqueId = `${req.transactionHash}-${req.index}`;
+
+                // Check if QuestEvent exists
+                // We can't query by uniqueId easily in QuestEvent schema unless we put it in 'data'?
+                // We'll check by TxHash AND Type 'HIGH_STAKES'
+                const existing = await prisma.questEvent.findFirst({
+                    where: {
+                        type: 'HIGH_STAKES',
+                        createdAt: {
+                            gte: new Date(Date.now() - 3600000 * 24), // Last 24h approximation?
+                            // Better: check if we have an event with this Actor pending?
+                        }
+                    }
+                });
+
+                // Actually, best deduping is: Check if we have a QuestEvent for this Actor + Type recently processed?
+                // Or precise match: Check if we have QuestEvent where data matches?
+                // For now, let's just create it if we haven't processed this TX HASH.
+                const alreadyProcessedTx = await prisma.questEvent.findFirst({
+                    where: {
+                        type: 'HIGH_STAKES',
+                        createdAt: { // Approximate timestamp match }
+                        }
+                        // This is hard.
+                    });
+
+                // Better approach: Check if we have ANY HighStakes event for this User and TxHash?
+                // QuestEvent doesn't store TxHash column exposed?
+                // Schema check: indexer-service writes it to CartelEvent. QuestEvent is derived.
+
+                // Let's look for CartelEvent first!
+                // If we didn't index HighStakes properly, we likely don't have a CartelEvent with type='HIGH_STAKES_RAID'
+                // But we might have one with 'RAID' (incorrectly).
+
+                // We will JUST CREATE THE QUEST EVENT idempotently.
+                // We need to avoid duplicates.
+                // We'll trust the User's Quest Progress + DB check.
+
+                // Check DB for QuestEvent created within 10 mins of this block?
+                // Block timestamp?
+                const block = await provider.getBlock(req.blockNumber);
+                const timestamp = new Date(block.timestamp * 1000);
+
+                const duplicate = await prisma.questEvent.findFirst({
+                    where: {
+                        type: 'HIGH_STAKES',
+                        actor: raider,
+                        createdAt: timestamp // Exact match
+                    }
+                });
+
+                if (!duplicate) {
+                    log(`Fixing High Stakes Raid: ${req.transactionHash} (ReqId ${parseInt(requestId, 16)})`);
+                    await prisma.questEvent.create({
+                        data: {
+                            type: 'HIGH_STAKES',
+                            actor: raider,
+                            data: {
+                                target: "0x000...", // We don't have target from Logs easily (it's in Raids map in contract)
+                                stolen: stolen,
+                                penalty: 0,
+                                success: success,
+                                requestId: requestId // Store for reference
+                            },
+                            processed: false,
+                            createdAt: timestamp
+                        }
+                    });
+                    v2FixedCount++;
+                }
+            }
+        }
+
+        log(`V2 Fix complete. Created ${v2FixedCount} High Stakes events.`);
+        fixedCount += v2FixedCount;
+
+        log(`Triggering QuestEngine...`);
 
         // 2. Run Engine
         const questStats = await QuestEngine.processPendingEvents();
