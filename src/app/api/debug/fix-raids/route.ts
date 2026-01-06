@@ -259,90 +259,62 @@ export async function GET(request: Request) {
 
                 log(`Req ${requestId} (Tx: ${req.transactionHash.substring(0, 10)}): Raider=${raider}, HighStakes=${isHighStakes}`);
 
+                // Proceed for BOTH High Stakes and Normal Raids (since Indexer V1 misses both)
+                // Find Result
+                const res = resultMap.get(requestId);
+                let success = false;
+                let stolen = 0;
 
-                if (isHighStakes) {
-                    // Find Result
-                    const res = resultMap.get(requestId);
-                    let success = false;
-                    let stolen = 0;
-
-                    if (res) {
-                        if (res.data && res.data !== '0x') {
-                            // Decode Result Data
+                if (res) {
+                    // Try to decode result data
+                    if (res.data && res.data !== '0x') {
+                        try {
                             const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bool", "uint256"], res.data);
                             success = decoded[0];
                             stolen = Number(decoded[1]);
-                        } else {
-                            log(`Result found for ${requestId} but no data?`);
+                        } catch (e: any) {
+                            log(`Failed to decode result data for ${requestId}: ${e.message}`);
                         }
+                    } else if (res.data === '0x' && !isHighStakes) {
+                        // For Normal Raids, failure might be encoded as empty data or just (false, 0)
+                        // If 0x, checking topics implies success/fail?
+                        // Actually, without data, we can't know stolen/success easily from log alone if it's packed.
+                        // But typically result emits (success, stolen).
+                        // If it's 0x, it might mean (false, 0).
+                        log(`Result data empty, assuming 0 stolen/failed.`);
                     }
+                }
 
-                    // Create Expectation: Unique ID based on RequestId
-                    // We don't have requestId in DB??
-                    // We'll use txHash + logIndex as unique constraint check
-                    const uniqueId = `${req.transactionHash}-${req.index}`;
+                // Create Unique ID check
+                const timestamp = new Date((await provider.getBlock(req.blockNumber))!.timestamp * 1000);
+                const type = isHighStakes ? 'HIGH_STAKES' : 'RAID';
 
-                    // Check if QuestEvent exists
-                    // We can't query by uniqueId easily in QuestEvent schema unless we put it in 'data'?
-                    // We'll check by TxHash AND Type 'HIGH_STAKES'
-                    const existing = await prisma.questEvent.findFirst({
-                        where: {
-                            type: 'HIGH_STAKES',
-                            createdAt: {
-                                gte: new Date(Date.now() - 3600000 * 24), // Last 24h approximation?
-                                // Better: check if we have an event with this Actor pending?
-                            }
-                        }
-                    });
+                const duplicate = await prisma.questEvent.findFirst({
+                    where: {
+                        type: type,
+                        actor: raider,
+                        createdAt: timestamp
+                    }
+                });
 
-                    // Actually, best deduping is: Check if we have a QuestEvent for this Actor + Type recently processed?
-                    // Deduplication check uses 'duplicate' below.
-
-
-                    // Better approach: Check if we have ANY HighStakes event for this User and TxHash?
-                    // QuestEvent doesn't store TxHash column exposed?
-                    // Schema check: indexer-service writes it to CartelEvent. QuestEvent is derived.
-
-                    // Let's look for CartelEvent first!
-                    // If we didn't index HighStakes properly, we likely don't have a CartelEvent with type='HIGH_STAKES_RAID'
-                    // But we might have one with 'RAID' (incorrectly).
-
-                    // We will JUST CREATE THE QUEST EVENT idempotently.
-                    // We need to avoid duplicates.
-                    // We'll trust the User's Quest Progress + DB check.
-
-                    // Check DB for QuestEvent created within 10 mins of this block?
-                    // Block timestamp?
-                    const block = await provider.getBlock(req.blockNumber);
-                    const timestamp = new Date(block.timestamp * 1000);
-
-                    const duplicate = await prisma.questEvent.findFirst({
-                        where: {
-                            type: 'HIGH_STAKES',
+                if (!duplicate) {
+                    log(`Fixing ${type}: ${req.transactionHash}`);
+                    await prisma.questEvent.create({
+                        data: {
+                            type: type,
                             actor: raider,
-                            createdAt: timestamp // Exact match
+                            data: {
+                                target: "0x000...", // Unknown from logs
+                                stolen: stolen,
+                                penalty: 0,
+                                success: success,
+                                requestId: requestId
+                            },
+                            processed: false,
+                            createdAt: timestamp
                         }
                     });
-
-                    if (!duplicate) {
-                        log(`Fixing High Stakes Raid: ${req.transactionHash} (ReqId ${parseInt(requestId, 16)})`);
-                        await prisma.questEvent.create({
-                            data: {
-                                type: 'HIGH_STAKES',
-                                actor: raider,
-                                data: {
-                                    target: "0x000...", // We don't have target from Logs easily (it's in Raids map in contract)
-                                    stolen: stolen,
-                                    penalty: 0,
-                                    success: success,
-                                    requestId: requestId // Store for reference
-                                },
-                                processed: false,
-                                createdAt: timestamp
-                            }
-                        });
-                        v2FixedCount++;
-                    }
+                    v2FixedCount++;
                 }
 
             } catch (err: any) {
