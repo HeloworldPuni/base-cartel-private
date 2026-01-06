@@ -220,24 +220,33 @@ export async function GET(request: Request) {
         for (const req of reqLogs) {
             try {
                 const requestId = req.topics[1];
-                let raider: string;
-                let isHighStakes: boolean;
 
-                const reqData = req.data && req.data !== '0x' ? req.data : null;
-                if (!reqData) {
-                    log(`Skipping Req ${requestId} - No data`);
+                // Deep Scan: Fetch Receipt to find Truth
+                const txReceipt = await provider.getTransactionReceipt(req.transactionHash);
+                if (!txReceipt) {
+                    log(`Skipping Req ${requestId} - No Receipt`);
                     continue;
                 }
 
-                if (req.topics.length >= 3) {
-                    raider = ethers.getAddress(ethers.dataSlice(req.topics[2], 12));
-                    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bool"], reqData);
-                    isHighStakes = decoded[0];
-                } else {
-                    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["address", "bool"], reqData);
-                    raider = decoded[0];
-                    isHighStakes = decoded[1];
+                // 1. Identify Raider: The sender of the tx is the Raider
+                const raider = txReceipt.from;
+
+                // 2. Identify High Stakes: Look for the Fee Transfer in Logs
+                // Fee = 0.015 * 1e18 = 15000000000000000
+                // Hex = 0x354a6ba7a18000
+                const HIGH_STAKES_HEX = "0x354a6ba7a18000";
+
+                // Simple string scan of all logs to find the fee payment
+                let isHighStakes = false;
+                for (const l of txReceipt.logs) {
+                    if (l.data && l.data.includes(HIGH_STAKES_HEX.replace('0x', ''))) {
+                        isHighStakes = true;
+                        break;
+                    }
                 }
+
+                log(`Req ${requestId} (Tx: ${req.transactionHash.substring(0, 10)}): Raider=${raider}, HighStakes=${isHighStakes}`);
+
 
                 if (isHighStakes) {
                     // Find Result
