@@ -182,285 +182,309 @@ export async function indexEvents() {
                 fee: safeNumber(log.args[1]) // Actually 'amount'
             });
         }
+        // 2b. Fetch Pending/Failed Events from DB (Retry Logic)
+        // If the indexer crashed after inserting CartelEvent but before QuestEvent,
+        // they remain 'processed: false'. The block range above might skip them.
+        const pendingDbEvents = await prisma.cartelEvent.findMany({
+            where: { processed: false },
+            take: 50 // Retry max 50 at a time to avoid huge batches
+        });
+
+        for (const dbEvent of pendingDbEvents) {
+            // Adapt DB shape to Event shape
+            // Avoid duplicates if RPC also picked it up (txHash check handles this later)
+            if (!eventsToProcess.find(e => e.txHash === dbEvent.txHash)) {
+                eventsToProcess.push({
+                    type: dbEvent.type,
+                    txHash: dbEvent.txHash,
+                    blockNumber: dbEvent.blockNumber,
+                    timestamp: dbEvent.timestamp,
+                    attacker: dbEvent.attacker,
+                    target: dbEvent.target,
+                    stolenShares: Number(dbEvent.stolenShares), // Ensure number
+                    penalty: dbEvent.selfPenaltyShares ? Number(dbEvent.selfPenaltyShares) : 0,
+                    fee: dbEvent.feePaid // Map feePaid -> fee
+                });
+            }
+        }
+
+        const failedEvents: any[] = [];
+
+        // 3. Process Batch
+        await processEventBatch(eventsToProcess, failedEvents);
+
+        console.log(`[Indexer] Processed ${eventsToProcess.length} events.`);
+
+        return {
+            processed: eventsToProcess.length,
+            backfillFound: missedClaims.length,
+            backfillErrors: backfillErrors.length > 0 ? backfillErrors : null,
+            processingErrors: failedEvents.length > 0 ? failedEvents : null,
+            recentEvents: {
+                raid: raidLogs.length,
+                highStakes: highStakesLogs.length,
+                join: joinLogs.length,
+                claim: claimLogs.length
+            }
+        };
     }
 
-    const failedEvents: any[] = [];
+    async function processEventBatch(events: any[], failedEvents: any[]) {
+        for (const event of events) {
 
-    // 3. Process Batch
-    await processEventBatch(eventsToProcess, failedEvents);
+            try {
+                // Idempotency: We used to skip, but now we allow re-processing to fix data (e.g. fees)
+                const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
 
-    console.log(`[Indexer] Processed ${eventsToProcess.length} events.`);
+                // HEALING LOGIC: If event exists but QuestEvent is missing for RAIDs, we proceed.
+                // If completely processed and synced, we skip.
+                if (exists && exists.processed) {
+                    // Check if QuestEvent is missing (V2 Migration/Backfill issue)
+                    if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                        const qe = await prisma.questEvent.findFirst({
+                            where: {
+                                type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
+                                createdAt: event.timestamp
+                            }
+                        });
+                        if (qe) continue; // Already has quest event, skip.
+                        console.log(`[Indexer] Healing missing QuestEvent for ${event.txHash}`);
+                    } else {
+                        continue;
+                    }
+                }
 
-    return {
-        processed: eventsToProcess.length,
-        backfillFound: missedClaims.length,
-        backfillErrors: backfillErrors.length > 0 ? backfillErrors : null,
-        processingErrors: failedEvents.length > 0 ? failedEvents : null,
-        recentEvents: {
-            raid: raidLogs.length,
-            highStakes: highStakesLogs.length,
-            join: joinLogs.length,
-            claim: claimLogs.length
-        }
-    };
-}
+                console.log(`[Indexer] Processing ${event.type}.`);
+                const feeFinal = event.fee ? Number(event.fee) : 0;
 
-async function processEventBatch(events: any[], failedEvents: any[]) {
-    for (const event of events) {
+                // DEBUG LOGGING REQUESTED BY USER
+                console.log("INSERTING EVENT:", {
+                    type: event.type,
+                    feePaid: feeFinal,
+                    rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs, (key, value) =>
+                        typeof value === 'bigint' ? value.toString() : value
+                    ) : "N/A"
+                });
 
-        try {
-            // Idempotency: We used to skip, but now we allow re-processing to fix data (e.g. fees)
-            const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
-
-            // HEALING LOGIC: If event exists but QuestEvent is missing for RAIDs, we proceed.
-            // If completely processed and synced, we skip.
-            if (exists && exists.processed) {
-                // Check if QuestEvent is missing (V2 Migration/Backfill issue)
-                if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
-                    const qe = await prisma.questEvent.findFirst({
-                        where: {
-                            type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
-                            createdAt: event.timestamp
+                await prisma.$transaction(async (tx) => {
+                    // A. Create Event Record (Legacy / V1)
+                    await tx.cartelEvent.upsert({
+                        where: { txHash: event.txHash },
+                        update: {
+                            feePaid: feeFinal,
+                            processed: true
+                        },
+                        create: {
+                            txHash: event.txHash,
+                            blockNumber: event.blockNumber,
+                            timestamp: event.timestamp,
+                            type: event.type,
+                            attacker: event.attacker,
+                            target: event.target,
+                            stolenShares: event.stolenShares,
+                            selfPenaltyShares: event.penalty, // for High Stakes
+                            feePaid: feeFinal, // For CLAIM this is amount
+                            processed: true
                         }
                     });
-                    if (qe) continue; // Already has quest event, skip.
-                    console.log(`[Indexer] Healing missing QuestEvent for ${event.txHash}`);
-                } else {
-                    continue;
-                }
-            }
 
-            console.log(`[Indexer] Processing ${event.type}.`);
-            const feeFinal = event.fee ? Number(event.fee) : 0;
+                    // B. Route Logic (V1)
+                    if (event.type === 'JOIN') {
+                        await handleJoinEvent(tx, event);
 
-            // DEBUG LOGGING REQUESTED BY USER
-            console.log("INSERTING EVENT:", {
-                type: event.type,
-                feePaid: feeFinal,
-                rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs, (key, value) =>
-                    typeof value === 'bigint' ? value.toString() : value
-                ) : "N/A"
-            });
+                        // V2 QUEST EVENT: JOIN
+                        // Idempotent check inside TX is hard, relying on unique constraint failure or just allow dupes (filtered by logic)
+                        // But usually 1 join per person.
+                        await tx.questEvent.create({
+                            data: {
+                                type: 'JOIN',
+                                actor: event.attacker,
+                                data: {
+                                    referrer: event.target,
+                                    shares: event.stolenShares
+                                },
+                                processed: false,
+                                createdAt: event.timestamp
+                            }
+                        });
 
-            await prisma.$transaction(async (tx) => {
-                // A. Create Event Record (Legacy / V1)
-                await tx.cartelEvent.upsert({
-                    where: { txHash: event.txHash },
-                    update: {
-                        feePaid: feeFinal,
-                        processed: true
-                    },
-                    create: {
-                        txHash: event.txHash,
-                        blockNumber: event.blockNumber,
-                        timestamp: event.timestamp,
-                        type: event.type,
-                        attacker: event.attacker,
-                        target: event.target,
-                        stolenShares: event.stolenShares,
-                        selfPenaltyShares: event.penalty, // for High Stakes
-                        feePaid: feeFinal, // For CLAIM this is amount
-                        processed: true
+                    } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                        await handleRaidEvent(tx, event);
+
+                        // V2 QUEST EVENT: RAID
+                        await tx.questEvent.create({
+                            data: {
+                                type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
+                                actor: event.attacker,
+                                data: {
+                                    target: event.target,
+                                    stolen: event.stolenShares,
+                                    penalty: event.penalty || 0,
+                                    success: true // If log exists, it succeeded
+                                },
+                                processed: false,
+                                createdAt: event.timestamp
+                            }
+                        });
+                    } else if (event.type === 'CLAIM') {
+                        await tx.questEvent.create({
+                            data: {
+                                type: 'CLAIM',
+                                actor: event.attacker,
+                                data: {
+                                    amount: feeFinal
+                                },
+                                processed: false,
+                                createdAt: event.timestamp
+                            }
+                        });
                     }
                 });
-
-                // B. Route Logic (V1)
-                if (event.type === 'JOIN') {
-                    await handleJoinEvent(tx, event);
-
-                    // V2 QUEST EVENT: JOIN
-                    // Idempotent check inside TX is hard, relying on unique constraint failure or just allow dupes (filtered by logic)
-                    // But usually 1 join per person.
-                    await tx.questEvent.create({
-                        data: {
-                            type: 'JOIN',
-                            actor: event.attacker,
-                            data: {
-                                referrer: event.target,
-                                shares: event.stolenShares
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-
-                } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
-                    await handleRaidEvent(tx, event);
-
-                    // V2 QUEST EVENT: RAID
-                    await tx.questEvent.create({
-                        data: {
-                            type: event.type === 'HIGH_STAKES_RAID' ? 'HIGH_STAKES' : 'RAID',
-                            actor: event.attacker,
-                            data: {
-                                target: event.target,
-                                stolen: event.stolenShares,
-                                penalty: event.penalty || 0,
-                                success: true // If log exists, it succeeded
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-                } else if (event.type === 'CLAIM') {
-                    await tx.questEvent.create({
-                        data: {
-                            type: 'CLAIM',
-                            actor: event.attacker,
-                            data: {
-                                amount: feeFinal
-                            },
-                            processed: false,
-                            createdAt: event.timestamp
-                        }
-                    });
-                }
-            });
-        } catch (error) {
-            console.error(`[Indexer] Error processing event ${event.txHash}:`, error);
-        }
-    }
-}
-
-async function handleJoinEvent(tx: any, event: any) {
-    const playerAddr = event.attacker;
-    const referrerAddr = event.target;
-    const sharesMinted = event.stolenShares;
-
-    console.log(`[Indexer] Processing JOIN for ${playerAddr} (Referrer: ${referrerAddr})`);
-
-    // 1. Upsert Player (The User)
-    const user = await tx.user.upsert({
-        where: { walletAddress: playerAddr },
-        update: {
-            shares: sharesMinted, // Authoritative Source
-            lastSeenAt: event.timestamp
-        },
-        create: {
-            walletAddress: playerAddr,
-            shares: sharesMinted
-        }
-    });
-
-    // 2. Handle Referral
-    if (referrerAddr && referrerAddr !== ethers.ZeroAddress && referrerAddr !== playerAddr) {
-
-        // Upsert Referrer (Ensure they exist in DB)
-        // We do NOT update their shares here; the contract likely minted referral bonus to them,
-        // but we would need to check their balance or wait for a Transfer event to know exactly.
-        // For now, we trust the contract logic: `Join` event implies Referrer got +20.
-        // Ideally we'd read their balance, but simpler to just track the relationship.
-
-        await tx.user.upsert({
-            where: { walletAddress: referrerAddr },
-            update: { lastSeenAt: event.timestamp },
-            create: { walletAddress: referrerAddr }
-        });
-
-        // Create Referral Record
-        const existingRef = await tx.cartelReferral.findUnique({
-            where: { userAddress: playerAddr }
-        });
-
-        if (!existingRef) {
-            await tx.cartelReferral.create({
-                data: {
-                    userAddress: playerAddr,
-                    referrerAddress: referrerAddr,
-                    season: 1
-                }
-            });
-            console.log(`[Indexer] Linked ${playerAddr} -> ${referrerAddr}`);
-
-            // V2 QUEST EVENT: REFER (Triggered for the Referrer)
-            // Note: We create a separate event for the Referrer to count towards "Refer a friend" quest
-            await tx.questEvent.create({
-                data: {
-                    type: 'REFER',
-                    actor: referrerAddr,
-                    data: {
-                        referee: playerAddr,
-                        season: 1
-                    },
-                    processed: false,
-                    createdAt: event.timestamp
-                }
-            });
-        }
-    }
-
-    // 3. INVITE GENERATION -> MOVED TO LAZY API (V5)
-    // We no longer generate invites here.
-    // They are generated synchronously on-demand when the user visits the referral UI.
-}
-
-async function handleRaidEvent(tx: any, event: any) {
-    const { attacker, target } = event;
-
-    // Self-Healing: Fetch actual on-chain balance to ensure DB is in sync
-    // This fixes "frozen" or "desynced" leaderboards by forcing truth from source.
-    try {
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
-        // We know Shares contract address is needed. 
-        // We can get it from Core or Env. 
-        // For now, let's look it up or assuming shares contract is known.
-        // Actually, CartelCore has a publicly readable `sharesContract()` function.
-
-        const core = new ethers.Contract(CARTEL_CORE_ADDRESS, [
-            "function sharesContract() view returns (address)",
-            "function balanceOf(address account, uint256 id) view returns (uint256)" // ERC1155 on shares
-        ], provider);
-
-        const sharesAddr = await core.sharesContract();
-        const sharesMinter = new ethers.Contract(sharesAddr, [
-            "function balanceOf(address account, uint256 id) view returns (uint256)"
-        ], provider);
-
-        // Update Attacker
-        if (attacker) {
-            const actualBal = await sharesMinter.balanceOf(attacker, 1); // ID 1 is the main share
-            await tx.user.upsert({
-                where: { walletAddress: attacker },
-                update: { shares: Number(actualBal) },
-                create: { walletAddress: attacker, shares: Number(actualBal) }
-            });
-            console.log(`[Indexer] Synced ${attacker} shares to ${actualBal}`);
-        }
-
-        // Update Target
-        if (target) {
-            const actualBal = await sharesMinter.balanceOf(target, 1);
-            await tx.user.upsert({
-                where: { walletAddress: target },
-                update: { shares: Number(actualBal) },
-                create: { walletAddress: target, shares: Number(actualBal) }
-            });
-            console.log(`[Indexer] Synced ${target} shares to ${actualBal}`);
-        }
-
-    } catch (e) {
-        console.error("Failed to sync on-chain balance, falling back to increment:", e);
-        // FALLBACK: Old Logic
-        const { stolenShares, penalty } = event;
-        const totalChange = stolenShares - (penalty || 0);
-
-        if (attacker) {
-            await tx.user.upsert({
-                where: { walletAddress: attacker },
-                update: { shares: { increment: totalChange } },
-                create: { walletAddress: attacker, shares: Math.max(0, totalChange) }
-            });
-        }
-        if (target) {
-            const tUser = await tx.user.findUnique({ where: { walletAddress: target } });
-            if (tUser) {
-                const newBal = Math.max(0, (tUser.shares || 0) - stolenShares);
-                await tx.user.update({
-                    where: { walletAddress: target },
-                    data: { shares: newBal }
-                });
+            } catch (error) {
+                console.error(`[Indexer] Error processing event ${event.txHash}:`, error);
             }
         }
     }
-}
+
+    async function handleJoinEvent(tx: any, event: any) {
+        const playerAddr = event.attacker;
+        const referrerAddr = event.target;
+        const sharesMinted = event.stolenShares;
+
+        console.log(`[Indexer] Processing JOIN for ${playerAddr} (Referrer: ${referrerAddr})`);
+
+        // 1. Upsert Player (The User)
+        const user = await tx.user.upsert({
+            where: { walletAddress: playerAddr },
+            update: {
+                shares: sharesMinted, // Authoritative Source
+                lastSeenAt: event.timestamp
+            },
+            create: {
+                walletAddress: playerAddr,
+                shares: sharesMinted
+            }
+        });
+
+        // 2. Handle Referral
+        if (referrerAddr && referrerAddr !== ethers.ZeroAddress && referrerAddr !== playerAddr) {
+
+            // Upsert Referrer (Ensure they exist in DB)
+            // We do NOT update their shares here; the contract likely minted referral bonus to them,
+            // but we would need to check their balance or wait for a Transfer event to know exactly.
+            // For now, we trust the contract logic: `Join` event implies Referrer got +20.
+            // Ideally we'd read their balance, but simpler to just track the relationship.
+
+            await tx.user.upsert({
+                where: { walletAddress: referrerAddr },
+                update: { lastSeenAt: event.timestamp },
+                create: { walletAddress: referrerAddr }
+            });
+
+            // Create Referral Record
+            const existingRef = await tx.cartelReferral.findUnique({
+                where: { userAddress: playerAddr }
+            });
+
+            if (!existingRef) {
+                await tx.cartelReferral.create({
+                    data: {
+                        userAddress: playerAddr,
+                        referrerAddress: referrerAddr,
+                        season: 1
+                    }
+                });
+                console.log(`[Indexer] Linked ${playerAddr} -> ${referrerAddr}`);
+
+                // V2 QUEST EVENT: REFER (Triggered for the Referrer)
+                // Note: We create a separate event for the Referrer to count towards "Refer a friend" quest
+                await tx.questEvent.create({
+                    data: {
+                        type: 'REFER',
+                        actor: referrerAddr,
+                        data: {
+                            referee: playerAddr,
+                            season: 1
+                        },
+                        processed: false,
+                        createdAt: event.timestamp
+                    }
+                });
+            }
+        }
+
+        // 3. INVITE GENERATION -> MOVED TO LAZY API (V5)
+        // We no longer generate invites here.
+        // They are generated synchronously on-demand when the user visits the referral UI.
+    }
+
+    async function handleRaidEvent(tx: any, event: any) {
+        const { attacker, target } = event;
+
+        // Self-Healing: Fetch actual on-chain balance to ensure DB is in sync
+        // This fixes "frozen" or "desynced" leaderboards by forcing truth from source.
+        try {
+            const provider = new ethers.JsonRpcProvider(RPC_URL);
+            // We know Shares contract address is needed. 
+            // We can get it from Core or Env. 
+            // For now, let's look it up or assuming shares contract is known.
+            // Actually, CartelCore has a publicly readable `sharesContract()` function.
+
+            const core = new ethers.Contract(CARTEL_CORE_ADDRESS, [
+                "function sharesContract() view returns (address)",
+                "function balanceOf(address account, uint256 id) view returns (uint256)" // ERC1155 on shares
+            ], provider);
+
+            const sharesAddr = await core.sharesContract();
+            const sharesMinter = new ethers.Contract(sharesAddr, [
+                "function balanceOf(address account, uint256 id) view returns (uint256)"
+            ], provider);
+
+            // Update Attacker
+            if (attacker) {
+                const actualBal = await sharesMinter.balanceOf(attacker, 1); // ID 1 is the main share
+                await tx.user.upsert({
+                    where: { walletAddress: attacker },
+                    update: { shares: Number(actualBal) },
+                    create: { walletAddress: attacker, shares: Number(actualBal) }
+                });
+                console.log(`[Indexer] Synced ${attacker} shares to ${actualBal}`);
+            }
+
+            // Update Target
+            if (target) {
+                const actualBal = await sharesMinter.balanceOf(target, 1);
+                await tx.user.upsert({
+                    where: { walletAddress: target },
+                    update: { shares: Number(actualBal) },
+                    create: { walletAddress: target, shares: Number(actualBal) }
+                });
+                console.log(`[Indexer] Synced ${target} shares to ${actualBal}`);
+            }
+
+        } catch (e) {
+            console.error("Failed to sync on-chain balance, falling back to increment:", e);
+            // FALLBACK: Old Logic
+            const { stolenShares, penalty } = event;
+            const totalChange = stolenShares - (penalty || 0);
+
+            if (attacker) {
+                await tx.user.upsert({
+                    where: { walletAddress: attacker },
+                    update: { shares: { increment: totalChange } },
+                    create: { walletAddress: attacker, shares: Math.max(0, totalChange) }
+                });
+            }
+            if (target) {
+                const tUser = await tx.user.findUnique({ where: { walletAddress: target } });
+                if (tUser) {
+                    const newBal = Math.max(0, (tUser.shares || 0) - stolenShares);
+                    await tx.user.update({
+                        where: { walletAddress: target },
+                        data: { shares: newBal }
+                    });
+                }
+            }
+        }
+    }
 
