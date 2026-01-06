@@ -487,4 +487,5 @@ export async function indexEvents() {
             }
         }
     }
+}
 
