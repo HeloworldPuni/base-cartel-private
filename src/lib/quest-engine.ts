@@ -113,19 +113,22 @@ export class QuestEngine {
         }
 
         if (!user) {
-            console.warn(`[QuestEngine] User not found for address ${actorAddress}. Skipping quest ${questSlug}.`);
+            log(`[QuestEngine] User not found for address ${actorAddress}. Skipping quest ${questSlug}.`);
             return;
         }
 
         // 1. Get Quest Definition
         const quest = await prisma.quest.findUnique({ where: { slug: questSlug } });
         if (!quest) {
-            console.warn(`[QuestEngine] Quest not found: ${questSlug}`);
+            log(`[QuestEngine] Quest not found: ${questSlug}`);
             return;
         }
-        if (!quest.isActive) return;
+        if (!quest.isActive) {
+            log(`[QuestEngine] Quest not active: ${questSlug}`);
+            return;
+        }
 
-        console.log(`[QuestEngine] Updating ${questSlug} for ${actorAddress} (ID: ${user.id}). +${amount}`);
+        log(`[QuestEngine] Updating ${questSlug} for ${actorAddress} (ID: ${user.id}). +${amount}`);
 
         // 2. Get User Progress
         let progress = await prisma.questProgressV2.findUnique({
@@ -152,7 +155,7 @@ export class QuestEngine {
         }
 
         if (progress.completed) {
-            console.log(`[QuestEngine] Quest ${questSlug} already completed for ${actorAddress}.`);
+            log(`[QuestEngine] Quest ${questSlug} already completed for ${actorAddress}.`);
             return;
         }
 
@@ -169,7 +172,7 @@ export class QuestEngine {
         });
 
         if (isCompleted) {
-            console.log(`[QuestEngine] User ${actorAddress} COMPLETED ${questSlug}!`);
+            log(`[QuestEngine] User ${actorAddress} COMPLETED ${questSlug}!`);
 
             // Award REP
             if (quest.rewardRep > 0) {
@@ -177,7 +180,7 @@ export class QuestEngine {
                     where: { id: user.id },
                     data: { rep: { increment: quest.rewardRep } }
                 });
-                console.log(`[QuestEngine] Awarded ${quest.rewardRep} REP to ${actorAddress}`);
+                log(`[QuestEngine] Awarded ${quest.rewardRep} REP to ${actorAddress}`);
             }
 
             // Award Shares (Queue)
