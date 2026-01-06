@@ -14,10 +14,13 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Address required' }, { status: 400 });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { walletAddress: address },
+        // Case-Insensitive Lookup to match Engine logic
+        const user = await prisma.user.findFirst({
+            where: {
+                walletAddress: { equals: address, mode: 'insensitive' }
+            },
             include: {
-                questProgress: true // This is V1? No, we need V2 relations if defined in schema or manual query
+                questProgress: true
             }
         });
 
