@@ -238,6 +238,18 @@ export async function GET(request: Request) {
 
                 // Simple string scan of all logs to find the fee payment
                 let isHighStakes = false;
+
+                // DEBUG: Dump all logs for this Tx to see why we missed it
+                if (req.transactionHash.startsWith("0x0b11")) { // Only for the debug target
+                    log(`--- Debugging Log Scan for ${req.transactionHash} ---`);
+                    txReceipt.logs.forEach((l: any, i: number) => {
+                        log(`[${i}] Addr: ${l.address} | Topics: ${l.topics.join(',')} | Data: ${l.data}`);
+                    });
+                    // Check specifically for fee
+                    const feeHex = HIGH_STAKES_HEX.replace('0x', '');
+                    log(`Looking for Fee Hex: ${feeHex}`);
+                }
+
                 for (const l of txReceipt.logs) {
                     if (l.data && l.data.includes(HIGH_STAKES_HEX.replace('0x', ''))) {
                         isHighStakes = true;
