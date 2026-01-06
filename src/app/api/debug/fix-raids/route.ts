@@ -13,6 +13,17 @@ export async function GET(request: Request) {
         const url = new URL(request.url);
         const forceTx = url.searchParams.get('tx');
         const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
+        const debugUser = url.searchParams.get('debugUser');
+
+        if (debugUser) {
+            const u = await prisma.user.findFirst({ where: { walletAddress: { equals: debugUser, mode: 'insensitive' } } });
+            if (u) {
+                const p = await prisma.questProgressV2.findMany({ where: { userId: u.id } });
+                return NextResponse.json({ success: true, debugUser: u.walletAddress, userId: u.id, progress: p });
+            }
+            return NextResponse.json({ success: false, error: "User not found" });
+        }
+
 
         log("Starting Manual Raid Fix...");
         if (forceTx) log(`Targeting specific Tx: ${forceTx}`);
