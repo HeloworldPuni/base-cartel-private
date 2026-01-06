@@ -10,7 +10,23 @@ export async function GET(request: Request) {
     const log = (msg: string) => { console.log(msg); logs.push(msg); };
 
     try {
+        const url = new URL(request.url);
+        const forceTx = url.searchParams.get('tx');
+        const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
+
         log("Starting Manual Raid Fix...");
+        if (forceTx) log(`Targeting specific Tx: ${forceTx}`);
+        if (forceType) log(`Forcing Type: ${forceType}`);
+
+        // DB stats
+        const allEvents = await prisma.questEvent.findMany({
+            where: {
+                type: { in: ['RAID', 'HIGH_STAKES_RAID', 'HIGH_STAKES'] },
+                createdAt: { gte: new Date(Date.now() - 3600000 * 24 * 7) }
+            },
+            select: { id: true, type: true, data: true, processed: true }
+        });
+        log(`DB has ${allEvents.length} Recent Raid Events.`);
 
         // 1. Find Stuck Raids (Standard Logic)
         const stuckRaids = await prisma.cartelEvent.findMany({
