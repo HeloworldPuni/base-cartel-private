@@ -12,20 +12,34 @@ export async function GET(request: Request) {
     try {
         log("Starting Manual Raid Fix...");
 
-        // 1. Find Stuck Raids
+        // 1. Find Stuck Raids (Standard Logic)
         const stuckRaids = await prisma.cartelEvent.findMany({
             where: {
-                type: { in: ['RAID', 'HIGH_STAKES_RAID'] },
+                type: 'RAID',
                 processed: false
             },
-            take: 100
+            take: 50
         });
 
-        log(`Found ${stuckRaids.length} stuck raid events.`);
+        // 2. Deep Repair for High Stakes (Check verified processed ones too)
+        // because they might have been marked processed but skipped Quest creation
+        const highStakes = await prisma.cartelEvent.findMany({
+            where: {
+                type: 'HIGH_STAKES_RAID'
+            },
+            take: 20,
+            orderBy: { timestamp: 'desc' }
+        });
+
+        const allEvents = [...stuckRaids, ...highStakes];
+        log(`Found ${stuckRaids.length} stuck raids and ${highStakes.length} recent high stakes.`);
 
         let fixedCount = 0;
 
-        for (const raid of stuckRaids) {
+        for (const raid of allEvents) {
+            // Dedupe loop if event is in both lists (unlikely due to type filter)
+
+            // ... (rest of logic)
             log(`Fixing Raid ${raid.txHash}...`);
 
             // A. Ensure User Exists
