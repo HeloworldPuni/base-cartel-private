@@ -259,37 +259,47 @@ export async function GET(request: Request) {
 
                 log(`Req ${requestId} (Tx: ${req.transactionHash.substring(0, 10)}): Raider=${raider}, HighStakes=${isHighStakes}`);
 
-                // Proceed for BOTH High Stakes and Normal Raids (since Indexer V1 misses both)
-                // Find Result
-                const res = resultMap.get(requestId);
-                let success = false;
-                let stolen = 0;
+                // 3. Identify Stolen/Penalty via TransferSingle Logs
+                // TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)
+                const TRANSFER_SINGLE_SIG = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62";
 
-                if (res) {
-                    // Try to decode result data
-                    if (res.data && res.data !== '0x') {
+                let stolen = 0;
+                let penalty = 0;
+                let success = false;
+
+                for (const l of txReceipt.logs) {
+                    if (l.topics[0] === TRANSFER_SINGLE_SIG) {
                         try {
-                            const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bool", "uint256"], res.data);
-                            success = decoded[0];
-                            stolen = Number(decoded[1]);
-                        } catch (e: any) {
-                            log(`Failed to decode result data for ${requestId}: ${e.message}`);
-                        }
-                    } else if (res.data === '0x' && !isHighStakes) {
-                        // For Normal Raids, failure might be encoded as empty data or just (false, 0)
-                        // If 0x, checking topics implies success/fail?
-                        // Actually, without data, we can't know stolen/success easily from log alone if it's packed.
-                        // But typically result emits (success, stolen).
-                        // If it's 0x, it might mean (false, 0).
-                        log(`Result data empty, assuming 0 stolen/failed.`);
+                            // Decode Data: id, value (since others are indexed)
+                            // Note: ethers v6 parses logs nicely if we had interface, but we do manual
+                            // Topics: [Sig, Operator, From, To]
+                            const from = ethers.getAddress(ethers.dataSlice(l.topics[2], 12));
+                            const to = ethers.getAddress(ethers.dataSlice(l.topics[3], 12));
+                            const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256", "uint256"], l.data);
+                            const val = Number(decoded[1]);
+
+                            // Case A: Mint to Raider (Stolen)
+                            if (to === ethers.getAddress(raider)) {
+                                stolen += val;
+                                success = true;
+                            }
+                            // Case B: Burn from Raider (Penalty) -> High Stakes Lose
+                            if (from === ethers.getAddress(raider) && to === ethers.ZeroAddress) {
+                                penalty += val;
+                                success = false;
+                            }
+                        } catch (e) { /* ignore parse err */ }
                     }
                 }
+
+                log(`Raid Outcome: Success=${success}, Stolen=${stolen}, Penalty=${penalty}`);
 
                 // Create Unique ID check
                 const timestamp = new Date((await provider.getBlock(req.blockNumber))!.timestamp * 1000);
                 const type = isHighStakes ? 'HIGH_STAKES' : 'RAID';
 
-                const duplicate = await prisma.questEvent.findFirst({
+                // Upsert Logic: If exists, update it (failed/empty before?)
+                const existing = await prisma.questEvent.findFirst({
                     where: {
                         type: type,
                         actor: raider,
@@ -297,16 +307,33 @@ export async function GET(request: Request) {
                     }
                 });
 
-                if (!duplicate) {
-                    log(`Fixing ${type}: ${req.transactionHash}`);
+                if (existing) {
+                    // Update if it looks "empty" (stolen=0, processed=true?) or just force refresh
+                    log(`Updating existing ${type} event (Force Retry)...`);
+                    await prisma.questEvent.update({
+                        where: { id: existing.id },
+                        data: {
+                            data: {
+                                target: "0x000...",
+                                stolen: stolen,
+                                penalty: penalty,
+                                success: success,
+                                requestId: requestId
+                            },
+                            processed: false // FORCE REPROCESS
+                        }
+                    });
+                    v2FixedCount++;
+                } else {
+                    log(`Creating new ${type} event...`);
                     await prisma.questEvent.create({
                         data: {
                             type: type,
                             actor: raider,
                             data: {
-                                target: "0x000...", // Unknown from logs
+                                target: "0x000...",
                                 stolen: stolen,
-                                penalty: 0,
+                                penalty: penalty,
                                 success: success,
                                 requestId: requestId
                             },
