@@ -21,10 +21,36 @@ export async function GET(request: Request) {
             take: 50
         });
 
-        // 2. Deep Repair for High Stakes
-        // Hypothesis: Contract emits 'Raid' for both, but High Stakes has higher fee.
-        // RAID_FEE = 0.005 USDC (5e15), HIGH_STAKES = 0.015 USDC (1.5e16)
-        // Check recent (processed) RAIDs for high fee.
+        // 2. Deep Repair / Inspection
+        // Use a known recent Tx to inspect raw logs
+        const debugTx = "0x0b1150a14ad1157ba3b82772714041d8b9e6717a52f9288e000fc770337f7a81"; // Valid length?
+        // Note: The user logs provided partial hashes "0x0b1150a1...". exact hash is unknown.
+        // Actually, let's use the DB to get the FULL hash.
+
+        const sampleRaid = await prisma.cartelEvent.findFirst({
+            where: { txHash: { startsWith: '0x0b1150a1' } }
+        });
+
+        if (sampleRaid) {
+            log(`Inspecting Tx: ${sampleRaid.txHash}`);
+            // Need provider
+            const { ethers } = require('ethers');
+            const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
+            const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+            const receipt = await provider.getTransactionReceipt(sampleRaid.txHash);
+            if (receipt) {
+                log(`Logs found: ${receipt.logs.length}`);
+                receipt.logs.forEach((l: any, i: number) => {
+                    log(`Log ${i}: Address=${l.address} Topic[0]=${l.topics[0]}`);
+                });
+            } else {
+                log("Receipt not found ??");
+            }
+        } else {
+            log("Sample raid not found in DB?");
+        }
+
         const recentRaids = await prisma.cartelEvent.findMany({
             where: {
                 type: 'RAID',
