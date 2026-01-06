@@ -273,6 +273,12 @@ export async function GET(request: Request) {
                     }
                 }
 
+                // FORCE OVERRIDE
+                if (forceTx && req.transactionHash.toLowerCase() === forceTx.toLowerCase() && forceType) {
+                    log(`Overriding Type to ${forceType} for ${forceTx}`);
+                    isHighStakes = (forceType === 'HIGH_STAKES' || forceType === 'HIGH_STAKES_RAID');
+                }
+
                 log(`Req ${requestId} (Tx: ${req.transactionHash.substring(0, 10)}): Raider=${raider}, HighStakes=${isHighStakes}`);
 
                 // 3. Identify Stolen/Penalty via TransferSingle Logs
