@@ -258,15 +258,8 @@ export async function GET(request: Request) {
                 });
 
                 // Actually, best deduping is: Check if we have a QuestEvent for this Actor + Type recently processed?
-                // Or precise match: Check if we have QuestEvent where data matches?
-                // For now, let's just create it if we haven't processed this TX HASH.
-                const alreadyProcessedTx = await prisma.questEvent.findFirst({
-                    where: {
-                        type: 'HIGH_STAKES',
-                        createdAt: { // Approximate timestamp match }
-                        }
-                        // This is hard.
-                    });
+                // Deduplication check uses 'duplicate' below.
+
 
                 // Better approach: Check if we have ANY HighStakes event for this User and TxHash?
                 // QuestEvent doesn't store TxHash column exposed?
