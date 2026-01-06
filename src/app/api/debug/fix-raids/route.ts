@@ -37,12 +37,19 @@ export async function GET(request: Request) {
         const HIGH_FEE_THRESHOLD = 10000000000000000; // 0.01 USDC (1e16)
 
         const allEvents = [...stuckRaids];
+        let fixedCount = 0;
 
         for (const raid of recentRaids) {
             // Check if fee indicates High Stakes
-            // fee is Float in DB probably? handle potential number
-            if (raid.fee && raid.fee > HIGH_FEE_THRESHOLD) {
-                log(`Found potential High Stakes Raid: ${raid.txHash} Fee: ${raid.fee}`);
+            // Use feePaid if available, else fee (indexer maps feePaid->fee in memory, likely similar in DB)
+            // If TS error on 'fee', using 'any' cast to be safe or check schema.
+            // Based on indexer-service, DB model likely has 'feePaid'. Let's check 'feePaid' or 'fee'.
+            // Actually, best to cast to any to avoid property check issues if type is loose.
+            const r = raid as any;
+            const fee = r.fee || r.feePaid || 0;
+
+            if (fee > HIGH_FEE_THRESHOLD) {
+                log(`Found potential High Stakes Raid: ${raid.txHash} Fee: ${fee}`);
                 // Treat as High Stakes Candidate
 
                 // Check if we already have the High Stakes Quest Event
@@ -74,9 +81,7 @@ export async function GET(request: Request) {
             }
         }
 
-        log(`Found ${stuckRaids.length} stuck raids and ${highStakes.length} recent high stakes.`);
-
-        let fixedCount = 0;
+        log(`Found ${stuckRaids.length} stuck raids and scanned ${recentRaids.length} recent raids for High Stakes.`);
 
         for (const raid of allEvents) {
             // Dedupe loop if event is in both lists (unlikely due to type filter)
