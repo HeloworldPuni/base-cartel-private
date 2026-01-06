@@ -116,40 +116,69 @@ export async function indexEvents() {
         return Number(n);
     };
 
-    for (const log of raidLogs) {
-        if ('args' in log) {
-            const block = await log.getBlock();
-            const fee = safeNumber(log.args[4]); // Index 4 is Fee
-            console.log(`[Indexer] Raid found. FeeRaw: ${log.args[4]}, Extracted: ${fee}`);
+    // V2: Raw Topic Scan (Since ABI fails)
+    const RAID_REQ_SIG = "0x76421cb080d40e8a03ba462b500012451ba59bdebc46694dc458807c1d754b62";
+    const TRANSFER_SINGLE_SIG = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62";
+    const HIGH_STAKES_HEX = "354a6ba7a18000"; // 0.015 ETH/USDC
+
+    const v2ReqLogs = await provider.getLogs({
+        address: CARTEL_CORE_ADDRESS,
+        topics: [RAID_REQ_SIG],
+        fromBlock: startBlock,
+        toBlock: endBlock
+    });
+
+    console.log(`[Indexer] Found ${v2ReqLogs.length} V2 Raid Requests.`);
+
+    for (const log of v2ReqLogs) {
+        try {
+            const receipt = await provider.getTransactionReceipt(log.transactionHash);
+            if (!receipt) continue;
+
+            const raider = receipt.from;
+            let isHighStakes = false;
+            let stolen = 0;
+            let penalty = 0;
+            let target = ethers.ZeroAddress;
+
+            // 1. Check for High Stakes Fee
+            for (const l of receipt.logs) {
+                if (l.data && l.data.includes(HIGH_STAKES_HEX)) {
+                    isHighStakes = true;
+                }
+                // 2. Check for Outcome in TransferSingle
+                if (l.topics[0] === TRANSFER_SINGLE_SIG) {
+                    try {
+                        const from = ethers.getAddress(ethers.dataSlice(l.topics[2], 12));
+                        const to = ethers.getAddress(ethers.dataSlice(l.topics[3], 12));
+                        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256", "uint256"], l.data);
+                        const val = Number(decoded[1]);
+
+                        if (to === ethers.getAddress(raider)) {
+                            stolen += val;
+                            target = from; // Found the target!
+                        }
+                        if (from === ethers.getAddress(raider) && to === ethers.ZeroAddress) {
+                            penalty += val;
+                        }
+                    } catch (e) { /* ignore */ }
+                }
+            }
 
             eventsToProcess.push({
-                type: 'RAID',
+                type: isHighStakes ? 'HIGH_STAKES_RAID' : 'RAID',
                 txHash: log.transactionHash,
                 blockNumber: log.blockNumber,
-                timestamp: new Date(block.timestamp * 1000),
-                attacker: log.args[0],
-                target: log.args[1],
-                stolenShares: safeNumber(log.args[2]),
-                fee: fee,
-                rawArgs: log.args // Capture full args for debugging
+                timestamp: new Date((await provider.getBlock(log.blockNumber))!.timestamp * 1000),
+                attacker: raider,
+                target: target !== ethers.ZeroAddress ? target : "0x0000000000000000000000000000000000000000",
+                stolenShares: stolen,
+                penalty: penalty,
+                fee: isHighStakes ? 0.015 : 0.005 // Approx based on type
             });
-        }
-    }
 
-    for (const log of highStakesLogs) {
-        if ('args' in log) {
-            const block = await log.getBlock();
-            eventsToProcess.push({
-                type: 'HIGH_STAKES_RAID',
-                txHash: log.transactionHash,
-                blockNumber: log.blockNumber,
-                timestamp: new Date(block.timestamp * 1000),
-                attacker: log.args[0], // Traitor
-                target: log.args[1],   // Victim
-                stolenShares: safeNumber(log.args[2]),
-                penalty: safeNumber(log.args[3]),
-                fee: safeNumber(log.args[4])
-            });
+        } catch (err) {
+            console.error(`[Indexer] Error parsing V2 Log ${log.transactionHash}:`, err);
         }
     }
 
