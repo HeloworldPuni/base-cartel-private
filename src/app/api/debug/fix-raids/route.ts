@@ -51,41 +51,8 @@ export async function GET(request: Request) {
             const logs = await core.queryFilter(filter, startBlock, 'latest');
             console.log(`Found ${logs.length} RaidRequests events for ${scanUser}`);
 
-            const results = [];
-
-            // Process each log using the Deep Scan logic
-            for (const log of logs) {
-                try {
-                    // Extract minimal info to reuse existing loop logic or call a helper
-                    // We will reconstruct a "fake" req object to feed into the main loop below?
-                    // OR better: Refactor the main loop to be a function? 
-                    // For speed, I'll just iterate here and grab the txHash.
-                    const txHash = log.transactionHash;
-                    results.push(txHash);
-
-                    // Add to recentRaids list to be processed by the main logic below
-                    // We can just overwrite 'recentRaids' query results with these logs if we want.
-                } catch (e) {
-                    console.error(`Error processing log ${log.transactionHash}:`, e);
-                }
-            }
-
-            // Return found TXs so we can see what we found
-            // To actually FIX them, we should probably just return them and let the USER click them? 
-            // OR auto-process them.
-            // Let's auto-process.
-            // Instead of 'recentRaids' from DB, we will use these logs as the source of truth for the "Fix Loop".
-            // We need to map them to the shape expected by the loop: { transactionHash, ... }
-
-            // We'll populate a special variable and SKIP the standard DB query.
-            var overrideEvents = logs.map(l => ({
-                transactionHash: l.transactionHash,
-                blockNumber: l.blockNumber,
-                topics: l.topics,
-                data: l.data
-            }));
-        } else {
-            var overrideEvents = null;
+            // Add to Part 2 Processing
+            extraReqLogs = logs;
         }
 
 
