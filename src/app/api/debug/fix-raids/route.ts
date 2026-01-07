@@ -42,10 +42,12 @@ export async function GET(request: Request) {
             // Topic 2: raider (indexed) - user address
             const filter = core.filters.RaidRequests(null, scanUser);
 
-            // Fetch ALL logs for this user (from block 0 or reasonable start)
-            // reasonable start: deployed block? or just latest - 50000? 
-            // Let's go wide.
-            const logs = await core.queryFilter(filter, 0, 'latest');
+            // Fetch ALL logs for this user (limited to max range)
+            const currentBlock = await provider.getBlockNumber();
+            const startBlock = Math.max(0, currentBlock - 90000); // Max 100k allowed
+
+            console.log(`Scanning from block ${startBlock} to latest`);
+            const logs = await core.queryFilter(filter, startBlock, 'latest');
             console.log(`Found ${logs.length} RaidRequests events for ${scanUser}`);
 
             const results = [];
