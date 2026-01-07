@@ -7,6 +7,8 @@ import FrameProvider from "~/components/providers/FrameProvider";
 
 import { SharedCastHandler } from "~/components/farcaster/SharedCastHandler";
 
+import { SessionProvider } from 'next-auth/react';
+
 export default function Providers({
   children,
 }: {
@@ -28,10 +30,12 @@ export default function Providers({
         },
       }}
     >
-      <FrameProvider>
-        <SharedCastHandler />
-        <WagmiProvider>{children}</WagmiProvider>
-      </FrameProvider>
+      <SessionProvider>
+        <FrameProvider>
+          <SharedCastHandler />
+          <WagmiProvider>{children}</WagmiProvider>
+        </FrameProvider>
+      </SessionProvider>
     </OnchainKitProvider>
   );
 }

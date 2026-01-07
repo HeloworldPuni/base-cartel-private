@@ -11,29 +11,23 @@ export async function POST(req: NextRequest) {
 
         // Verify the event using Neynar (or provide custom otherwise)
         // Assuming NEYNAR_API_KEY is set in env
-        const data = await parseWebhookEvent(requestJson, verifyAppKeyWithNeynar);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: any = await parseWebhookEvent(requestJson, verifyAppKeyWithNeynar);
 
         switch (data.event) {
             case "miniapp_added":
             case "notifications_enabled": {
                 if (data.notificationDetails) {
-                    await prisma.notificationToken.create({
-                        data: {
+                    await prisma.notificationToken.upsert({
+                        where: { token: data.notificationDetails.token },
+                        create: {
                             fid: data.fid.toString(),
                             token: data.notificationDetails.token,
                             url: data.notificationDetails.url,
-                        }
-                    }).catch(async (e) => {
-                        // Upsert manually if create fails on unique constraint
-                        if (e.code === 'P2002') {
-                            await prisma.notificationToken.update({
-                                where: { token: data.notificationDetails!.token },
-                                data: {
-                                    fid: data.fid.toString(),
-                                    url: data.notificationDetails!.url,
-                                    // Renew timestamp?
-                                }
-                            })
+                        },
+                        update: {
+                            fid: data.fid.toString(),
+                            url: data.notificationDetails.url,
                         }
                     });
                 }
