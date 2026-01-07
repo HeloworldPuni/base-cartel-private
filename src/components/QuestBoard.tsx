@@ -128,6 +128,16 @@ export default function QuestBoard() {
                 ))}
             </div>
 
+            {/* DEBUG DUMP */}
+            <div className="p-4 bg-black/50 text-[10px] font-mono text-zinc-500 overflow-auto max-h-40">
+                <div className="font-bold text-zinc-300 mb-2">DEBUG DATA DUMP</div>
+                {(quests || []).map(q => (
+                    <div key={q.id}>
+                        {q.title} | {q.category} | {q.progress?.completed ? 'DONE' : 'WIP'} ({q.progress?.current}/{q.progress?.target})
+                    </div>
+                ))}
+            </div>
+
         </div>
     );
 }
