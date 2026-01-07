@@ -28,11 +28,11 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
 
     // Farcaster Auth Hook
     // @ts-expect-error - AuthKit types
-    const { connect, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
+    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
 
     useEffect(() => {
-        console.log("Farcaster Auth Debug:", { connect, isAuthenticated, farcasterData, rest });
-    }, [connect, isAuthenticated, farcasterData, rest]);
+        console.log("Farcaster Auth Debug:", { signIn, isAuthenticated, farcasterData, rest });
+    }, [signIn, isAuthenticated, farcasterData, rest]);
 
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
@@ -139,9 +139,9 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                         ) : (
                             <button
                                 onClick={() => {
-                                    console.log("Connect Farcaster Clicked. Connect fn:", connect);
-                                    if (connect) connect();
-                                    else alert("Farcaster Connect function missing!");
+                                    console.log("Connect Farcaster Clicked. SignIn fn:", signIn);
+                                    if (signIn) signIn();
+                                    else alert("Farcaster SignIn function missing!");
                                 }}
                                 className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
