@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { X, MessageSquare, Loader2, Check } from "lucide-react";
 import { useAccount } from "wagmi";
 import { signIn as signInNextAuth, useSession } from "next-auth/react";
-import { useSignIn, StatusAPIResponse } from "@farcaster/auth-kit";
+import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
 
 // Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
@@ -26,14 +26,6 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     const { address } = useAccount();
     const { data: session } = useSession(); // Prepare for Twitter session
 
-    // Farcaster Auth Hook
-    // @ts-expect-error - AuthKit types
-    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
-
-    useEffect(() => {
-        console.log("Farcaster Auth Debug:", { signIn, isAuthenticated, farcasterData, rest });
-    }, [signIn, isAuthenticated, farcasterData, rest]);
-
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
     const [farcasterConnected, setFarcasterConnected] = useState(!!initialData?.farcaster);
@@ -49,7 +41,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     }, [isOpen, initialData]);
 
     // Handle Farcaster Success
-    const handleFarcasterSuccess = useCallback(async (res: StatusAPIResponse) => {
+    const handleFarcasterSuccess = async (res: StatusAPIResponse) => {
         if (!address) return;
         setIsSaving(true);
         try {
@@ -70,14 +62,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
         } finally {
             setIsSaving(false);
         }
-    }, [address]);
-
-    // Watch for Farcaster authentication changes
-    useEffect(() => {
-        if (isAuthenticated && farcasterData && !farcasterConnected && isOpen) {
-            handleFarcasterSuccess(farcasterData);
-        }
-    }, [isAuthenticated, farcasterData, farcasterConnected, handleFarcasterSuccess, isOpen]);
+    };
 
 
     if (!isOpen) return null;
@@ -137,17 +122,18 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <button
-                                onClick={() => {
-                                    console.log("Connect Farcaster Clicked. SignIn fn:", signIn);
-                                    if (signIn) signIn();
-                                    else alert("Farcaster SignIn function missing!");
-                                }}
-                                className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                            >
-                                <MessageSquare className="w-5 h-5" />
-                                Connect Farcaster
-                            </button>
+                            <div className="w-full relative">
+                                {/* Custom visual button */}
+                                <button className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 pointer-events-none">
+                                    <MessageSquare className="w-5 h-5" />
+                                    <span>Connect Farcaster</span>
+                                </button>
+
+                                {/* Invisible official button overlay */}
+                                <div className="absolute inset-0 opacity-0 cursor-pointer overflow-hidden rounded-xl">
+                                    <SignInButton onSuccess={handleFarcasterSuccess} />
+                                </div>
+                            </div>
                         )}
                     </div>
 
