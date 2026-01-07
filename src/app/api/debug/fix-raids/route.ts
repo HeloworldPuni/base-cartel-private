@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
-        log(`[Corrected] Version 3.0 - Build Bypass`);
+        log(`[Corrected] Version 3.1 - RPC Safe Mode`);
         log(`URL: ${request.url}`);
 
         const forceTx = url.searchParams.get('tx');
@@ -278,7 +278,7 @@ export async function GET(request: Request) {
         // A. Fetch recent logs for RaidRequests
         const currentBlock = await provider.getBlockNumber();
         const globalScan = url.searchParams.get('globalScan');
-        const range = globalScan ? 100000 : 20000;
+        const range = globalScan ? 90000 : 20000; // 90k safe buffer for 100k limit
         const startBlock = Math.max(0, currentBlock - range);
         log(`Scanning last ${range} blocks (Global mode: ${!!globalScan})`);
 
@@ -287,7 +287,7 @@ export async function GET(request: Request) {
                 address: CORE_ADDRESS,
                 topics: [RAID_REQ_SIG],
                 fromBlock: startBlock,
-                toBlock: 'latest'
+                toBlock: currentBlock // Pin to avoid 'latest' drift
             })),
             ...(extraReqLogs || [])
         ];
@@ -297,7 +297,7 @@ export async function GET(request: Request) {
             address: CORE_ADDRESS,
             topics: [RAID_RES_SIG],
             fromBlock: startBlock,
-            toBlock: 'latest'
+            toBlock: currentBlock
         });
 
         log(`Found ${reqLogs.length} Requests and ${resLogs.length} Results in last ${currentBlock - startBlock} blocks.`);
