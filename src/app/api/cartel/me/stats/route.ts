@@ -37,10 +37,13 @@ export async function GET(request: Request) {
             }
         }) + 1;
 
+        const totalPlayers = await prisma.user.count();
+
         return NextResponse.json({
             highStakesCount,
             shares: user?.shares || 0,
-            rank
+            rank,
+            totalPlayers
         });
     } catch (error) {
         console.error('Stats API error:', error);

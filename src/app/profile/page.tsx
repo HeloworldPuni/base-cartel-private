@@ -129,7 +129,7 @@ export default function ProfilePage() {
                     reputation: questsData.rep || 0,
                     rank: questsData.tier?.title || "Soldier",
                     rankNumber: statsData.rank || 9999,
-                    totalPlayers: 1247, // Fallback or fetch global stat if needed
+                    totalPlayers: statsData.totalPlayers || 1,
                     shares: statsData.shares || 0,
                     operations: (statsData.highStakesCount || 0) + (questsData.quests?.length || 0), // Approx
                     earnings: 0, // Placeholder
