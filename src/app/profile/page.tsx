@@ -132,7 +132,7 @@ export default function ProfilePage() {
                     totalPlayers: statsData.totalPlayers || 1,
                     shares: statsData.shares || 0,
                     operations: (statsData.highStakesCount || 0) + (questsData.quests?.length || 0), // Approx
-                    earnings: 0, // Placeholder
+                    earnings: statsData.earnings || 0, // Calculated in API
                     clanSize: 0,
                     joinedDate: statsData.joinedDate ? new Date(statsData.joinedDate).getFullYear().toString() : "2024",
                     badges: [

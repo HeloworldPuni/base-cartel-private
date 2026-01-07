@@ -29,7 +29,8 @@ export async function GET(request: Request) {
             where: { walletAddress: address },
             select: {
                 shares: true,
-                createdAt: true
+                createdAt: true,
+                referralRewardsClaimed: true
             }
         });
 
@@ -42,12 +43,32 @@ export async function GET(request: Request) {
 
         const totalPlayers = await prisma.user.count();
 
+        // Calculate Earnings (Claims + Referrals)
+        const claims = await prisma.cartelEvent.aggregate({
+            where: {
+                attacker: address,
+                type: 'CLAIM'
+            },
+            _sum: { feePaid: true }
+        });
+
+        // Heuristic: If claims are in Wei (huge), convert to ETH. 
+        // If indexer stored them as ETH (small), keep as is.
+        // Threshold: 1000 (ETH is unlikely to be > 1000 for this demo context, Wei is always > 1000)
+        let claimEth = claims._sum.feePaid || 0;
+        if (claimEth > 1000) {
+            claimEth = claimEth / 1e18;
+        }
+
+        const totalEarnings = (claimEth + (user?.referralRewardsClaimed || 0)).toFixed(4);
+
         return NextResponse.json({
             highStakesCount,
             shares: user?.shares || 0,
             rank,
             totalPlayers,
-            joinedDate: user?.createdAt
+            joinedDate: user?.createdAt,
+            earnings: totalEarnings
         });
     } catch (error) {
         console.error('Stats API error:', error);
