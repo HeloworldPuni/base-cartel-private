@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
-        log(`[Corrected] Version 2.3 - Raider Fix`);
+        log(`[Corrected] Version 2.4 - Retry Build`);
         log(`URL: ${request.url}`);
 
         const forceTx = url.searchParams.get('tx');
