@@ -14,6 +14,13 @@ export async function GET(request: Request) {
         const forceTx = url.searchParams.get('tx');
         const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
         const debugUser = url.searchParams.get('debugUser');
+        const dumpQuests = url.searchParams.get('dumpQuests');
+
+        if (dumpQuests) {
+            const quests = await prisma.quest.findMany({ select: { slug: true, id: true } });
+            return NextResponse.json({ success: true, quests });
+        }
+
 
         if (debugUser) {
             const u = await prisma.user.findFirst({ where: { walletAddress: { equals: debugUser, mode: 'insensitive' } } });
