@@ -27,7 +27,10 @@ export async function GET(request: Request) {
         // Get user shares
         const user = await prisma.user.findUnique({
             where: { walletAddress: address },
-            select: { shares: true }
+            select: {
+                shares: true,
+                createdAt: true
+            }
         });
 
         // Calculate rank (simple count of users with more shares)
@@ -43,7 +46,8 @@ export async function GET(request: Request) {
             highStakesCount,
             shares: user?.shares || 0,
             rank,
-            totalPlayers
+            totalPlayers,
+            joinedDate: user?.createdAt
         });
     } catch (error) {
         console.error('Stats API error:', error);

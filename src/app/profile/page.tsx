@@ -134,7 +134,7 @@ export default function ProfilePage() {
                     operations: (statsData.highStakesCount || 0) + (questsData.quests?.length || 0), // Approx
                     earnings: 0, // Placeholder
                     clanSize: 0,
-                    joinedDate: "2024", // Placeholder
+                    joinedDate: statsData.joinedDate ? new Date(statsData.joinedDate).getFullYear().toString() : "2024",
                     badges: [
                         ...(won > 0 ? [{ id: 1, name: "First Blood", icon: "🩸", rarity: "common" }] : []),
                         ...(statsData.shares > 1000 ? [{ id: 2, name: "Whale", icon: "💎", rarity: "epic" }] : []),
