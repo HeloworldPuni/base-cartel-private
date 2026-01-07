@@ -9,6 +9,7 @@ import { SharedCastHandler } from "~/components/farcaster/SharedCastHandler";
 
 import { SessionProvider } from 'next-auth/react';
 import { AuthKitProvider } from '@farcaster/auth-kit';
+import '@farcaster/auth-kit/styles.css';
 
 const farcasterConfig = {
   rpcUrl: "https://mainnet.optimism.io",
