@@ -16,6 +16,64 @@ export async function GET(request: Request) {
         const debugUser = url.searchParams.get('debugUser');
         const simulateActive = url.searchParams.get('simulateActive');
         const checkCategory = url.searchParams.get('checkCategory');
+        const scanUser = url.searchParams.get('scanUser');
+
+        // MODE: Scan History for User
+        if (scanUser) {
+            console.log(`Scanning history for user: ${scanUser}`);
+            // Core Contract
+            const core = new ethers.Contract(CARTEL_CORE_ADDRESS, CORE_ABI, provider);
+
+            // Filter: RaidRequests(requestId, raider, isHighStakes)
+            // Topic 0: Event Signature
+            // Topic 1: requestId (indexed) - null (any)
+            // Topic 2: raider (indexed) - user address
+            const filter = core.filters.RaidRequests(null, scanUser);
+
+            // Fetch ALL logs for this user (from block 0 or reasonable start)
+            // reasonable start: deployed block? or just latest - 50000? 
+            // Let's go wide.
+            const logs = await core.queryFilter(filter, 0, 'latest');
+            console.log(`Found ${logs.length} RaidRequests events for ${scanUser}`);
+
+            const results = [];
+
+            // Process each log using the Deep Scan logic
+            for (const log of logs) {
+                try {
+                    // Extract minimal info to reuse existing loop logic or call a helper
+                    // We will reconstruct a "fake" req object to feed into the main loop below?
+                    // OR better: Refactor the main loop to be a function? 
+                    // For speed, I'll just iterate here and grab the txHash.
+                    const txHash = log.transactionHash;
+                    results.push(txHash);
+
+                    // Add to recentRaids list to be processed by the main logic below
+                    // We can just overwrite 'recentRaids' query results with these logs if we want.
+                } catch (e) {
+                    console.error(`Error processing log ${log.transactionHash}:`, e);
+                }
+            }
+
+            // Return found TXs so we can see what we found
+            // To actually FIX them, we should probably just return them and let the USER click them? 
+            // OR auto-process them.
+            // Let's auto-process.
+            // Instead of 'recentRaids' from DB, we will use these logs as the source of truth for the "Fix Loop".
+            // We need to map them to the shape expected by the loop: { transactionHash, ... }
+
+            // We'll populate a special variable and SKIP the standard DB query.
+            var overrideEvents = logs.map(l => ({
+                transactionHash: l.transactionHash,
+                blockNumber: l.blockNumber,
+                topics: l.topics,
+                data: l.data
+            }));
+        } else {
+            var overrideEvents = null;
+        }
+
+
 
         if (checkCategory) {
             const q = await prisma.quest.findUnique({ where: { slug: checkCategory } });
