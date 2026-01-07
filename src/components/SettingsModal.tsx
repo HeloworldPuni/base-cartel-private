@@ -27,8 +27,12 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     const { data: session } = useSession(); // Prepare for Twitter session
 
     // Farcaster Auth Hook
-    // @ts-expect-error - AuthKit types are tricky, passing empty object typically works or is required in some versions
-    const { connect, isSuccess: isAuthenticated, data: farcasterData } = useSignIn({});
+    // @ts-expect-error - AuthKit types
+    const { connect, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
+
+    useEffect(() => {
+        console.log("Farcaster Auth Debug:", { connect, isAuthenticated, farcasterData, rest });
+    }, [connect, isAuthenticated, farcasterData, rest]);
 
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
@@ -134,7 +138,11 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                             </div>
                         ) : (
                             <button
-                                onClick={() => connect()}
+                                onClick={() => {
+                                    console.log("Connect Farcaster Clicked. Connect fn:", connect);
+                                    if (connect) connect();
+                                    else alert("Farcaster Connect function missing!");
+                                }}
                                 className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <MessageSquare className="w-5 h-5" />
