@@ -120,7 +120,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <div className="w-full flex justify-center py-2 bg-white/5 border border-white/10 rounded-xl">
+                            <div className="w-full flex justify-center">
                                 <SignInButton
                                     onSuccess={handleFarcasterSuccess}
                                     onError={() => setError("Farcaster Login Failed")}

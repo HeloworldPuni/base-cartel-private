@@ -8,6 +8,13 @@ import FrameProvider from "~/components/providers/FrameProvider";
 import { SharedCastHandler } from "~/components/farcaster/SharedCastHandler";
 
 import { SessionProvider } from 'next-auth/react';
+import { AuthKitProvider } from '@farcaster/auth-kit';
+
+const farcasterConfig = {
+  rpcUrl: "https://mainnet.optimism.io", // Or user's RPC, standard for auth kit
+  domain: "basecartel.in",
+  siweUri: "https://basecartel.in/login",
+};
 
 export default function Providers({
   children,
@@ -15,27 +22,29 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <OnchainKitProvider
-      chain={base}
-      apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY}
-      config={{
-        appearance: {
-          mode: 'dark',
-          theme: 'default',
-        },
-        wallet: {
-          display: 'modal',
-          termsUrl: 'https://www.base.org/terms-of-service',
-          privacyUrl: 'https://www.base.org/privacy-policy',
-        },
-      }}
-    >
-      <SessionProvider>
-        <FrameProvider>
-          <SharedCastHandler />
-          <WagmiProvider>{children}</WagmiProvider>
-        </FrameProvider>
-      </SessionProvider>
-    </OnchainKitProvider>
+    <AuthKitProvider config={farcasterConfig}>
+      <OnchainKitProvider
+        chain={base}
+        apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY}
+        config={{
+          appearance: {
+            mode: 'dark',
+            theme: 'default',
+          },
+          wallet: {
+            display: 'modal',
+            termsUrl: 'https://www.base.org/terms-of-service',
+            privacyUrl: 'https://www.base.org/privacy-policy',
+          },
+        }}
+      >
+        <SessionProvider>
+          <FrameProvider>
+            <SharedCastHandler />
+            <WagmiProvider>{children}</WagmiProvider>
+          </FrameProvider>
+        </SessionProvider>
+      </OnchainKitProvider>
+    </AuthKitProvider>
   );
 }
