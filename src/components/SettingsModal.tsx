@@ -129,8 +129,8 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                     <span>Connect Farcaster</span>
                                 </button>
 
-                                {/* Invisible official button overlay */}
-                                <div className="absolute inset-0 opacity-0 cursor-pointer overflow-hidden rounded-xl">
+                                {/* Invisible official button overlay - DEBUG MODE: Visible */}
+                                <div className="absolute inset-0 opacity-50 bg-red-500 cursor-pointer overflow-hidden rounded-xl flex items-center justify-center">
                                     <SignInButton onSuccess={handleFarcasterSuccess} />
                                 </div>
                             </div>
