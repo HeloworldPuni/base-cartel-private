@@ -319,8 +319,15 @@ export async function GET(request: Request) {
                     continue;
                 }
 
-                // 1. Identify Raider: The sender of the tx is the Raider
-                const raider = txReceipt.from;
+                // 1. Identify Raider: Prefer indexed topic (true user) over tx.from (relayer)
+                // Topic 2 is address (padded to 32 bytes)
+                let raider = txReceipt.from;
+                if (req.topics && req.topics[2]) {
+                    try {
+                        // Decodes 0x000...address -> 0xaddress
+                        raider = ethers.getAddress('0x' + req.topics[2].slice(26));
+                    } catch (e) { console.error("Error decoding topic 2 raider", e); }
+                }
 
                 // 2. Identify High Stakes: Look for the Fee Transfer in Logs
                 // Fee = 0.015 * 1e18 = 15000000000000000
