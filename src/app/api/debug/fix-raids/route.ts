@@ -302,17 +302,12 @@ export async function GET(request: Request) {
 
         log("Starting V2 Event Scan...");
 
-        const { ethers } = require('ethers');
-        const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const coreAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0x40fdD70ae4559dd9E4a31AD08673dBBA91DCB7a8"; // Updated from Logs
-
         // A. Fetch recent logs for RaidRequests
         const currentBlock = await provider.getBlockNumber();
         const startBlock = currentBlock - 20000; // Increased to 20k blocks (~12h)
 
         const reqLogs = await provider.getLogs({
-            address: coreAddress,
+            address: CORE_ADDRESS,
             topics: [RAID_REQ_SIG],
             fromBlock: startBlock,
             toBlock: 'latest'
