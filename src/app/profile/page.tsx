@@ -103,23 +103,31 @@ export default function ProfilePage() {
                 }
 
                 // Map raids to activity format
-                const activityLog: ActivityLog[] = raids.map((raid: RaidEvent, index: number) => ({
-                    id: `raid-${index}`,
-                    type: 'raid',
-                    target: raid.direction === 'by' ? raid.target : raid.attacker,
-                    result: raid.direction === 'by' ? 'won' : 'lost', // Simplification: Attacker always wins in this MVP? Or check stolenShares? 
-                    // Actually, if I attacked and got shares, I won. If I was attacked and lost shares, I lost.
-                    // For now, let's assume 'by' = attack = active participation. 'on' = defense. 
-                    // Real win/loss logic depends on game rules. Let's assume successful raid if stolenShares > 0.
-                    amount: raid.direction === 'by' ? `+${raid.stolenShares} shares` : `-${raid.stolenShares} shares`,
-                    time: new Date(raid.timestamp).toLocaleDateString(),
-                    timestamp: new Date(raid.timestamp).getTime()
-                }));
+                const activityLog: ActivityLog[] = raids.map((raid: RaidEvent, index: number) => {
+                    let result = 'won';
+                    if (raid.direction === 'by') {
+                        // I attacked
+                        result = raid.stolenShares > 0 ? 'won' : 'failed';
+                    } else {
+                        // I was attacked
+                        result = raid.stolenShares > 0 ? 'lost' : 'defended';
+                    }
+
+                    return {
+                        id: `raid-${index}`,
+                        type: 'raid',
+                        target: raid.direction === 'by' ? raid.target : raid.attacker,
+                        result,
+                        amount: raid.direction === 'by' ? `+${raid.stolenShares} shares` : `-${raid.stolenShares} shares`,
+                        time: new Date(raid.timestamp).toLocaleDateString(),
+                        timestamp: new Date(raid.timestamp).getTime()
+                    };
+                });
 
                 // Calculate stats
                 raids.forEach((r: RaidEvent) => {
-                    if (r.direction === 'by') won++;
-                    else lost++;
+                    if (r.direction === 'by' && r.stolenShares > 0) won++;
+                    else if (r.direction === 'on' && r.stolenShares > 0) lost++;
                 });
 
                 setRaidStats({ won, lost, total: won + lost });
@@ -526,7 +534,7 @@ export default function ProfilePage() {
                                     >
                                         <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.type === "raid"
-                                                ? activity.result === "won"
+                                                ? (activity.result === "won" || activity.result === "defended")
                                                     ? "bg-green-500/20"
                                                     : "bg-red-500/20"
                                                 : activity.type === "quest"
@@ -536,7 +544,10 @@ export default function ProfilePage() {
                                         >
                                             {activity.type === "raid" ? (
                                                 <Target
-                                                    className={`w-5 h-5 ${activity.result === "won" ? "text-green-400" : "text-red-400"}`}
+                                                    className={`w-5 h-5 ${activity.result === "won" || activity.result === "defended"
+                                                            ? "text-green-400"
+                                                            : "text-red-400"
+                                                        }`}
                                                 />
                                             ) : activity.type === "quest" ? (
                                                 <Trophy className="w-5 h-5 text-blue-400" />
@@ -546,17 +557,22 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="font-semibold truncate">
-                                                {activity.type === "raid" &&
-                                                    `Raid ${activity.result} vs ${(activity.target || "").slice(0, 6)}...`}
+                                                {activity.type === "raid" && (
+                                                    activity.result === "failed"
+                                                        ? `Raid Failed vs ${(activity.target || "").slice(0, 6)}...`
+                                                        : activity.result === "defended"
+                                                            ? `Defended vs ${(activity.target || "").slice(0, 6)}...`
+                                                            : `Raid ${activity.result} vs ${(activity.target || "").slice(0, 6)}...`
+                                                )}
                                                 {activity.type === "quest" && `Quest: ${activity.name}`}
                                                 {activity.type === "dividend" && "Dividend Claimed"}
                                             </div>
                                             <div className="text-sm text-gray-400">{activity.time}</div>
                                         </div>
                                         <div
-                                            className={`font-bold whitespace-nowrap ${activity.amount.startsWith("+")
-                                                ? "text-green-400"
-                                                : "text-red-400"
+                                            className={`font-bold whitespace-nowrap ${(activity.amount.startsWith("+") && activity.amount !== "+0 shares") || activity.result === "defended"
+                                                    ? "text-green-400"
+                                                    : "text-red-400"
                                                 }`}
                                         >
                                             {activity.amount}
