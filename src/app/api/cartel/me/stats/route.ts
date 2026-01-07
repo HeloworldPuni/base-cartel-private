@@ -30,7 +30,9 @@ export async function GET(request: Request) {
             select: {
                 shares: true,
                 createdAt: true,
-                referralRewardsClaimed: true
+                referralRewardsClaimed: true,
+                xHandle: true,
+                farcasterHandle: true
             }
         });
 
@@ -68,7 +70,11 @@ export async function GET(request: Request) {
             rank,
             totalPlayers,
             joinedDate: user?.createdAt,
-            earnings: totalEarnings
+            earnings: totalEarnings,
+            socials: {
+                twitter: user?.xHandle || "",
+                farcaster: user?.farcasterHandle || ""
+            }
         });
     } catch (error) {
         console.error('Stats API error:', error);

@@ -20,6 +20,7 @@ import { useAccount, useDisconnect, useEnsName } from 'wagmi';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
 import { useFrameContext } from "@/components/providers/FrameProvider";
+import SettingsModal from "@/components/SettingsModal";
 
 
 export default function ProfilePage() {
@@ -30,6 +31,7 @@ export default function ProfilePage() {
 
     const [copiedAddress, setCopiedAddress] = useState(false);
     const [activeTab, setActiveTab] = useState("stats");
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Derive display data from real sources or fallbacks
     const displayAddress = address || "";
@@ -65,6 +67,10 @@ export default function ProfilePage() {
         joinedDate: string;
         badges: Badge[];
         recentActivity: ActivityLog[];
+        socials?: {
+            twitter: string;
+            farcaster: string;
+        };
     }
 
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -148,7 +154,8 @@ export default function ProfilePage() {
                         ...(statsData.shares > 1000 ? [{ id: 2, name: "Whale", icon: "💎", rarity: "epic" }] : []),
                         ...(statsData.rank === 1 ? [{ id: 3, name: "The Boss", icon: "👑", rarity: "legendary" }] : [])
                     ],
-                    recentActivity: activityLog.slice(0, 10)
+                    recentActivity: activityLog.slice(0, 10),
+                    socials: statsData.socials
                 });
 
             } catch (error) {
@@ -248,12 +255,19 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
                                 <button
+                                    onClick={() => setIsSettingsOpen(true)}
                                     className="p-2 md:p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
                                     aria-label="Settings"
                                 >
                                     <Settings className="w-5 h-5 md:w-6 md:h-6" />
                                 </button>
                             </div>
+
+                            <SettingsModal
+                                isOpen={isSettingsOpen}
+                                onClose={() => setIsSettingsOpen(false)}
+                                initialData={userData.socials}
+                            />
 
                             {/* Reputation & Rank Card */}
                             <motion.div
@@ -545,8 +559,8 @@ export default function ProfilePage() {
                                             {activity.type === "raid" ? (
                                                 <Target
                                                     className={`w-5 h-5 ${activity.result === "won" || activity.result === "defended"
-                                                            ? "text-green-400"
-                                                            : "text-red-400"
+                                                        ? "text-green-400"
+                                                        : "text-red-400"
                                                         }`}
                                                 />
                                             ) : activity.type === "quest" ? (
@@ -571,8 +585,8 @@ export default function ProfilePage() {
                                         </div>
                                         <div
                                             className={`font-bold whitespace-nowrap ${(activity.amount.startsWith("+") && activity.amount !== "+0 shares") || activity.result === "defended"
-                                                    ? "text-green-400"
-                                                    : "text-red-400"
+                                                ? "text-green-400"
+                                                : "text-red-400"
                                                 }`}
                                         >
                                             {activity.amount}
