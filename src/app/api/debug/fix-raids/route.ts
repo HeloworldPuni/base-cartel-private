@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     const logs: string[] = [];
     const log = (msg: string) => { console.log(msg); logs.push(msg); };
+    let extraReqLogs: any[] = [];
 
     try {
         const url = new URL(request.url);
@@ -308,12 +309,15 @@ export async function GET(request: Request) {
         const currentBlock = await provider.getBlockNumber();
         const startBlock = currentBlock - 20000; // Increased to 20k blocks (~12h)
 
-        const reqLogs = await provider.getLogs({
-            address: CORE_ADDRESS,
-            topics: [RAID_REQ_SIG],
-            fromBlock: startBlock,
-            toBlock: 'latest'
-        });
+        const reqLogs = [
+            ...(await provider.getLogs({
+                address: CORE_ADDRESS,
+                topics: [RAID_REQ_SIG],
+                fromBlock: startBlock,
+                toBlock: 'latest'
+            })),
+            ...(extraReqLogs || [])
+        ];
 
         // B. Fetch recent logs for RaidResult
         const resLogs = await provider.getLogs({
