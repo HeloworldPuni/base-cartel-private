@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
-        log(`[Corrected] Version 3.1 - RPC Safe Mode`);
+        log(`[Corrected] Version 3.2 - QueryFilter Switch`);
         log(`URL: ${request.url}`);
 
         const forceTx = url.searchParams.get('tx');
@@ -278,21 +278,26 @@ export async function GET(request: Request) {
         // A. Fetch recent logs for RaidRequests
         const currentBlock = await provider.getBlockNumber();
         const globalScan = url.searchParams.get('globalScan');
-        const range = globalScan ? 90000 : 20000; // 90k safe buffer for 100k limit
+        const range = globalScan ? 90000 : 20000;
         const startBlock = Math.max(0, currentBlock - range);
-        log(`Scanning last ${range} blocks (Global mode: ${!!globalScan})`);
+
+        log(`CORE_ADDRESS: ${CORE_ADDRESS}`);
+        log(`Scanning last ${range} blocks (Global mode: ${!!globalScan}) using queryFilter`);
+
+        // Use Contract instance (worked better for manual scan)
+        const core = new ethers.Contract(CORE_ADDRESS, MINIMAL_CORE_ABI, provider);
 
         const reqLogs = [
-            ...(await provider.getLogs({
-                address: CORE_ADDRESS,
-                topics: [RAID_REQ_SIG],
-                fromBlock: startBlock,
-                toBlock: currentBlock // Pin to avoid 'latest' drift
-            })),
+            ...(await core.queryFilter(core.filters.RaidRequests(), startBlock, currentBlock)),
             ...(extraReqLogs || [])
         ];
 
         // B. Fetch recent logs for RaidResult
+        // Note: RaidResult is not in MINIMAL_CORE_ABI above? We need to check if it has a filter method. 
+        // If not, we fall back to getLogs or add it to ABI. 
+        // Based on logs, RaidResult is needed. 
+        // For safety, let's stick to getLogs for Result OR add ABI.
+        // Let's rely on getLogs for Result for now, assuming Request was the main issue.
         const resLogs = await provider.getLogs({
             address: CORE_ADDRESS,
             topics: [RAID_RES_SIG],
