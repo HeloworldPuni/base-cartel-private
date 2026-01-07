@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
-        log(`[Corrected] Version 2.9 - Persistence Check II`);
+        log(`[Corrected] Version 3.0 - Build Bypass`);
         log(`URL: ${request.url}`);
 
         const forceTx = url.searchParams.get('tx');
