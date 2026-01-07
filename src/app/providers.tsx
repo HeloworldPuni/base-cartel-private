@@ -11,9 +11,9 @@ import { SessionProvider } from 'next-auth/react';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 
 const farcasterConfig = {
-  rpcUrl: "https://mainnet.optimism.io", // Or user's RPC, standard for auth kit
-  domain: "basecartel.in",
-  siweUri: "https://basecartel.in/login",
+  rpcUrl: "https://mainnet.optimism.io",
+  domain: typeof window !== 'undefined' ? window.location.host : 'basecartel.in',
+  siweUri: typeof window !== 'undefined' ? `${window.location.origin}/login` : 'https://basecartel.in/login',
 };
 
 export default function Providers({

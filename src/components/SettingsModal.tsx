@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, MessageSquare, Loader2, Check } from "lucide-react";
 import { useAccount } from "wagmi";
 import { signIn as signInNextAuth, useSession } from "next-auth/react";
-import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
+import { useSignIn, StatusAPIResponse } from "@farcaster/auth-kit";
 
 // Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
@@ -25,6 +25,10 @@ interface SettingsModalProps {
 export default function SettingsModal({ isOpen, onClose, initialData }: SettingsModalProps) {
     const { address } = useAccount();
     const { data: session } = useSession(); // Prepare for Twitter session
+
+    // Farcaster Auth Hook
+    // @ts-expect-error - AuthKit types
+    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
 
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
@@ -63,6 +67,13 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
             setIsSaving(false);
         }
     };
+
+    // Watch for Farcaster authentication changes
+    useEffect(() => {
+        if (isAuthenticated && farcasterData && !farcasterConnected && isOpen) {
+            handleFarcasterSuccess(farcasterData);
+        }
+    }, [isAuthenticated, farcasterData, farcasterConnected, isOpen]);
 
 
     if (!isOpen) return null;
@@ -122,18 +133,13 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <div className="w-full relative">
-                                {/* Custom visual button */}
-                                <button className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 pointer-events-none">
-                                    <MessageSquare className="w-5 h-5" />
-                                    <span>Connect Farcaster</span>
-                                </button>
-
-                                {/* Invisible official button overlay - DEBUG MODE: Visible */}
-                                <div className="absolute inset-0 opacity-50 bg-red-500 cursor-pointer overflow-hidden rounded-xl flex items-center justify-center">
-                                    <SignInButton onSuccess={handleFarcasterSuccess} />
-                                </div>
-                            </div>
+                            <button
+                                onClick={() => signIn()}
+                                className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                Connect Farcaster
+                            </button>
                         )}
                     </div>
 
