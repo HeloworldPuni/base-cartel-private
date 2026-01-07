@@ -14,11 +14,20 @@ export async function GET(request: Request) {
         const forceTx = url.searchParams.get('tx');
         const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
         const debugUser = url.searchParams.get('debugUser');
-        const dumpQuests = url.searchParams.get('dumpQuests');
+        const simulateActive = url.searchParams.get('simulateActive');
 
-        if (dumpQuests) {
-            const quests = await prisma.quest.findMany({ select: { slug: true, id: true } });
-            return NextResponse.json({ success: true, quests });
+        if (simulateActive) {
+            // Logic mirrored from active/route.ts
+            const u = await prisma.user.findFirst({ where: { walletAddress: { equals: simulateActive, mode: 'insensitive' } } });
+            if (!u) return NextResponse.json({ found: false });
+
+            const progressItems = await prisma.questProgressV2.findMany({
+                where: {
+                    userId: u.id,
+                    seasonId: 1
+                }
+            });
+            return NextResponse.json({ found: true, progressItems });
         }
 
 
