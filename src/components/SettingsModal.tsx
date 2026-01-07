@@ -28,7 +28,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
 
     // Farcaster Auth Hook
     // @ts-expect-error - AuthKit types are tricky, passing empty object typically works or is required in some versions
-    const { signIn, isSuccess: isAuthenticated, data: farcasterData } = useSignIn({});
+    const { connect, isSuccess: isAuthenticated, data: farcasterData } = useSignIn({});
 
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
@@ -134,7 +134,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                             </div>
                         ) : (
                             <button
-                                onClick={() => signIn()}
+                                onClick={() => connect()}
                                 className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <MessageSquare className="w-5 h-5" />
