@@ -317,7 +317,7 @@ export async function GET(request: Request) {
 
         // B. Fetch recent logs for RaidResult
         const resLogs = await provider.getLogs({
-            address: coreAddress,
+            address: CORE_ADDRESS,
             topics: [RAID_RES_SIG],
             fromBlock: startBlock,
             toBlock: 'latest'
