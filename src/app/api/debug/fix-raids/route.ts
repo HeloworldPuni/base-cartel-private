@@ -12,6 +12,9 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
+        log(`[Corrected] Version 2.2 - Active`);
+        log(`URL: ${request.url}`);
+
         const forceTx = url.searchParams.get('tx');
         const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
         const debugUser = url.searchParams.get('debugUser');
