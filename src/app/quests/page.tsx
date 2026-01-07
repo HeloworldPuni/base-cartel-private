@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Check, Lock, Trophy, Shield, Target, Coins, Award } from "lucide-react";
+import { Trophy, Award } from "lucide-react";
 import Link from 'next/link';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
@@ -12,7 +12,6 @@ export default function QuestsPage() {
     const [quests, setQuests] = useState<any[]>([]);
     const [rep, setRep] = useState(0);
     const [tier, setTier] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!address) return;
