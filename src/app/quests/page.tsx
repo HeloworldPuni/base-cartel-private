@@ -378,17 +378,7 @@ export default function QuestsPage() {
                     </div>
                 </div>
 
-                {/* DEBUG DUMP (PAGE) */}
-                <div className="max-w-7xl mx-auto px-6 mb-12">
-                    <div className="p-4 bg-black/50 text-[10px] font-mono text-zinc-500 overflow-auto max-h-40 rounded-xl border border-zinc-800">
-                        <div className="font-bold text-zinc-300 mb-2">DEBUG DATA DUMP (USER: {address})</div>
-                        {(quests || []).map((q: any) => (
-                            <div key={q.id}>
-                                {q.title} | {q.category} | {q.progress?.completed ? 'DONE' : 'WIP'} ({q.progress?.current}/{q.progress?.target})
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
 
                 {/* Footer */}
                 <footer className="border-t border-[#1e2a45] mt-20 py-8">
