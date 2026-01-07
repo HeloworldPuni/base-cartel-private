@@ -19,8 +19,10 @@ export default function QuestsPage() {
 
         const fetchQuests = async () => {
             try {
-                const res = await fetch(`/api/quests/active?address=${address}`);
+                console.log("[QuestsPage] Fetching for:", address);
+                const res = await fetch(`/api/quests/active?address=${address}&_t=${Date.now()}`);
                 const data = await res.json();
+                console.log("[QuestsPage] Data:", data);
                 if (data.quests) {
                     setQuests(data.quests);
                     setRep(data.rep);
