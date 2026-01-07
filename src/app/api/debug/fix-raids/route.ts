@@ -18,11 +18,23 @@ export async function GET(request: Request) {
         const checkCategory = url.searchParams.get('checkCategory');
         const scanUser = url.searchParams.get('scanUser');
 
+        // Initialize Ethers & Provider
+        const { ethers } = require('ethers');
+        const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0x40fdD70ae4559dd9E4a31AD08673dBBA91DCB7a8";
+
+        // Minimal ABI for filtering
+        const MINIMAL_CORE_ABI = [
+            "event RaidRequests(uint256 indexed requestId, address indexed raider, bool isHighStakes)"
+        ];
+
         // MODE: Scan History for User
         if (scanUser) {
             console.log(`Scanning history for user: ${scanUser}`);
             // Core Contract
-            const core = new ethers.Contract(CARTEL_CORE_ADDRESS, CORE_ABI, provider);
+            const core = new ethers.Contract(CORE_ADDRESS, MINIMAL_CORE_ABI, provider);
+
 
             // Filter: RaidRequests(requestId, raider, isHighStakes)
             // Topic 0: Event Signature
