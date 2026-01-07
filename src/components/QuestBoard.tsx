@@ -39,9 +39,13 @@ export default function QuestBoard() {
 
         const fetchQuests = async () => {
             try {
-                const res = await fetch(`/api/quests/active?address=${address}`);
+                const res = await fetch(`/api/quests/active?address=${address}&_t=${Date.now()}`);
                 const data = await res.json();
+                console.log("[QuestBoard] API Response:", data);
                 if (data.quests) {
+                    const hs = data.quests.find((q: any) => q.slug === 'weekly-high-stakes');
+                    console.log("[QuestBoard] High Stakes Data:", hs);
+
                     setQuests(data.quests);
                     setRep(data.rep);
                     setTier(data.tier);
