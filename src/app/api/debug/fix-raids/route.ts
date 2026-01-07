@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const url = new URL(request.url);
-        log(`[Corrected] Version 2.7 - Retry Global Scan`);
+        log(`[Corrected] Version 2.8 - Persistence Check`);
         log(`URL: ${request.url}`);
 
         const forceTx = url.searchParams.get('tx');
