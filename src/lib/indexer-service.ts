@@ -135,7 +135,15 @@ export async function indexEvents() {
             const receipt = await provider.getTransactionReceipt(log.transactionHash);
             if (!receipt) continue;
 
-            const raider = receipt.from;
+            // Fix: Use Topic 2 (Index 1 of args, but Topic 2 in log) for Raider if available
+            // RaidRequests(requestId, raider, isHighStakes) -> Topic 0=Sig, Topic 1=reqId, Topic 2=raider
+            let raider = receipt.from;
+            if (log.topics && log.topics[2]) {
+                try {
+                    raider = ethers.getAddress(ethers.dataSlice(log.topics[2], 12));
+                } catch (e) { console.error(`[Indexer] Failed to decode topic 2 raider for ${log.transactionHash}`, e); }
+            }
+
             let isHighStakes = false;
             let stolen = 0;
             let penalty = 0;
