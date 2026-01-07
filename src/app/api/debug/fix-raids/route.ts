@@ -277,7 +277,10 @@ export async function GET(request: Request) {
 
         // A. Fetch recent logs for RaidRequests
         const currentBlock = await provider.getBlockNumber();
-        const startBlock = currentBlock - 20000; // Increased to 20k blocks (~12h)
+        const globalScan = url.searchParams.get('globalScan');
+        const range = globalScan ? 100000 : 20000;
+        const startBlock = Math.max(0, currentBlock - range);
+        log(`Scanning last ${range} blocks (Global mode: ${!!globalScan})`);
 
         const reqLogs = [
             ...(await provider.getLogs({
