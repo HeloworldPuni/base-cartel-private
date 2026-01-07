@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Twitter, MessageSquare, Loader2, Check } from "lucide-react";
+import { X, MessageSquare, Loader2, Check } from "lucide-react";
 import { useAccount } from "wagmi";
 import { signIn, useSession } from "next-auth/react";
 import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
+
+// Custom X Logo component since Lucide doesn't have the exact specific trademarked one usually
+const XLogo = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+    </svg>
+);
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -77,25 +84,25 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
 
                 {/* Body */}
                 <div className="p-6 space-y-6">
-                    {/* Twitter Connect */}
+                    {/* Twitter / X Connect */}
                     <div className="space-y-3">
                         <label className="text-sm text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                            <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                            Twitter / X
+                            <XLogo className="w-4 h-4 text-white" />
+                            X (Formerly Twitter)
                         </label>
 
                         {twitterConnected || session?.user ? (
-                            <div className="flex items-center justify-between p-4 bg-[#1DA1F2]/10 border border-[#1DA1F2]/20 rounded-xl">
-                                <span className="font-bold text-[#1DA1F2]">Connected</span>
-                                <Check className="w-5 h-5 text-[#1DA1F2]" />
+                            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                                <span className="font-bold text-white">Connected</span>
+                                <Check className="w-5 h-5 text-green-400" />
                             </div>
                         ) : (
                             <button
                                 onClick={() => signIn('twitter')}
-                                className="w-full py-3 bg-[#1DA1F2] hover:bg-[#1a91da] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="w-full py-3 bg-white text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:bg-gray-200"
                             >
-                                <Twitter className="w-5 h-5" />
-                                Connect Twitter
+                                <XLogo className="w-5 h-5" />
+                                Connect X profile
                             </button>
                         )}
                     </div>
@@ -113,7 +120,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <div className="w-full flex justify-center">
+                            <div className="w-full flex justify-center py-2 bg-white/5 border border-white/10 rounded-xl">
                                 <SignInButton
                                     onSuccess={handleFarcasterSuccess}
                                     onError={() => setError("Farcaster Login Failed")}
