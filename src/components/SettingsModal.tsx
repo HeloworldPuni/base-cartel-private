@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, MessageSquare, Loader2, Check } from "lucide-react";
 import { useAccount } from "wagmi";
-import { signIn, useSession } from "next-auth/react";
-import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
+import { signIn as signInNextAuth, useSession } from "next-auth/react";
+import { useSignIn, StatusAPIResponse } from "@farcaster/auth-kit";
 
-// Custom X Logo component since Lucide doesn't have the exact specific trademarked one usually
+// Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
@@ -26,6 +26,10 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     const { address } = useAccount();
     const { data: session } = useSession(); // Prepare for Twitter session
 
+    // Farcaster Auth Hook
+    // @ts-expect-error - AuthKit types are tricky, passing empty object typically works or is required in some versions
+    const { signIn, isSuccess: isAuthenticated, data: farcasterData } = useSignIn({});
+
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
     const [farcasterConnected, setFarcasterConnected] = useState(!!initialData?.farcaster);
@@ -40,7 +44,8 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
         }
     }, [isOpen, initialData]);
 
-    const handleFarcasterSuccess = async (res: StatusAPIResponse) => {
+    // Handle Farcaster Success
+    const handleFarcasterSuccess = useCallback(async (res: StatusAPIResponse) => {
         if (!address) return;
         setIsSaving(true);
         try {
@@ -61,7 +66,15 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
         } finally {
             setIsSaving(false);
         }
-    };
+    }, [address]);
+
+    // Watch for Farcaster authentication changes
+    useEffect(() => {
+        if (isAuthenticated && farcasterData && !farcasterConnected && isOpen) {
+            handleFarcasterSuccess(farcasterData);
+        }
+    }, [isAuthenticated, farcasterData, farcasterConnected, handleFarcasterSuccess, isOpen]);
+
 
     if (!isOpen) return null;
 
@@ -98,7 +111,7 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                             </div>
                         ) : (
                             <button
-                                onClick={() => signIn('twitter')}
+                                onClick={() => signInNextAuth('twitter')}
                                 className="w-full py-3 bg-white text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:bg-gray-200"
                             >
                                 <XLogo className="w-5 h-5" />
@@ -120,12 +133,13 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <div className="w-full flex justify-center">
-                                <SignInButton
-                                    onSuccess={handleFarcasterSuccess}
-                                    onError={() => setError("Farcaster Login Failed")}
-                                />
-                            </div>
+                            <button
+                                onClick={() => signIn()}
+                                className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                Connect Farcaster
+                            </button>
                         )}
                     </div>
 
