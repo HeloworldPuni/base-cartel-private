@@ -1,0 +1,26 @@
+- [x] Check `src/components/MyClanModal.tsx` for referral display logic <!-- id: 15 -->
+- [x] Implement ownership check to hide referral link on other profiles <!-- id: 16 -->
+- [x] Verify `ProfitClaimed` event signature in `d:\demos\RemixOneClick.sol` <!-- id: 17 -->
+- [x] Compare with `src/lib/indexer-service.ts` ABI <!-- id: 18 -->
+- [x] Fix any ABI mismatches or logic errors in claim indexing <!-- id: 19 -->
+- [x] Implement Backfill Logic (500k blocks) to recover missed claims <!-- id: 21 -->
+- [x] Fix logic bug: `eventsToProcess` scope issue <!-- id: 22 -->
+- [x] Implement Chunking (20k blocks) to avoid RPC timeouts <!-- id: 23 -->
+- [x] Fix Leaderboard Display (Convert Wei to Eth/USDC) <!-- id: 24 -->
+- [x] Filter Leaderboard: Hide users with 0 shares <!-- id: 25 -->
+- [x] Verify changes <!-- id: 20 -->
+- [x] **Debug Quest UI Discrepancy**
+  - [x] Investigate why `High Stakes` quest shows incomplete despite DB saying otherwise
+  - [x] Verify API endpoint `active/route.ts` logic for `QuestProgressV2`
+  - [x] Check for caching issues (`_t` timestamp added)
+  - [x] Verify `QuestBoard.tsx` vs `quests/page.tsx` usage (Confirmed `page.tsx` is source)
+  - [x] Add Debug Dumps to UI to visualize raw API data
+- [x] **Fix Backend Event Processing**
+  - [x] Update `fix-raids` to handle V2 event signatures
+  - [x] Implement "Deep Scan" to fetch transaction receipts for internal logs (USDC transfers)
+  - [x] Fix case-sensitivity in User Lookup (`active/route.ts`)
+  - [x] Add Retroactive Scan for specific user (`scanUser`)
+  - [x] Fix `raider` address mismatch (Relayer vs Topic 2)
+- [x] **Verification**
+  - [x] Confirm User 0xfe09... gets credit for High Stakes
+  - [x] Verify Quest UI shows green/completed state

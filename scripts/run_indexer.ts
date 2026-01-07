@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 import prisma from '../src/lib/prisma';
 
 dotenv.config();
+console.log("DB URL:", process.env.DATABASE_URL ? "Set" : "Unset");
+console.log("DB URL Start:", process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 10) : "N/A");
 
 async function main() {
     console.log("--- MANUALLY TRIGGERING INDEXER ---");

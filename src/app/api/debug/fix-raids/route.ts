@@ -1,4 +1,4 @@
-```typescript
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { QuestEngine } from '@/lib/quest-engine';
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     try {
         const url = new URL(request.url);
         log(`[Maintenance] Raid Repair Tool`);
-        log(`URL: ${ request.url } `);
+        log(`URL: ${request.url} `);
 
         const forceTx = url.searchParams.get('tx');
         // const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
         // MODE: Scan History for User
         if (scanUser) {
-            console.log(`Scanning history for user: ${ scanUser } `);
+            console.log(`Scanning history for user: ${scanUser} `);
             // Core Contract
             const core = new ethers.Contract(CORE_ADDRESS, MINIMAL_CORE_ABI, provider);
 
@@ -51,9 +51,9 @@ export async function GET(request: Request) {
             // Start from 0 to capture full history manually for specific user if needed, but safe cap 90k
             const startBlock = Math.max(0, currentBlock - 90000); // Max 100k allowed
 
-            console.log(`Scanning from block ${ startBlock } to latest`);
+            console.log(`Scanning from block ${startBlock} to latest`);
             const reqLogs = await core.queryFilter(filter, startBlock, 'latest');
-            console.log(`Found ${ reqLogs.length } RaidRequests events for ${ scanUser }`);
+            console.log(`Found ${reqLogs.length} RaidRequests events for ${scanUser}`);
 
             // Add to Part 2 Processing
             extraReqLogs = reqLogs;
@@ -267,7 +267,7 @@ export async function GET(request: Request) {
         // }
 
         if (forceTx) {
-            log(`Manual Trigger for Tx: ${ forceTx } `);
+            log(`Manual Trigger for Tx: ${forceTx} `);
 
             // 1. Check if event exists
             const existing = await prisma.cartelEvent.findUnique({
@@ -275,7 +275,7 @@ export async function GET(request: Request) {
             });
 
             if (existing) {
-                log(`Event exists: ${ existing.type } (Processed: ${ existing.processed })`);
+                log(`Event exists: ${existing.type} (Processed: ${existing.processed})`);
             } else {
                 log(`Event NOT found in DB.Creating...`);
                 // We'd need to fetch receipt to know type, but for now we trust 'RAID' default or verify later
@@ -320,18 +320,18 @@ export async function GET(request: Request) {
         const globalScan = url.searchParams.get('globalScan');
         const range = globalScan ? 90000 : 20000;
         const startBlock = Math.max(0, currentBlock - range);
-        
-        log(`CORE_ADDRESS: ${ CORE_ADDRESS } `);
-        log(`Scanning last ${ range } blocks(Global mode: ${!!globalScan}) using queryFilter`);
+
+        log(`CORE_ADDRESS: ${CORE_ADDRESS} `);
+        log(`Scanning last ${range} blocks(Global mode: ${!!globalScan}) using queryFilter`);
 
         // Use Contract instance (worked better for manual scan)
         const core = new ethers.Contract(CORE_ADDRESS, MINIMAL_CORE_ABI, provider);
-        
+
         const reqLogs = [
             ...(await core.queryFilter(core.filters.RaidRequests(), startBlock, currentBlock)),
             ...(extraReqLogs || [])
         ];
-        
+
         // B. Fetch recent logs for RaidResult
         // Note: RaidResult is not in MINIMAL_CORE_ABI above? We need to check if it has a filter method. 
         // If not, we fall back to getLogs or add it to ABI. 
@@ -345,7 +345,7 @@ export async function GET(request: Request) {
             toBlock: currentBlock
         });
 
-        log(`Found ${ reqLogs.length } Requests and ${ resLogs.length } Results in last ${ currentBlock - startBlock } blocks.`);
+        log(`Found ${reqLogs.length} Requests and ${resLogs.length} Results in last ${currentBlock - startBlock} blocks.`);
 
         // Map Results by RequestId (Topic 1)
         const resultMap = new Map<string, any>();
@@ -363,7 +363,7 @@ export async function GET(request: Request) {
                 // Deep Scan: Fetch Receipt to find Truth
                 const txReceipt = await provider.getTransactionReceipt(req.transactionHash);
                 if (!txReceipt) {
-                    log(`Skipping Req ${ requestId } - No Receipt`);
+                    log(`Skipping Req ${requestId} - No Receipt`);
                     continue;
                 }
 
@@ -387,13 +387,13 @@ export async function GET(request: Request) {
 
                 // DEBUG: Dump all logs for this Tx to see why we missed it
                 if (req.transactionHash.startsWith("0x0b11")) { // Only for the debug target
-                    log(`-- - Debugging Log Scan for ${ req.transactionHash } -- - `);
+                    log(`-- - Debugging Log Scan for ${req.transactionHash} -- - `);
                     txReceipt.logs.forEach((l: any, i: number) => {
-                        log(`[${ i }]Addr: ${ l.address } | Topics: ${ l.topics.join(',') } | Data: ${ l.data } `);
+                        log(`[${i}]Addr: ${l.address} | Topics: ${l.topics.join(',')} | Data: ${l.data} `);
                     });
                     // Check specifically for fee
                     const feeHex = HIGH_STAKES_HEX.replace('0x', '');
-                    log(`Looking for Fee Hex: ${ feeHex } `);
+                    log(`Looking for Fee Hex: ${feeHex} `);
                 }
 
                 for (const l of txReceipt.logs) {
@@ -405,11 +405,11 @@ export async function GET(request: Request) {
 
                 // FORCE OVERRIDE
                 if (forceTx && req.transactionHash.toLowerCase() === forceTx.toLowerCase() && forceType) {
-                    log(`Overriding Type to ${ forceType } for ${ forceTx }`);
+                    log(`Overriding Type to ${forceType} for ${forceTx}`);
                     isHighStakes = (forceType === 'HIGH_STAKES' || forceType === 'HIGH_STAKES_RAID');
                 }
 
-                log(`Req ${ requestId } (Tx: ${ req.transactionHash.substring(0, 10)}): Raider = ${ raider }, HighStakes = ${ isHighStakes } `);
+                log(`Req ${requestId} (Tx: ${req.transactionHash.substring(0, 10)}): Raider = ${raider}, HighStakes = ${isHighStakes} `);
 
                 // 3. Identify Stolen/Penalty via TransferSingle Logs
                 // TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)
@@ -444,7 +444,7 @@ export async function GET(request: Request) {
                     }
                 }
 
-                log(`Raid Outcome: Success = ${ success }, Stolen = ${ stolen }, Penalty = ${ penalty } `);
+                log(`Raid Outcome: Success = ${success}, Stolen = ${stolen}, Penalty = ${penalty} `);
 
                 // Create Unique ID check
                 const timestamp = new Date((await provider.getBlock(req.blockNumber))!.timestamp * 1000);
@@ -461,7 +461,7 @@ export async function GET(request: Request) {
 
                 if (existing) {
                     // Update if it looks "empty" (stolen=0, processed=true?) or just force refresh
-                    log(`Updating existing ${ type } event(Force Retry)...`);
+                    log(`Updating existing ${type} event(Force Retry)...`);
                     await prisma.questEvent.update({
                         where: { id: existing.id },
                         data: {
@@ -477,7 +477,7 @@ export async function GET(request: Request) {
                     });
                     v2FixedCount++;
                 } else {
-                    log(`Creating new ${ type } event...`);
+                    log(`Creating new ${type} event...`);
                     await prisma.questEvent.create({
                         data: {
                             type: type,
@@ -497,11 +497,11 @@ export async function GET(request: Request) {
                 }
 
             } catch (err: any) {
-                log(`Error processing req ${ req.transactionHash }: ${ err.message } `);
+                log(`Error processing req ${req.transactionHash}: ${err.message} `);
             }
         }
 
-        log(`V2 Fix complete.Created ${ v2FixedCount } High Stakes events.`);
+        log(`V2 Fix complete.Created ${v2FixedCount} High Stakes events.`);
         fixedCount += v2FixedCount;
 
         log(`Triggering QuestEngine...`);
@@ -517,7 +517,7 @@ export async function GET(request: Request) {
         });
 
     } catch (error: any) {
-        log(`Error: ${ error.message } `);
+        log(`Error: ${error.message} `);
         return NextResponse.json({ success: false, logs }, { status: 500 });
     }
 }

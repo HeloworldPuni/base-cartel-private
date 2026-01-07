@@ -1,7 +1,7 @@
 "use client";
 
-import { Trophy, Award } from "lucide-react";
-import Link from 'next/link';
+import { Trophy, Award, Shield } from "lucide-react";
+
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import BottomNav from '@/components/BottomNav';
 import { useAccount } from 'wagmi';
@@ -29,8 +29,6 @@ export default function QuestsPage() {
                 }
             } catch (e) {
                 console.error("Failed to load quests", e);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -220,16 +218,20 @@ export default function QuestsPage() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-3 mb-5">
-                                        <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#4FC3F7]">
-                                                +{quest.repReward} REP
-                                            </p>
-                                        </div>
-                                        <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#4FC3F7]">
-                                                +{quest.sharesReward} Shares
-                                            </p>
-                                        </div>
+                                        {quest.repReward > 0 && (
+                                            <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#4FC3F7]">
+                                                    +{quest.repReward} REP
+                                                </p>
+                                            </div>
+                                        )}
+                                        {quest.sharesReward > 0 && (
+                                            <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#4FC3F7]">
+                                                    +{quest.sharesReward} Shares
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mb-5">
@@ -286,16 +288,20 @@ export default function QuestsPage() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-3 mb-5">
-                                        <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#4FC3F7]">
-                                                +{quest.repReward} REP
-                                            </p>
-                                        </div>
-                                        <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
-                                            <p className="text-sm font-semibold text-[#4FC3F7]">
-                                                +{quest.sharesReward} Shares
-                                            </p>
-                                        </div>
+                                        {quest.repReward > 0 && (
+                                            <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#4FC3F7]">
+                                                    +{quest.repReward} REP
+                                                </p>
+                                            </div>
+                                        )}
+                                        {quest.sharesReward > 0 && (
+                                            <div className="bg-[rgba(79,195,247,0.1)] border border-[rgba(79,195,247,0.3)] px-4 py-2 rounded-lg">
+                                                <p className="text-sm font-semibold text-[#4FC3F7]">
+                                                    +{quest.sharesReward} Shares
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mb-5">
