@@ -15,6 +15,13 @@ export async function GET(request: Request) {
         const forceType = url.searchParams.get('forceType'); // 'HIGH_STAKES' or 'RAID'
         const debugUser = url.searchParams.get('debugUser');
         const simulateActive = url.searchParams.get('simulateActive');
+        const checkCategory = url.searchParams.get('checkCategory');
+
+        if (checkCategory) {
+            const q = await prisma.quest.findUnique({ where: { slug: checkCategory } });
+            return NextResponse.json({ success: true, quest: q });
+        }
+
 
         if (simulateActive) {
             // Logic mirrored from active/route.ts
