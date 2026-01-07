@@ -13,7 +13,6 @@ import { AuthKitProvider } from '@farcaster/auth-kit';
 const farcasterConfig = {
   rpcUrl: "https://mainnet.optimism.io",
   domain: typeof window !== 'undefined' ? window.location.host : 'basecartel.in',
-  siweUri: typeof window !== 'undefined' ? `${window.location.origin}/login` : 'https://basecartel.in/login',
 };
 
 export default function Providers({
