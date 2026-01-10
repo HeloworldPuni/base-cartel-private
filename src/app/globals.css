@@ -203,6 +203,16 @@ h6,
   animation: scaleIn 0.4s ease-out forwards;
 }
 
-.animate-slide-up {
-  animation: slideUp 0.5s ease-out backwards;
+
+/* Force Farcaster Auth Modal to be above everything */
+[data-rk],
+[class*="fc-"],
+[class*="farcaster"] {
+  z-index: 2147483647 !important;
+  /* Max Z-Index */
+}
+
+/* Specific fix for AuthKit modal container if searchable */
+div[role="dialog"] {
+  z-index: 2147483647 !important;
 }
