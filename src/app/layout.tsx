@@ -17,19 +17,11 @@ export const metadata: Metadata = {
   },
   other: {
     "fc:miniapp": JSON.stringify({
-      version: "1",
-      imageUrl: METADATA.bannerImageUrl,
+      version: "0.0.1",
+      icon: METADATA.iconImageUrl,
+      name: METADATA.name,
+      aboutUrl: METADATA.homeUrl,
       webhookUrl: "https://api.neynar.com/f/app/90b8eac4-fd29-4fc4-a310-576128e120b0/event",
-      button: {
-        title: "Join The Cartel",
-        action: {
-          type: "launch_miniapp",
-          name: METADATA.name,
-          url: METADATA.homeUrl,
-          splashImageUrl: METADATA.iconImageUrl,
-          splashBackgroundColor: METADATA.splashBackgroundColor,
-        },
-      },
     }),
     "fc:frame": JSON.stringify({
       version: "1",
