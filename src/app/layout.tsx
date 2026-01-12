@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     "fc:miniapp": JSON.stringify({
       version: "1",
       imageUrl: METADATA.bannerImageUrl,
+      webhookUrl: "https://api.neynar.com/f/app/90b8eac4-fd29-4fc4-a310-576128e120b0/event",
       button: {
         title: "Join The Cartel",
         action: {
