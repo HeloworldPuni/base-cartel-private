@@ -11,7 +11,10 @@ export function AddMiniAppAction() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const miniapp: any = useMiniApp();
-  const { isSDKLoaded, addMiniApp } = miniapp;
+  const { isSDKLoaded } = miniapp;
+
+  // Attempt to find the function in actions if not at root
+  const addMiniAppFn = miniapp.actions?.addMiniApp || miniapp.addMiniApp;
 
   console.log("[AddMiniApp] Hook Result:", miniapp);
   console.log("[AddMiniApp] Rendered. SDK Loaded:", isSDKLoaded);
@@ -25,13 +28,18 @@ export function AddMiniAppAction() {
       return;
     }
 
+    if (!addMiniAppFn) {
+      setError("addMiniApp function not found in SDK.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setStatus(null);
 
     try {
       console.log("[AddMiniApp] Invoking addMiniApp()...");
-      const result = await addMiniApp();
+      const result = await addMiniAppFn();
       console.log("[AddMiniApp] Result:", result);
 
       if (result.added && result.notificationDetails) {
@@ -47,7 +55,7 @@ export function AddMiniAppAction() {
     } finally {
       setLoading(false);
     }
-  }, [isSDKLoaded, addMiniApp]);
+  }, [isSDKLoaded, addMiniAppFn]);
 
   return (
     <div className="mb-4">
@@ -56,11 +64,12 @@ export function AddMiniAppAction() {
           <pre className="font-mono text-xs text-emerald-500 dark:text-emerald-400">Neynar Hook Keys</pre>
           <div className="text-[10px] text-gray-500 flex flex-col items-end">
             <span>SDK: {isSDKLoaded ? '✅ Loaded' : '❌ Waiting'}</span>
-            <span>Env: {typeof window !== 'undefined' && window.innerWidth > 768 ? 'Desktop' : 'Mobile'}</span>
+            <span>Actions: {miniapp.actions ? '✅ Found' : '❌ Missing'}</span>
           </div>
         </div>
         <div className="text-[10px] text-gray-400 break-all bg-black/20 p-1 rounded">
-          {JSON.stringify(Object.keys(miniapp || {}))}
+          {/* Show keys of ACTIONS to find the right method name */}
+          Action Keys: {JSON.stringify(Object.keys(miniapp.actions || {}))}
         </div>
       </div>
 
