@@ -9,8 +9,11 @@ export function AddMiniAppAction() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
-  const { isSDKLoaded, addMiniApp } = useMiniApp();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const miniapp: any = useMiniApp();
+  const { isSDKLoaded, addMiniApp } = miniapp;
 
+  console.log("[AddMiniApp] Hook Result:", miniapp);
   console.log("[AddMiniApp] Rendered. SDK Loaded:", isSDKLoaded);
 
   const handleAddMiniApp = useCallback(async (): Promise<void> => {
