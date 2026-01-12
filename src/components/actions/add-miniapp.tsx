@@ -11,9 +11,14 @@ export function AddMiniAppAction() {
 
   const { isSDKLoaded, addMiniApp } = useMiniApp();
 
+  console.log("[AddMiniApp] Rendered. SDK Loaded:", isSDKLoaded);
+
   const handleAddMiniApp = useCallback(async (): Promise<void> => {
+    console.log("[AddMiniApp] Button Clicked");
+
     if (!isSDKLoaded) {
-      setError("SDK not loaded yet. Please try again.");
+      console.warn("[AddMiniApp] SDK state is false");
+      setError("SDK not loaded. Please try refreshing.");
       return;
     }
 
@@ -22,17 +27,20 @@ export function AddMiniAppAction() {
     setStatus(null);
 
     try {
+      console.log("[AddMiniApp] Invoking addMiniApp()...");
       const result = await addMiniApp();
+      console.log("[AddMiniApp] Result:", result);
 
       if (result.added && result.notificationDetails) {
-        setStatus("Mini App added successfully! Notifications enabled.");
-        console.log('Notification token:', result.notificationDetails.token);
+        setStatus("Success! Notifications enabled.");
+        console.log("[AddMiniApp] Token:", result.notificationDetails.token);
       } else {
-        // Did not add or enable notifications
-        setError("Mini App was not added or notifications were not enabled.");
+        console.warn("[AddMiniApp] Failed/Cancelled. Result:", result);
+        setError("Notifications not enabled (Cancelled or Error).");
       }
     } catch (err) {
-      setError(`Failed to add Mini App: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error("[AddMiniApp] Exception:", err);
+      setError(`Error: ${err instanceof Error ? err.message : 'Unknown'}`);
     } finally {
       setLoading(false);
     }
