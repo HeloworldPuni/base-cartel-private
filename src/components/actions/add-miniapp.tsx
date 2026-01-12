@@ -11,25 +11,21 @@ export function AddMiniAppAction() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const miniapp: any = useMiniApp();
-  const { isSDKLoaded } = miniapp;
+  const { isSDKLoaded, isInMiniApp } = miniapp;
 
-  // Attempt to find the function in actions if not at root
-  const addMiniAppFn = miniapp.actions?.addMiniApp || miniapp.addMiniApp;
-
-  console.log("[AddMiniApp] Hook Result:", miniapp);
-  console.log("[AddMiniApp] Rendered. SDK Loaded:", isSDKLoaded);
+  console.log("[AddMiniApp] Hook State:", { isSDKLoaded, isInMiniApp });
 
   const handleAddMiniApp = useCallback(async (): Promise<void> => {
     console.log("[AddMiniApp] Button Clicked");
 
     if (!isSDKLoaded) {
-      console.warn("[AddMiniApp] SDK state is false");
-      setError("SDK not loaded. Please try refreshing.");
+      setError("SDK loading...");
       return;
     }
 
-    if (!addMiniAppFn) {
-      setError("addMiniApp function not found in SDK.");
+    // Direct access to preserve 'this' context if needed
+    if (!miniapp.actions?.addMiniApp) {
+      setError("addMiniApp action not found.");
       return;
     }
 
@@ -38,38 +34,38 @@ export function AddMiniAppAction() {
     setStatus(null);
 
     try {
-      console.log("[AddMiniApp] Invoking addMiniApp()...");
-      const result = await addMiniAppFn();
+      console.log("[AddMiniApp] Calling actions.addMiniApp()...");
+      // Call directly on the object to ensure 'this' binding
+      const result = await miniapp.actions.addMiniApp();
       console.log("[AddMiniApp] Result:", result);
 
-      if (result.added && result.notificationDetails) {
+      // Neynar docs suggest result contains { added: boolean, notificationDetails: ... }
+      // But we also check the hook state if result is void
+      if ((result && result.added) || (miniapp.notificationDetails)) {
         setStatus("Success! Notifications enabled.");
-        console.log("[AddMiniApp] Token:", result.notificationDetails.token);
       } else {
-        console.warn("[AddMiniApp] Failed/Cancelled. Result:", result);
-        setError("Notifications not enabled (Cancelled or Error).");
+        console.warn("[AddMiniApp] Result indicated failure or was empty:", result);
+        setError("Could not enable notifications. (User declined?)");
       }
-    } catch (err) {
-      console.error("[AddMiniApp] Exception:", err);
-      setError(`Error: ${err instanceof Error ? err.message : 'Unknown'}`);
+    } catch (err: any) {
+      console.error("[AddMiniApp] Error:", err);
+      // Clean up the error message
+      const msg = err.message || "Unknown error";
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [isSDKLoaded, addMiniAppFn]);
+  }, [isSDKLoaded, miniapp]);
 
   return (
     <div className="mb-4">
-      <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2 flex flex-col gap-2">
+      <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2 flex flex-col gap-1">
         <div className="flex justify-between items-center">
-          <pre className="font-mono text-xs text-emerald-500 dark:text-emerald-400">Neynar Hook Keys</pre>
-          <div className="text-[10px] text-gray-500 flex flex-col items-end">
-            <span>SDK: {isSDKLoaded ? '✅ Loaded' : '❌ Waiting'}</span>
-            <span>Actions: {miniapp.actions ? '✅ Found' : '❌ Missing'}</span>
+          <pre className="font-mono text-xs text-emerald-500 dark:text-emerald-400">Notifications</pre>
+          <div className="text-[10px] text-gray-400 flex gap-2">
+            <span>SDK: {isSDKLoaded ? '✅' : '⏳'}</span>
+            <span>App: {isInMiniApp ? '✅' : '❌'}</span>
           </div>
-        </div>
-        <div className="text-[10px] text-gray-400 break-all bg-black/20 p-1 rounded">
-          {/* Show keys of ACTIONS to find the right method name */}
-          Action Keys: {JSON.stringify(Object.keys(miniapp.actions || {}))}
         </div>
       </div>
 
