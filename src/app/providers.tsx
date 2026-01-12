@@ -58,8 +58,4 @@ export default function Providers({
     </NeynarContextProvider>
   );
 }
-        </SessionProvider >
-      </OnchainKitProvider >
-    </AuthKitProvider >
-  );
-}
+
