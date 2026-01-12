@@ -11,7 +11,7 @@ import { SessionProvider } from 'next-auth/react';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 
-import { NeynarContextProvider, Theme } from "@neynar/react";
+import { NeynarContextProvider, Theme, MiniAppProvider } from "@neynar/react";
 import "@neynar/react/dist/style.css";
 
 const farcasterConfig = {
@@ -31,31 +31,32 @@ export default function Providers({
         defaultTheme: Theme.Dark,
       }}
     >
-      <AuthKitProvider config={farcasterConfig}>
-        <OnchainKitProvider
-          chain={base}
-          apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY}
-          config={{
-            appearance: {
-              mode: 'dark',
-              theme: 'default',
-            },
-            wallet: {
-              display: 'modal',
-              termsUrl: 'https://www.base.org/terms-of-service',
-              privacyUrl: 'https://www.base.org/privacy-policy',
-            },
-          }}
-        >
-          <SessionProvider>
-            <FrameProvider>
-              <SharedCastHandler />
-              <WagmiProvider>{children}</WagmiProvider>
-            </FrameProvider>
-          </SessionProvider>
-        </OnchainKitProvider>
-      </AuthKitProvider>
+      <MiniAppProvider>
+        <AuthKitProvider config={farcasterConfig}>
+          <OnchainKitProvider
+            chain={base}
+            apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY}
+            config={{
+              appearance: {
+                mode: 'dark',
+                theme: 'default',
+              },
+              wallet: {
+                display: 'modal',
+                termsUrl: 'https://www.base.org/terms-of-service',
+                privacyUrl: 'https://www.base.org/privacy-policy',
+              },
+            }}
+          >
+            <SessionProvider>
+              <FrameProvider>
+                <SharedCastHandler />
+                <WagmiProvider>{children}</WagmiProvider>
+              </FrameProvider>
+            </SessionProvider>
+          </OnchainKitProvider>
+        </AuthKitProvider>
+      </MiniAppProvider>
     </NeynarContextProvider>
   );
 }
-
