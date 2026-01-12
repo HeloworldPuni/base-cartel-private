@@ -26,15 +26,18 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     const { address } = useAccount();
     const { data: session } = useSession(); // Prepare for Twitter session
 
-    // Farcaster Auth Hook
-    // @ts-expect-error - AuthKit types
-    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({});
-
     // Local state for UI feedback
     const [twitterConnected, setTwitterConnected] = useState(!!initialData?.twitter);
     const [farcasterConnected, setFarcasterConnected] = useState(!!initialData?.farcaster);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState("");
+    const [debugStatus, setDebugStatus] = useState("Ready");
+
+    // Farcaster Auth Hook
+    // @ts-expect-error - AuthKit types
+    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({
+        onError: (err) => setDebugStatus(`Auth Error: ${err?.message || JSON.stringify(err)}`)
+    });
 
     useEffect(() => {
         if (isOpen) {
@@ -133,13 +136,28 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <button
-                                onClick={() => signIn()}
-                                className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                            >
-                                <MessageSquare className="w-5 h-5" />
-                                Connect Farcaster
-                            </button>
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={async () => {
+                                        setDebugStatus("Clicked... invoking signIn()");
+                                        try {
+                                            signIn();
+                                        } catch (e) {
+                                            setDebugStatus(`Error invoking: ${e}`);
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                >
+                                    <MessageSquare className="w-5 h-5" />
+                                    Connect Farcaster
+                                </button>
+                                {/* ON-SCREEN DEBUGGER */}
+                                <div className="text-xs font-mono text-yellow-400 bg-black/50 p-2 rounded break-all">
+                                    Status: {debugStatus} <br />
+                                    Auth: {isAuthenticated ? "Yes" : "No"} <br />
+                                    Err: {error || "None"}
+                                </div>
+                            </div>
                         )}
                     </div>
 
