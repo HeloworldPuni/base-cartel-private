@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { signIn as signInNextAuth, useSession } from "next-auth/react";
 import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
 import { AddMiniAppAction } from "./actions/add-miniapp";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 // Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
