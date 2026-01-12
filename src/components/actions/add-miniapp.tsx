@@ -77,9 +77,24 @@ export function AddMiniAppAction() {
         </div>
       </div>
 
+      {/* DEBUG SECTION */}
+      <details className="mb-2">
+        <summary className="text-[10px] text-gray-500 cursor-pointer">Debug Info (Click to Expand)</summary>
+        <div className="text-[10px] bg-black/50 p-2 rounded mt-1 font-mono break-all whitespace-pre-wrap text-left">
+          <div>URL: {typeof window !== 'undefined' ? window.location.href : 'SSR'}</div>
+          <div className="mt-1 opacity-75">Action: {miniapp.actions?.addFrame ? 'addFrame' : 'addMiniApp (fallback)'}</div>
+          <div className="mt-1 opacity-75">Context: {JSON.stringify(miniapp.user || 'No User')}</div>
+          {error && (
+            <div className="mt-2 text-red-300 border-t border-red-900 pt-1">
+              ERR: {typeof error === 'string' ? error : JSON.stringify(error, Object.getOwnPropertyNames(error))}
+            </div>
+          )}
+        </div>
+      </details>
+
       {error && (
         <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg my-2 text-xs text-red-600 dark:text-red-400">
-          <strong>Error:</strong> {error}
+          <strong>Error:</strong> {typeof error === 'string' ? error : 'See Debug Info'}
           {error.includes("not a function") && (
             <div className="mt-1 text-[10px] opacity-80">
               This usually happens on Desktop. Try opening this page inside <strong>Warpcast (Mobile)</strong>.
