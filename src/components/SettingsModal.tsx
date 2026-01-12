@@ -144,7 +144,9 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                         {/* Notifications Section */}
                         <div className="w-full pt-4 border-t border-gray-800">
                             <h3 className="text-sm font-bold text-gray-400 mb-2">Notifications</h3>
-                            <AddMiniAppAction />
+                            <ErrorBoundary>
+                                <AddMiniAppAction />
+                            </ErrorBoundary>
                         </div>
                     </div>
 
