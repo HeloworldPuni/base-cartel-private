@@ -23,9 +23,11 @@ export function AddMiniAppAction() {
       return;
     }
 
-    // Direct access to preserve 'this' context if needed
-    if (!miniapp.actions?.addMiniApp) {
-      setError("addMiniApp action not found.");
+    // Fallback search for action
+    const actionFn = miniapp.actions?.addFrame || miniapp.actions?.addMiniApp;
+
+    if (!actionFn) {
+      setError("Action (addFrame/addMiniApp) not found.");
       return;
     }
 
@@ -34,18 +36,24 @@ export function AddMiniAppAction() {
     setStatus(null);
 
     try {
-      console.log("[AddMiniApp] Calling actions.addMiniApp()...");
-      // Call directly on the object to ensure 'this' binding
-      const result = await miniapp.actions.addMiniApp();
+      console.log("[AddMiniApp] Calling action...");
+
+      let result;
+      if (miniapp.actions?.addFrame) {
+        console.log("Using addFrame()");
+        result = await miniapp.actions.addFrame();
+      } else {
+        console.log("Using addMiniApp()");
+        result = await miniapp.actions.addMiniApp();
+      }
+
       console.log("[AddMiniApp] Result:", result);
 
-      // Neynar docs suggest result contains { added: boolean, notificationDetails: ... }
-      // But we also check the hook state if result is void
-      if ((result && result.added) || (miniapp.notificationDetails)) {
-        setStatus("Success! Notifications enabled.");
+      if (result && result.added) {
+        setStatus("Success! App added.");
       } else {
-        console.warn("[AddMiniApp] Result indicated failure or was empty:", result);
-        setError("Could not enable notifications. (User declined?)");
+        console.warn("[AddMiniApp] Failed/Cancelled:", result);
+        setError("Action cancelled/failed.");
       }
     } catch (err: any) {
       console.error("[AddMiniApp] Error:", err);
