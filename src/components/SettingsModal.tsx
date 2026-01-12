@@ -5,6 +5,7 @@ import { X, MessageSquare, Check } from "lucide-react";
 import { useAccount } from "wagmi";
 import { signIn as signInNextAuth, useSession } from "next-auth/react";
 import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
+import { AddMiniAppAction } from "./actions/add-miniapp";
 
 // Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
@@ -138,6 +139,12 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 </div>
                             </div>
                         )}
+
+                        {/* Notifications Section */}
+                        <div className="w-full pt-4 border-t border-gray-800">
+                            <h3 className="text-sm font-bold text-gray-400 mb-2">Notifications</h3>
+                            <AddMiniAppAction />
+                        </div>
                     </div>
 
                     {error && (
