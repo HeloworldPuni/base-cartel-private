@@ -145,25 +145,56 @@ export function AddMiniAppAction() {
         {!miniapp.user && (
           <button
             onClick={async () => {
-              if (miniapp.actions?.signIn) {
-                try {
-                  console.log("Calling signIn()...");
-                  const res = await miniapp.actions.signIn();
-                  console.log("Sign In Result:", res);
-                  if (res) {
-                    setError(null);
-                    setStatus("Signed In! Try enabling notifications now.");
-                  }
-                } catch (e: any) {
-                  setError("Sign In Failed: " + (e.message || "Unknown"));
+              // Quick Auth Flow
+              try {
+                console.log("Starting QuickAuth...");
+                setStatus("Requesting token...");
+
+                // 1. Get Token from Client
+                // @ts-ignore - sdk might be on window or imported, but we use miniapp context which usually wraps sdk.
+                // Actually, we need 'sdk' from @farcaster/miniapp-sdk directly if the hook doesn't expose it.
+                // For now, let's assume miniapp.actions.signIn is actually the wrapper for this OR we use the sdk global if available.
+
+                // But wait, the docs say: import { sdk } from "@farcaster/miniapp-sdk";
+                // I will use dynamic import to be safe in this client component.
+                const { sdk } = await import("@farcaster/miniapp-sdk");
+
+                const { token } = await sdk.actions.signIn({ nonce: "quickauth" }) as any; // Fallback or new API
+                // OR
+                // const { token } = await sdk.quickAuth.getToken(); // if available in this version
+
+                // Let's try the modern way first
+                let authToken = token;
+                if (!authToken && sdk.quickAuth) {
+                  const res = await sdk.quickAuth.getToken();
+                  authToken = res.token;
                 }
-              } else {
-                setError("signIn action not available.");
+
+                if (!authToken) throw new Error("No token received");
+
+                setStatus("Verifying...");
+                console.log("Token received, verifying...");
+
+                // 2. Verify on Backend
+                const response = await fetch('/api/auth/farcaster', {
+                  headers: { "Authorization": `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Verification failed");
+
+                setStatus(`Verified as FID: ${data.fid}`);
+                // Ideally, we would reload the page or update context here
+                window.location.reload();
+
+              } catch (e: any) {
+                console.error(e);
+                setError("QuickAuth Failed: " + (e.message || "Unknown"));
               }
             }}
             className="ml-2 text-[10px] text-emerald-500 underline"
           >
-            Sign In First
+            Sign In (QuickAuth)
           </button>
         )}
       </div>
