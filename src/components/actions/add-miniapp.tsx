@@ -51,11 +51,16 @@ export function AddMiniAppAction() {
 
   return (
     <div className="mb-4">
-      <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2 flex justify-between items-center">
-        <pre className="font-mono text-xs text-emerald-500 dark:text-emerald-400">Neynar: useMiniApp()</pre>
-        <div className="text-[10px] text-gray-500 flex flex-col items-end">
-          <span>SDK: {isSDKLoaded ? '✅ Loaded' : '❌ Waiting'}</span>
-          <span>Env: {typeof window !== 'undefined' && window.innerWidth > 768 ? 'Desktop' : 'Mobile'}</span>
+      <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2 flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <pre className="font-mono text-xs text-emerald-500 dark:text-emerald-400">Neynar Hook Keys</pre>
+          <div className="text-[10px] text-gray-500 flex flex-col items-end">
+            <span>SDK: {isSDKLoaded ? '✅ Loaded' : '❌ Waiting'}</span>
+            <span>Env: {typeof window !== 'undefined' && window.innerWidth > 768 ? 'Desktop' : 'Mobile'}</span>
+          </div>
+        </div>
+        <div className="text-[10px] text-gray-400 break-all bg-black/20 p-1 rounded">
+          {JSON.stringify(Object.keys(miniapp || {}))}
         </div>
       </div>
 
