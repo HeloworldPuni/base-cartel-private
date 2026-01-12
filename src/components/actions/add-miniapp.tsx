@@ -116,6 +116,32 @@ export function AddMiniAppAction() {
       >
         Enable Notifications
       </Button>
+
+      {/* Manual Fallback for Desperate Times */}
+      <div className="mt-2 flex gap-2 justify-center">
+        <button
+          onClick={() => {
+            // Try raw postMessage for add_frame
+            if (window.parent) {
+              console.log("Posting raw add_frame message...");
+              window.parent.postMessage({ type: "add_frame" }, "*");
+            }
+          }}
+          className="text-[10px] text-gray-500 underline"
+        >
+          Try Raw Add
+        </button>
+
+        <button
+          onClick={() => {
+            // Fallback to purely opening the URL which might trigger deep link logic
+            window.open("https://warpcast.com/~/add-frame?url=https://www.basecartel.in", "_blank");
+          }}
+          className="text-[10px] text-gray-500 underline"
+        >
+          Deep Link
+        </button>
+      </div>
     </div>
   );
 }
