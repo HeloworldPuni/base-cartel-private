@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { X, MessageSquare, Loader2, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, MessageSquare, Check } from "lucide-react";
 import { useAccount } from "wagmi";
 import { signIn as signInNextAuth, useSession } from "next-auth/react";
-import { useSignIn, StatusAPIResponse } from "@farcaster/auth-kit";
+import { SignInButton, StatusAPIResponse } from "@farcaster/auth-kit";
 
 // Custom X Logo component
 const XLogo = ({ className }: { className?: string }) => (
@@ -31,13 +31,6 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
     const [farcasterConnected, setFarcasterConnected] = useState(!!initialData?.farcaster);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState("");
-    const [debugStatus, setDebugStatus] = useState("Ready");
-
-    // Farcaster Auth Hook
-    // @ts-expect-error - AuthKit types
-    const { signIn, isSuccess: isAuthenticated, data: farcasterData, ...rest } = useSignIn({
-        onError: (err) => setDebugStatus(`Auth Error: ${err?.message || JSON.stringify(err)}`)
-    });
 
     useEffect(() => {
         if (isOpen) {
@@ -70,13 +63,6 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
             setIsSaving(false);
         }
     };
-
-    // Watch for Farcaster authentication changes
-    useEffect(() => {
-        if (isAuthenticated && farcasterData && !farcasterConnected && isOpen) {
-            handleFarcasterSuccess(farcasterData);
-        }
-    }, [isAuthenticated, farcasterData, farcasterConnected, isOpen]);
 
 
     if (!isOpen) return null;
@@ -136,26 +122,19 @@ export default function SettingsModal({ isOpen, onClose, initialData }: Settings
                                 <Check className="w-5 h-5 text-[#8a63d2]" />
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-2">
-                                <button
-                                    onClick={async () => {
-                                        setDebugStatus("Clicked... invoking signIn()");
-                                        try {
-                                            signIn();
-                                        } catch (e) {
-                                            setDebugStatus(`Error invoking: ${e}`);
-                                        }
-                                    }}
-                                    className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                                >
+                            <div className="w-full relative overflow-hidden rounded-xl">
+                                {/* Visual Custom Button (Non-functional) */}
+                                <button className="w-full py-3 bg-[#8a63d2] hover:bg-[#7c56c4] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 pointer-events-none">
                                     <MessageSquare className="w-5 h-5" />
                                     Connect Farcaster
                                 </button>
-                                {/* ON-SCREEN DEBUGGER */}
-                                <div className="text-xs font-mono text-yellow-400 bg-black/50 p-2 rounded break-all">
-                                    Status: {debugStatus} <br />
-                                    Auth: {isAuthenticated ? "Yes" : "No"} <br />
-                                    Err: {error || "None"}
+
+                                {/* Functional Overlay: Invisible + Scaled to ensure click coverage */}
+                                <div
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 opacity-0 cursor-pointer"
+                                    style={{ transform: 'translate(-50%, -50%) scale(5)' }}
+                                >
+                                    <SignInButton onSuccess={handleFarcasterSuccess} />
                                 </div>
                             </div>
                         )}
