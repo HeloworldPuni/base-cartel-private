@@ -134,13 +134,38 @@ export function AddMiniAppAction() {
 
         <button
           onClick={() => {
-            // Fallback to purely opening the URL which might trigger deep link logic
             window.open("https://warpcast.com/~/add-frame?url=https://www.basecartel.in", "_blank");
           }}
           className="text-[10px] text-gray-500 underline"
         >
           Deep Link
         </button>
+
+        {/* Auth Button if No User */}
+        {!miniapp.user && (
+          <button
+            onClick={async () => {
+              if (miniapp.actions?.signIn) {
+                try {
+                  console.log("Calling signIn()...");
+                  const res = await miniapp.actions.signIn();
+                  console.log("Sign In Result:", res);
+                  if (res) {
+                    setError(null);
+                    setStatus("Signed In! Try enabling notifications now.");
+                  }
+                } catch (e: any) {
+                  setError("Sign In Failed: " + (e.message || "Unknown"));
+                }
+              } else {
+                setError("signIn action not available.");
+              }
+            }}
+            className="ml-2 text-[10px] text-emerald-500 underline"
+          >
+            Sign In First
+          </button>
+        )}
       </div>
     </div>
   );
